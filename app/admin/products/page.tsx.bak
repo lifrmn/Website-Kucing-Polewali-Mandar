@@ -1,0 +1,449 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { productService } from '@/services/productService';
+import type { Product } from '@/types';
+import { Card, Input, Button, Badge } from '@/components/ui';
+import { Plus, Edit, Trash2, Search, Package } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  useEffect(() => {
+    let filtered = products;
+    
+    if (searchQuery) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (categoryFilter !== 'all') {
+      filtered = filtered.filter(p => p.category === categoryFilter);
+    }
+    
+    setFilteredProducts(filtered);
+  }, [searchQuery, categoryFilter, products]);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    const response = await productService.getProducts();
+    if (response.success && response.data) {
+      setProducts(response.data.data);
+      setFilteredProducts(response.data.data);
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Delete product "${name}"? This action cannot be undone.`)) return;
+
+    const response = await productService.deleteProduct(id);
+    if (response.success) {
+      loadProducts();
+    } else {
+      alert(response.error || 'Failed to delete product');
+    }
+  };
+
+  const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-body text-muted">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-h1 font-bold text-text">Products</h1>
+          <p className="text-body text-muted">{products.length} total products</p>
+        </div>
+        <Link href="/admin/products/new">
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
+        </Link>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <Card.Content className="p-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                icon={<Search className="w-4 h-4" />}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCategoryFilter('all')}
+                className={`px-4 py-2 rounded-button text-small font-semibold transition-colors ${
+                  categoryFilter === 'all'
+                    ? 'bg-primary text-white'
+                    : 'bg-surface2 text-text hover:bg-surface2'
+                }`}
+              >
+                All
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setCategoryFilter(cat || '')}
+                  className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
+                    categoryFilter === cat
+                      ? 'bg-primary text-white'
+                      : 'bg-surface2 text-text hover:bg-surface2'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* Products Grid */}
+      {filteredProducts.length === 0 ? (
+        <Card>
+          <Card.Content className="p-12 text-center">
+            <Package className="w-16 h-16 mx-auto text-muted mb-4" />
+            <p className="text-h3 font-semibold text-text mb-2">No products found</p>
+            <p className="text-body text-muted mb-6">
+              {searchQuery || categoryFilter !== 'all' 
+                ? 'Try adjusting your filters' 
+                : 'Get started by adding your first product'}
+            </p>
+            <Link href="/admin/products/new">
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Product
+              </Button>
+            </Link>
+          </Card.Content>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className="overflow-hidden">
+              <div className="aspect-square bg-surface2 relative">
+                {product.image_url ? (
+                  <img
+                    src={product.image_url}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-16 h-16 text-muted" />
+                  </div>
+                )}
+                <div className="absolute top-3 right-3">
+                  <Badge variant={product.is_active ? 'success' : 'danger'}>
+                    {product.is_active ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+              </div>
+              <Card.Content className="p-4 space-y-3">
+                <div>
+                  <h3 className="text-body font-bold text-text mb-1 line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-small text-muted line-clamp-2">{product.description}</p>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-h3 font-bold text-primary">
+                      {formatCurrency(product.price)}
+                    </p>
+                    <p className="text-caption text-muted">
+                      Stock: <span className={product.stock < 10 ? 'text-danger font-semibold' : ''}>{product.stock}</span>
+                    </p>
+                  </div>
+                  {product.category && (
+                    <Badge variant="accent" size="sm">{product.category}</Badge>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <Link href={`/admin/products/${product.id}/edit`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(product.id, product.name)}
+                    className="text-danger hover:bg-danger hover:text-white"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </Card.Content>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`Yakin ingin menghapus produk "${name}"?`)) return
+
+    const response = await productService.deleteProduct(id)
+    if (response.success) {
+      toast.success('Produk berhasil dihapus!')
+      loadProducts()
+    } else {
+      toast.error(response.error || 'Gagal menghapus produk')
+    }
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-semibold">Memuat produk...</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">Kelola Produk</h1>
+          <p className="text-sm sm:text-base text-gray-600 break-words">Manage all products in your store</p>
+        </div>
+        <button
+          onClick={() => handleOpenModal()}
+          className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 hover:scale-105 whitespace-nowrap"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Tambah Produk</span>
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-lg">
+        <div className="relative">
+          <Search className="absolute w-4 h-4 text-gray-400 pointer-events-none" style={{left: '16px', top: '50%', transform: 'translateY(-50%)'}} />
+          <input
+            type="text"
+            placeholder="Cari produk..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 text-base border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-300 transition-all"
+          />
+        </div>
+      </div>
+
+      {/* Products Table */}
+      <div className="bg-white rounded-lg sm:rounded-xl shadow-lg overflow-hidden">
+        <div className="overflow-x-auto min-w-full">
+          <table className="w-full min-w-[800px]">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Produk</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Kategori</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Harga</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Stok</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Status</th>
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-right text-xs font-bold text-gray-600 uppercase whitespace-nowrap">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredProducts.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <img
+                        src={product.image_url || 'https://via.placeholder.com/100'}
+                        alt={product.name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-bold text-gray-800 text-sm sm:text-base break-words">{product.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 line-clamp-1">{product.description}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap">
+                      {product.category || 'Uncategorized'}
+                    </span>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <span className="font-bold text-gray-800 text-sm sm:text-base whitespace-nowrap">{formatCurrency(product.price)}</span>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <span className={`font-bold text-sm sm:text-base ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
+                      {product.stock}
+                    </span>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4">
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${product.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {product.is_active ? 'Aktif' : 'Nonaktif'}
+                    </span>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
+                    <div className="flex items-center justify-end gap-1 sm:gap-2">
+                      <button
+                        onClick={() => handleOpenModal(product)}
+                        className="p-1.5 sm:p-2 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-lg transition-all text-sm"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(product.id, product.name)}
+                        className="p-1.5 sm:p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-all text-sm"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-fadeInUp">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">
+                {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
+              </h2>
+            </div>
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Nama Produk*</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500"
+                  placeholder="Contoh: Royal Canin Kitten"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Deskripsi</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500"
+                  placeholder="Deskripsi produk"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Harga*</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500"
+                    placeholder="50000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Stok*</label>
+                  <input
+                    type="number"
+                    required
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500"
+                    placeholder="100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Kategori</label>
+                <input
+                  type="text"
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500"
+                  placeholder="Makanan / Mainan / Aksesoris"
+                />
+              </div>
+
+              <FileUpload
+                currentImageUrl={formData.image_url}
+                onUploadSuccess={(imageUrl) => setFormData({ ...formData, image_url: imageUrl })}
+                onRemove={() => setFormData({ ...formData, image_url: '' })}
+                label="Gambar Produk*"
+              />
+
+              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg sm:rounded-xl transition-all"
+                >
+                  {editingProduct ? 'Update' : 'Tambah'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base border-2 border-gray-300 text-gray-700 font-bold rounded-lg sm:rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

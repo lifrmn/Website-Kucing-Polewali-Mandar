@@ -1,0 +1,270 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { orderService } from '@/services/orderService';
+import { Card, Badge, Button } from '@/components/ui';
+import { Search, Eye, Package, Filter } from 'lucide-react';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { OrderStatus, PaymentStatus } from '@/types/enums';
+
+interface Order {
+  id: string;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  order_status: string;
+  created_at: string | Date;
+}
+
+const statusVariants: Record<string, 'primary' | 'accent' | 'success' | 'danger'> = {
+  PENDING: 'accent',
+  WAITING_VERIFICATION: 'accent',
+  PAID: 'success',
+  PROCESSING: 'primary',
+  SHIPPED: 'primary',
+  COMPLETED: 'success',
+  CANCELED: 'danger',
+  REFUNDED: 'danger',
+};
+
+const paymentStatusVariants: Record<string, 'primary' | 'accent' | 'success' | 'danger'> = {
+  PENDING: 'accent',
+  PAID: 'success',
+  FAILED: 'danger',
+  REFUNDED: 'danger',
+};
+
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  useEffect(() => {
+    let filtered = orders;
+
+    if (searchQuery) {
+      filtered = filtered.filter(order =>
+        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(order => order.order_status === statusFilter);
+    }
+
+    if (paymentFilter !== 'all') {
+      filtered = filtered.filter(order => order.payment_status === paymentFilter);
+    }
+
+    setFilteredOrders(filtered);
+  }, [searchQuery, statusFilter, paymentFilter, orders]);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    const response = await orderService.getOrders();
+    if (response.success && response.data) {
+      setOrders(response.data.data || []);
+      setFilteredOrders(response.data.data || []);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full border-4 border-primary border-t-transparent animate-spin" />
+          <p className="text-body text-muted">Loading orders...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-h1 font-bold text-text">Orders</h1>
+          <p className="text-body text-muted">{orders.length} total orders</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <Card.Content className="p-6 space-y-4">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+            <input
+              type="text"
+              placeholder="Search by order number, customer name, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-button focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+            />
+          </div>
+
+          {/* Status Filters */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <p className="text-small font-semibold text-text mb-2">Order Status</p>
+              <div className="flex gap-2 overflow-x-auto">
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
+                    statusFilter === 'all'
+                      ? 'bg-primary text-white'
+                      : 'bg-surface2 text-text hover:bg-border'
+                  }`}
+                >
+                  All
+                </button>
+                {Object.values(OrderStatus).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setStatusFilter(status)}
+                    className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
+                      statusFilter === status
+                        ? 'bg-primary text-white'
+                        : 'bg-surface2 text-text hover:bg-border'
+                    }`}
+                  >
+                    {status.replace(/_/g, ' ')}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex-1">
+              <p className="text-small font-semibold text-text mb-2">Payment Status</p>
+              <div className="flex gap-2 overflow-x-auto">
+                <button
+                  onClick={() => setPaymentFilter('all')}
+                  className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
+                    paymentFilter === 'all'
+                      ? 'bg-primary text-white'
+                      : 'bg-surface2 text-text hover:bg-border'
+                  }`}
+                >
+                  All
+                </button>
+                {Object.values(PaymentStatus).map((status) => (
+                  <button
+                    key={status}
+                    onClick={() => setPaymentFilter(status)}
+                    className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
+                      paymentFilter === status
+                        ? 'bg-primary text-white'
+                        : 'bg-surface2 text-text hover:bg-border'
+                    }`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card.Content>
+      </Card>
+
+      {/* Orders List */}
+      {filteredOrders.length === 0 ? (
+        <Card>
+          <Card.Content className="p-12 text-center">
+            <Package className="w-16 h-16 mx-auto text-muted mb-4" />
+            <p className="text-h3 font-semibold text-text mb-2">No orders found</p>
+            <p className="text-body text-muted">
+              {searchQuery || statusFilter !== 'all' || paymentFilter !== 'all'
+                ? 'Try adjusting your filters'
+                : 'No orders yet'}
+            </p>
+          </Card.Content>
+        </Card>
+      ) : (
+        <Card>
+          <Card.Content className="p-0">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-surface2 border-b border-border">
+                  <tr>
+                    <th className="text-left text-small font-semibold text-muted py-3 px-6">Order</th>
+                    <th className="text-left text-small font-semibold text-muted py-3 px-6">Customer</th>
+                    <th className="text-right text-small font-semibold text-muted py-3 px-6">Amount</th>
+                    <th className="text-left text-small font-semibold text-muted py-3 px-6">Payment</th>
+                    <th className="text-left text-small font-semibold text-muted py-3 px-6">Status</th>
+                    <th className="text-left text-small font-semibold text-muted py-3 px-6">Date</th>
+                    <th className="text-right text-small font-semibold text-muted py-3 px-6">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredOrders.map((order) => (
+                    <tr key={order.id} className="hover:bg-surface2 transition-colors">
+                      <td className="py-4 px-6">
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="text-body font-mono font-semibold text-primary hover:text-primary-hover"
+                        >
+                          #{order.order_number}
+                        </Link>
+                      </td>
+                      <td className="py-4 px-6">
+                        <div>
+                          <p className="text-body font-semibold text-text">{order.customer_name}</p>
+                          <p className="text-small text-muted">{order.customer_email}</p>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <p className="text-body font-bold text-text">
+                          {formatCurrency(order.total_amount)}
+                        </p>
+                        <p className="text-caption text-muted">{order.payment_method}</p>
+                      </td>
+                      <td className="py-4 px-6">
+                        <Badge variant={paymentStatusVariants[order.payment_status] || 'accent'}>
+                          {order.payment_status}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-6">
+                        <Badge variant={statusVariants[order.order_status] || 'accent'}>
+                          {order.order_status.replace(/_/g, ' ')}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-6">
+                        <p className="text-small text-muted">
+                          {formatDate(new Date(order.created_at))}
+                        </p>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <Link href={`/admin/orders/${order.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card.Content>
+        </Card>
+      )}
+    </div>
+  );
+}

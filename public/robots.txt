@@ -1,0 +1,10 @@
+# robots.txt for Cikal Pet Care Polman
+User-agent: *
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location (create this later)
+Sitemap: https://cikalpetcare.com/sitemap.xml

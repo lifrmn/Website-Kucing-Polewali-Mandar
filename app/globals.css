@@ -1,0 +1,306 @@
+/* ============================================
+   PREMIUM DESIGN SYSTEM - CIKAL PET CARE
+   Startup-Grade CSS Foundation
+   ============================================ */
+
+/* Font Import - Inter Variable */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   CSS CUSTOM PROPERTIES - DESIGN TOKENS
+   ============================================ */
+:root {
+  /* Color Tokens - Premium Palette */
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface2: #F1F5F9;
+  --color-text: #0F172A;
+  --color-muted: #64748B;
+  --color-border: #E2E8F0;
+  
+  /* Brand Colors */
+  --color-primary: #16A34A;
+  --color-primary-hover: #15803D;
+  --color-primary-pressed: #166534;
+  --color-accent: #F59E0B;
+  --color-danger: #EF4444;
+  --color-success: #22C55E;
+  
+  /* Spacing Base */
+  --spacing-unit: 8px;
+  
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  
+  /* Z-Index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-modal: 1200;
+  --z-popover: 1300;
+  --z-tooltip: 1400;
+}
+
+/* ============================================
+   BASE LAYER - GLOBAL RESETS & DEFAULTS
+   ============================================ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+  }
+  
+  body {
+    @apply bg-bg text-text;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Typography Defaults */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-bold text-text;
+    letter-spacing: -0.01em;
+  }
+  
+  p {
+    @apply text-body leading-relaxed;
+  }
+  
+  a {
+    @apply text-primary hover:text-primary-hover transition-colors duration-hover;
+  }
+  
+  /* Focus Styles */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+  
+  /* Remove default button styles */
+  button {
+    @apply font-medium;
+  }
+}
+
+/* ============================================
+   COMPONENT LAYER - REUSABLE PATTERNS
+   ============================================ */
+@layer components {
+  
+  /* Container */
+  .container-premium {
+    @apply max-w-[1280px] mx-auto px-5 sm:px-6;
+  }
+  
+  /* Section Padding */
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+  
+  /* Typography Classes */
+  .text-display-mobile {
+    font-size: clamp(2.25rem, 5vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  
+  .text-display-desktop {
+    font-size: clamp(3rem, 6vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  
+  /* Card Component */
+  .card-premium {
+    @apply bg-surface rounded-card p-6 border border-border shadow-card transition-shadow duration-hover hover:shadow-hero;
+  }
+  
+  /* Button Base */
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-button font-semibold transition-all duration-hover;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+  
+  /* Button Variants */
+  .btn-primary {
+    @apply btn-base bg-primary text-white hover:bg-primary-hover active:bg-primary-pressed shadow-button hover:shadow-card;
+  }
+  
+  .btn-secondary {
+    @apply btn-base bg-surface2 text-text hover:bg-surface border border-border hover:border-primary;
+  }
+  
+  .btn-outline {
+    @apply btn-base bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-white;
+  }
+  
+  .btn-ghost {
+    @apply btn-base bg-transparent text-text hover:bg-surface2;
+  }
+  
+  .btn-destructive {
+    @apply btn-base bg-danger text-white hover:bg-red-600 shadow-button;
+  }
+  
+  /* Input Components */
+  .input-premium {
+    @apply w-full px-4 py-3 bg-surface border border-border rounded-button text-text placeholder:text-muted;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply transition-all duration-hover shadow-input;
+    min-height: 48px;
+  }
+  
+  .input-error {
+    @apply border-danger focus:ring-danger;
+  }
+  
+  /* Badge Component */
+  .badge-premium {
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-badge text-caption font-semibold;
+  }
+  
+  .badge-primary {
+    @apply badge-premium bg-primary text-white;
+  }
+  
+  .badge-accent {
+    @apply badge-premium bg-accent text-white;
+  }
+  
+  .badge-outline {
+    @apply badge-premium bg-transparent border border-border text-text;
+  }
+  
+  /* Loading States */
+  .skeleton {
+    @apply animate-pulse bg-surface2 rounded-card;
+  }
+  
+  /* Mobile Touch Targets */
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* ============================================
+   UTILITY LAYER - HELPER CLASSES
+   ============================================ */
+@layer utilities {
+  /* Gradient Hero Background */
+  .gradient-hero {
+    background: linear-gradient(135deg, 
+      rgba(22, 163, 74, 0.05) 0%, 
+      rgba(34, 197, 94, 0.03) 50%, 
+      rgba(16, 185, 129, 0.05) 100%
+    );
+  }
+  
+  /* Text Gradient */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary via-success to-emerald-600 bg-clip-text text-transparent;
+  }
+  
+  /* Smooth Scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
+  /* Hide Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Backdrop Blur Utilities */
+  .backdrop-premium {
+    @apply backdrop-blur-md;
+    background-color: rgb(var(--color-surface) / 0.8);
+  }
+  
+  /* Safe Area Insets for Mobile */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ============================================
+   RESPONSIVE OVERRIDES
+   ============================================ */
+
+/* Mobile First - Touch-friendly */
+@media (max-width: 640px) {
+  /* Ensure minimum touch target size */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  /* Prevent text size adjustment on orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Tablet & Desktop */
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a, a:visited {
+    text-decoration: underline;
+  }
+  
+  img {
+    max-width: 100% !important;
+  }
+  
+  @page {
+    margin: 2cm;
+  }
+}
+
+/* ============================================
+   ANIMATION PERFORMANCE
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
