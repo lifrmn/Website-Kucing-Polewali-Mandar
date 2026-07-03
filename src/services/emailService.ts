@@ -1,7 +1,9 @@
 import { Resend } from 'resend';
 
-// Initialize Resend with API key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily — only when API key is present
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 // Default sender email
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Cikal Pet Care Polman <onboarding@resend.dev>';
@@ -24,7 +26,7 @@ export const emailService = {
         return false;
       }
 
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await resend!.emails.send({
         from: FROM_EMAIL,
         to: [to],
         subject: subject,

@@ -89,28 +89,29 @@ export default function ProductsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
       {/* Header */}
-      <section className="pt-24 md:pt-32 pb-12 md:pb-16 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
-              <AppIcon icon={Package} size="xs" className="text-emerald-600" />
-              <span className="leading-none">Produk Berkualitas</span>
-            </span>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-              Produk Kucing Terbaik
-            </h1>
-            <p className="text-base md:text-lg text-slate-600 leading-relaxed">
-              Pilihan lengkap produk berkualitas untuk kesehatan dan kebahagiaan kucing Anda
-            </p>
-          </div>
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+            Produk Kucing Terbaik
+          </h1>
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Pilihan lengkap produk berkualitas untuk kesehatan dan kebahagiaan kucing Anda
+          </p>
+        </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
         </div>
       </section>
 
       {/* Filter Section */}
-      <section className="py-6 md:py-8 bg-white border-b border-slate-100 sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-6 md:py-8 bg-white border-b sticky top-20 z-20" style={{ borderColor: '#E8E3DA' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
             <div className="relative w-full sm:w-80">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -155,8 +156,8 @@ export default function ProductsPage() {
       </section>
 
       {/* Products Grid */}
-      <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
           {products.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -182,9 +183,12 @@ export default function ProductsPage() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
               {filteredProducts.map((product) => (
-                <div 
-                  key={product.id} 
-                  className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-emerald-200 hover:shadow-lg transition-all duration-300"
+                <div
+                  key={product.id}
+                  className="group bg-white transition-all duration-300 hover:-translate-y-2"
+                  style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
                 >
                   {/* Image */}
                   <div className="relative h-44 md:h-48 overflow-hidden bg-slate-100">
@@ -196,12 +200,12 @@ export default function ProductsPage() {
                     {/* Stock Badge */}
                     <div className="absolute top-3 right-3">
                       {product.stock > 0 ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-semibold rounded-full" style={{ backgroundColor: '#4ade80' }}>
                           <AppIcon icon={Check} size="xs" />
                           <span className="leading-none">Tersedia</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-500 text-white text-xs font-semibold rounded-full">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-500 text-white text-xs font-semibold rounded-full">
                           <AppIcon icon={X} size="xs" />
                           <span className="leading-none">Habis</span>
                         </span>
@@ -211,27 +215,31 @@ export default function ProductsPage() {
 
                   {/* Content */}
                   <div className="p-4 md:p-5">
-                    <h3 className="font-bold text-sm md:text-base text-slate-900 mb-2 md:mb-3 line-clamp-2 min-h-[2.5rem]">
+                    <h3 className="font-bold text-sm md:text-base mb-2 md:mb-3 line-clamp-2 min-h-[2.5rem]" style={{ color: '#383838' }}>
                       {product.name}
                     </h3>
-                    
+
                     <div className="flex items-center justify-between mb-3 md:mb-4">
-                      <span className="text-lg md:text-xl font-bold text-emerald-600">
+                      <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
                         {formatCurrency(product.price)}
                       </span>
-                      <span className="text-xs md:text-sm text-slate-500">
+                      <span className="text-xs md:text-sm" style={{ color: '#707070' }}>
                         Stok: {product.stock}
                       </span>
                     </div>
-                    
-                    <button 
+
+                    <button
                       onClick={() => handleAddToCart(product)}
                       disabled={product.stock <= 0}
-                      className={`w-full py-2.5 md:py-3 px-4 md:px-5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 text-sm md:text-base ${
+                      className={`w-full py-2.5 md:py-3 px-4 rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-sm ${
                         product.stock > 0
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                          ? 'hover:opacity-90'
+                          : 'cursor-not-allowed opacity-50'
                       }`}
+                      style={product.stock > 0
+                        ? { backgroundColor: '#E6D18B', color: '#2a2a1a' }
+                        : { backgroundColor: '#E8E3DA', color: '#707070' }
+                      }
                     >
                       {product.stock > 0 ? (
                         <>

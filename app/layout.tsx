@@ -21,7 +21,7 @@ export default function RootLayout({
   children: ReactNode
 }) {
   return (
-    <html lang="id">
+    <html lang="id" style={{ fontFamily: "'Poppins', 'Inter', sans-serif" }}>
       <body>
         <AuthProvider>
           <PublicLayoutWrapper>

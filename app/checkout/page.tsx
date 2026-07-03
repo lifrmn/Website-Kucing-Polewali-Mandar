@@ -112,52 +112,76 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-indigo-50">
-        <div className="text-center animate-fadeInUp">
-          <div className="max-w-md mx-auto bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-xl">
-            <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-              <ShoppingCart className="w-20 h-20 text-gray-400" />
+      <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+        {/* Hero Header */}
+        <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+          <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+              Keranjang Belanja Kosong
+            </h1>
+          </div>
+          {/* Wave bottom */}
+          <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+            <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+              <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+            </svg>
+          </div>
+        </section>
+
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20 text-center">
+          <div className="max-w-md mx-auto bg-white rounded-[20px] p-12 shadow-md border-2" style={{ borderColor: '#E8E3DA' }}>
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FAF8F5' }}>
+              <ShoppingCart className="w-12 h-12" style={{ color: '#E6D18B' }} />
             </div>
-            <h2 className="text-3xl font-bold mb-4 text-gray-800">Keranjang Kosong</h2>
-            <p className="text-gray-600 mb-8">
+            <h2 className="text-3xl font-bold mb-4" style={{ color: '#383838' }}>Keranjang Kosong</h2>
+            <p className="mb-8" style={{ color: '#707070' }}>
               Keranjang belanja Anda masih kosong. Yuk mulai belanja untuk kucing kesayangan!
             </p>
             <button
               onClick={() => router.push('/produk')}
-              className="px-8 py-4 bg-gradient-to-r from-primary-500 to-indigo-600 hover:from-primary-600 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="px-8 py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
+              style={{ backgroundColor: '#E6D18B' }}
             >
               🛍️ Belanja Sekarang
             </button>
           </div>
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="pt-24 md:pt-32 pb-16 md:pb-20 bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-10 md:mb-12">
-          <div className="inline-block px-5 py-2.5 bg-blue-50 rounded-full mb-4 border-2 border-blue-100">
-            <span className="text-sm font-semibold text-blue-600">Checkout</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+      {/* Hero Header */}
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
             Selesaikan Pesanan
           </h1>
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Isi informasi Anda untuk menyelesaikan pembelian
+          </p>
         </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
+        </div>
+      </section>
 
+      {/* Content */}
+      <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20">
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md p-8 space-y-6 border-2 border-gray-100">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-3">
-                <span className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">📄</span>
-                <span>Informasi Pembeli</span>
-              </h2>
+            <form onSubmit={handleSubmit} className="bg-white rounded-[20px] shadow-md p-8 space-y-6 border-2" style={{ borderColor: '#E8E3DA' }}>
+              <h2 className="text-2xl font-bold mb-6" style={{ color: '#383838' }}>Informasi Pembeli</h2>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">
-                  Nama Lengkap <span className="text-red-500">*</span>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Nama Lengkap <span style={{ color: '#E6D18B' }}>*</span>
                 </label>
                 <input
                   type="text"
@@ -165,29 +189,30 @@ export default function CheckoutPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">
-                  Email <span className="text-red-500">*</span>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Email
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
                   placeholder="email@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">
-                  Nomor Telepon <span className="text-red-500">*</span>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Nomor Telepon <span style={{ color: '#E6D18B' }}>*</span>
                 </label>
                 <input
                   type="tel"
@@ -195,116 +220,90 @@ export default function CheckoutPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
                   placeholder="08xxxxxxxxxx"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">
-                  Alamat <span className="text-red-500">*</span>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Alamat <span style={{ color: '#E6D18B' }}>*</span>
                 </label>
                 <textarea
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
                   required
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
+                  placeholder="Masukkan alamat lengkap"
                   rows={3}
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300"
-                  placeholder="Alamat lengkap pengiriman"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">
-                  Metode Pembayaran <span className="text-red-500">*</span>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Metode Pembayaran
                 </label>
                 <select
                   name="payment_method"
                   value={formData.payment_method}
                   onChange={handleChange}
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300 font-semibold bg-white"
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
                 >
-                  <option value="qris">📱 QRIS</option>
-                  <option value="transfer">🏦 Transfer Bank</option>
+                  <option value="qris">QRIS (Semua E-Wallet)</option>
+                  <option value="transfer">Transfer Bank</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-bold mb-2 text-gray-700">Catatan (Opsional)</label>
+                <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
+                  Catatan Tambahan
+                </label>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
+                  style={{ borderColor: '#E8E3DA' }}
+                  placeholder="Catatan untuk pesanan (opsional)"
                   rows={2}
-                  className="input-enhanced w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:shadow-lg transition-all duration-300"
-                  placeholder="Catatan tambahan (opsional)"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 px-6 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: '#E6D18B' }}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin w-5 h-5" />
-                    <span>Memproses...</span>
-                  </>
-                ) : (
-                  <span>Buat Pesanan</span>
-                )}
+                {loading && <Loader2 className="animate-spin w-5 h-5" />}
+                {loading ? 'Memproses...' : 'Selesaikan Pesanan'}
               </button>
             </form>
           </div>
 
           <div>
-            <div className="bg-white rounded-2xl shadow-md p-8 sticky top-24 border-2 border-gray-100">
-              <h2 className="text-xl font-bold mb-6 text-gray-800 flex items-center gap-3">
-                <span className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">📭</span>
-                <span>Ringkasan Pesanan</span>
-              </h2>              
-              <div className="space-y-3 mb-6 max-h-96 overflow-y-auto pr-2">
-                {items.map((item, index) => (
-                  <div 
-                    key={`${item.type}-${item.id}`} 
-                    className="flex justify-between p-4 bg-white rounded-xl shadow-md hover:shadow-lg border border-gray-100 hover:border-primary-200 transition-all duration-300 group"
-                    style={{ animationDelay: `${(index + 3) * 50}ms` }}
-                  >
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-800 group-hover:text-primary-600 transition-colors">{item.name}</p>
-                      <p className="text-sm text-gray-600 mt-1 font-medium">
-                        <span className="inline-block px-2 py-1 bg-primary-100 text-primary-700 rounded-lg text-xs font-bold">
-                          {item.quantity}x
-                        </span>
-                        <span className="ml-2">{formatCurrency(item.price)}</span>
-                      </p>
-                    </div>
-                    <p className="font-bold text-primary-600 text-lg">
-                      {formatCurrency(item.price * item.quantity)}
-                    </p>
+            <div className="bg-white rounded-[20px] shadow-md p-6 sticky top-28 border-2" style={{ borderColor: '#E8E3DA' }}>
+              <h3 className="text-xl font-bold mb-4" style={{ color: '#383838' }}>Ringkasan Pesanan</h3>
+              <div className="space-y-3 mb-4" style={{ borderBottom: '2px solid #E8E3DA', paddingBottom: '1rem' }}>
+                {items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-sm" style={{ color: '#707070' }}>
+                    <span>{item.name}</span>
+                    <span>{formatCurrency(item.price * (item.quantity || 1))}</span>
                   </div>
                 ))}
               </div>
-
-              <div className="border-t-2 border-primary-200 pt-6">
-                <div className="flex justify-between items-center mb-6 p-4 bg-gradient-to-r from-primary-50 to-indigo-50 rounded-xl">
-                  <span className="text-lg font-bold text-gray-800">Total Pembayaran:</span>
-                  <span className="text-3xl font-bold text-gradient-primary">
-                    {formatCurrency(getTotal())}
-                  </span>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-50 rounded-xl p-4 border-2 border-blue-200">
-                  <p className="text-sm text-gray-700 text-center font-semibold">
-                    🔒 Pembayaran aman dan terpercaya
-                  </p>
-                </div>
+              <div className="flex justify-between items-center" style={{ color: '#383838' }}>
+                <span className="font-bold">Total</span>
+                <span className="text-2xl font-bold" style={{ color: '#E6D18B' }}>{formatCurrency(getTotal())}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

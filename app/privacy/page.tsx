@@ -9,26 +9,32 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 pt-40 pb-20">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fadeInUp">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6 shadow-xl">
-            <AppIcon icon={Shield} size="lg" className="text-white" />
-          </div>
-          <h1 className="text-5xl font-bold text-gray-800 mb-4">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+      {/* Hero Header */}
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
             Kebijakan Privasi
           </h1>
-          <p className="text-gray-600">
-            Terakhir diperbarui: 18 Februari 2026
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Perlindungan dan keamanan data pribadi Anda adalah prioritas kami
           </p>
         </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
+        </div>
+      </section>
 
-        {/* Content */}
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 space-y-8 animate-fadeInUp">
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-6 sm:px-8 py-14 md:py-20">
+        <div className="bg-white rounded-[20px] shadow-md p-8 md:p-12 space-y-8" style={{ borderColor: '#E8E3DA', borderWidth: '2px' }}>
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">1. Pendahuluan</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>1. Pendahuluan</h2>
+            <p className="leading-relaxed" style={{ color: '#707070' }}>
               Cikal Pet Care Polman ("kami", "kita") berkomitmen untuk melindungi privasi dan keamanan informasi pribadi Anda. 
               Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi data pribadi Anda ketika 
               menggunakan layanan kami.
@@ -36,11 +42,11 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">2. Informasi yang Kami Kumpulkan</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>2. Informasi yang Kami Kumpulkan</h2>
+            <p className="leading-relaxed mb-3" style={{ color: '#707070' }}>
               Kami mengumpulkan informasi berikut ketika Anda menggunakan layanan kami:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
+            <ul className="list-disc list-inside space-y-2" style={{ color: '#707070' }}>
               <li><strong>Informasi Identitas:</strong> Nama lengkap, alamat email, nomor telepon</li>
               <li><strong>Informasi Hewan Peliharaan:</strong> Nama, jenis, ras, usia, kondisi kesehatan hewan</li>
               <li><strong>Informasi Transaksi:</strong> Riwayat pembelian, layanan yang digunakan, metode pembayaran</li>
@@ -50,118 +56,38 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">3. Penggunaan Informasi</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">
-              Kami menggunakan informasi Anda untuk:
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>3. Penggunaan Informasi</h2>
+            <p className="leading-relaxed mb-3" style={{ color: '#707070' }}>
+              Informasi yang kami kumpulkan digunakan untuk:
             </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-              <li>Menyediakan dan meningkatkan layanan perawatan hewan peliharaan</li>
-              <li>Memproses transaksi dan pembayaran</li>
-              <li>Mengirimkan konfirmasi booking dan update layanan</li>
-              <li>Memberikan customer support</li>
-              <li>Mengirimkan promosi dan penawaran khusus (dengan persetujuan Anda)</li>
-              <li>Menganalisis dan meningkatkan pengalaman pengguna</li>
-              <li>Mematuhi kewajiban hukum</li>
+            <ul className="list-disc list-inside space-y-2" style={{ color: '#707070' }}>
+              <li>Memberikan dan meningkatkan layanan kami</li>
+              <li>Menghubungi Anda terkait pesanan atau pertanyaan</li>
+              <li>Mengirim promosi dan penawaran khusus (jika Anda setuju)</li>
+              <li>Mencegah fraud dan memastikan keamanan layanan</li>
+              <li>Memenuhi kewajiban hukum dan peraturan yang berlaku</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">4. Perlindungan Data</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang tepat untuk melindungi data pribadi Anda 
-              dari akses tidak sah, kehilangan, penyalahgunaan, atau pengungkapan. Data Anda disimpan dalam sistem yang aman 
-              dan hanya dapat diakses oleh personel yang berwenang.
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>4. Keamanan Data</h2>
+            <p className="leading-relaxed" style={{ color: '#707070' }}>
+              Kami menggunakan enkripsi dan protokol keamanan untuk melindungi informasi pribadi Anda dari akses tidak sah, perubahan, pengungkapan, atau penghancuran yang tidak disengaja. Namun, tidak ada metode transmisi internet yang 100% aman.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">5. Berbagi Informasi</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">
-              Kami tidak akan menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga. Kami hanya berbagi informasi dengan:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-              <li><strong>Penyedia Layanan:</strong> Partner pembayaran, kurir pengiriman</li>
-              <li><strong>Dokter Hewan:</strong> Untuk keperluan konsultasi kesehatan (dengan persetujuan Anda)</li>
-              <li><strong>Pihak Berwenang:</strong> Jika diwajibkan oleh hukum</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">6. Cookie dan Teknologi Pelacakan</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Website kami menggunakan cookie untuk meningkatkan pengalaman pengguna, menganalisis traffic, dan personalisasi konten. 
-              Anda dapat mengatur browser Anda untuk menolak cookie, namun beberapa fitur website mungkin tidak berfungsi optimal.
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>5. Kontak Kami</h2>
+            <p className="leading-relaxed" style={{ color: '#707070' }}>
+              Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami di: <strong style={{ color: '#E6D18B' }}>info@cikalpetcare.com</strong>
             </p>
           </section>
 
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">7. Hak Anda</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">
-              Anda memiliki hak untuk:
-            </p>
-            <ul className="list-disc list-inside space-y-2 text-gray-600 ml-4">
-              <li>Mengakses dan memperoleh salinan data pribadi Anda</li>
-              <li>Memperbarui atau mengoreksi data yang tidak akurat</li>
-              <li>Menghapus data pribadi Anda (dengan batasan tertentu)</li>
-              <li>Menolak atau membatasi pengolahan data</li>
-              <li>Menarik persetujuan yang telah diberikan</li>
-              <li>Mengajukan keluhan kepada otoritas perlindungan data</li>
-            </ul>
-            <p className="text-gray-600 leading-relaxed mt-3">
-              Untuk menggunakan hak-hak ini, silakan hubungi kami melalui informasi kontak di bawah.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">8. Penyimpanan Data</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Kami menyimpan data pribadi Anda selama diperlukan untuk tujuan yang dijelaskan dalam kebijakan ini atau 
-              sesuai dengan kewajiban hukum. Data transaksi akan disimpan minimal 5 tahun untuk keperluan audit dan perpajakan.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">9. Perubahan Kebijakan</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Versi terbaru akan selalu tersedia di website ini. 
-              Kami akan memberitahu Anda tentang perubahan signifikan melalui email atau notifikasi di website.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">10. Hubungi Kami</h2>
-            <p className="text-gray-600 leading-relaxed mb-3">
-              Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini atau ingin menggunakan hak privasi Anda, 
-              silakan hubungi kami:
-            </p>
-            <div className="bg-blue-50 rounded-xl p-6 space-y-2">
-              <p className="font-bold text-gray-800">Cikal Pet Care Polman</p>
-              <p className="text-gray-600">Email: privacy@cikalpetcare.com</p>
-              <p className="text-gray-600">WhatsApp: +62 812-3456-7890</p>
-              <p className="text-gray-600">Alamat: Jl. Jend. Sudirman, Polewali, Sulawesi Barat</p>
-            </div>
-          </section>
-        </div>
-
-        {/* Related Links */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">Baca juga:</p>
-          <div className="flex gap-4 justify-center flex-wrap">
-            <a
-              href="/terms"
-              className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-all duration-300 shadow-lg"
-            >
-              Syarat & Ketentuan
-            </a>
-            <a
-              href="/faq"
-              className="px-6 py-3 bg-white text-orange-600 rounded-xl font-bold hover:bg-orange-50 transition-all duration-300 shadow-lg"
-            >
-              FAQ
-            </a>
+          <div className="text-sm text-center pt-6" style={{ color: '#707070', borderTop: '1px solid #E8E3DA' }}>
+            <p>Terakhir diperbarui: 18 Februari 2026</p>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

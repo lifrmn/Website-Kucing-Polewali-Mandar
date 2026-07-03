@@ -44,43 +44,48 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF8F5' }}>
         <div className="text-center">
           <div className="relative inline-block">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 blur-xl opacity-50 animate-pulse-custom"></div>
-            <Loader2 className="animate-spin w-16 h-16 text-blue-600 mx-auto mb-4 relative" />
+            <Loader2 className="animate-spin w-16 h-16 mx-auto mb-4" style={{ color: '#E6D18B' }} />
           </div>
-          <p className="text-lg text-gray-700 font-medium">Memuat artikel menarik untuk Anda...</p>
+          <p className="text-lg font-medium" style={{ color: '#383838' }}>Memuat artikel menarik untuk Anda...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="pt-20 sm:pt-32 lg:pt-40 pb-12 sm:pb-16 lg:pb-24 bg-gray-50 min-h-screen">
-      <div className="container px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-10 sm:mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-xs sm:text-sm font-bold border border-blue-600 mb-4 shadow-md">
-            <span>📚</span>
-            <span>Artikel & Tips</span>
-          </span>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 text-gray-900">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+      {/* Hero Header */}
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
             Tips Kesehatan Kucing
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base lg:text-lg max-w-2xl mx-auto">
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
             Artikel dan tips bermanfaat untuk merawat kucing kesayangan Anda
           </p>
         </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
+        </div>
+      </section>
 
+      {/* Content */}
+      <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20">
         {posts.length === 0 ? (
           <div className="text-center py-20">
-            <div className="max-w-md mx-auto bg-white rounded-xl p-12 shadow-sm">
-              <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="max-w-md mx-auto rounded-[20px] p-12 shadow-md" style={{ backgroundColor: 'white' }}>
+              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FAF8F5' }}>
                 <span className="text-4xl">📝</span>
               </div>
-              <p className="text-gray-700 text-lg font-semibold mb-3">Belum ada artikel tersedia</p>
-              <p className="text-sm text-gray-500">Artikel menarik akan segera hadir!</p>
+              <p className="text-lg font-semibold mb-3" style={{ color: '#383838' }}>Belum ada artikel tersedia</p>
+              <p className="text-sm" style={{ color: '#707070' }}>Artikel menarik akan segera hadir!</p>
             </div>
           </div>
         ) : (
@@ -88,41 +93,41 @@ export default function BlogPage() {
             {posts.map((post, index) => (
               <article
                 key={post.id}
-                className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-2 border-gray-200 hover:border-blue-400"
+                className="group bg-white rounded-[20px] overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-2 hover:scale-105" style={{ borderColor: '#E8E3DA' }}
               >
                 {post.featured_image ? (
                   <div className="relative overflow-hidden h-48">
                     <img
                       src={post.featured_image}
                       alt={post.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
                 ) : (
-                  <div className="h-48 bg-blue-500 flex items-center justify-center">
+                  <div className="h-48 flex items-center justify-center" style={{ backgroundColor: '#E6D18B' }}>
                     <span className="text-5xl">📖</span>
                   </div>
                 )}
 
                 <div className="p-5">
-                  <div className="flex items-center gap-2 text-xs text-blue-600 mb-3 font-semibold">
+                  <div className="flex items-center gap-2 text-xs mb-3 font-semibold" style={{ color: '#E6D18B' }}>
                     <Calendar className="w-4 h-4" />
                     <time>{post.published_at ? formatDate(post.published_at) : 'Belum dipublikasi'}</time>
                   </div>
 
-                  <h2 className="text-lg font-bold mb-2 text-gray-900 line-clamp-2 min-h-[3.5rem]">
+                  <h2 className="text-lg font-bold mb-2 line-clamp-2 min-h-[3.5rem]" style={{ color: '#383838' }}>
                     <Link href={`/blog/${post.slug}`}>
                       {post.title}
                     </Link>
                   </h2>
 
-                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm leading-relaxed">
+                  <p className="mb-4 line-clamp-3 text-sm leading-relaxed" style={{ color: '#707070' }}>
                     {post.excerpt || post.content.substring(0, 150) + '...'}
                   </p>
 
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="inline-flex items-center gap-2 text-blue-600 font-semibold text-sm hover:text-blue-700 transition-colors"
+                    className="inline-flex items-center gap-2 font-semibold text-sm hover:opacity-80 transition-opacity" style={{ color: '#E6D18B' }}
                   >
                     <span>Baca Selengkapnya</span>
                     <ArrowRight className="w-4 h-4" />
@@ -133,6 +138,6 @@ export default function BlogPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }

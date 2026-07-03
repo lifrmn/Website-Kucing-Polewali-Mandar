@@ -35,51 +35,66 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled 
-        ? 'bg-white shadow-lg border-b border-gray-200' 
-        : 'bg-white/95 backdrop-blur-md border-b border-gray-100'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav className="flex items-center justify-between h-16">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-md border-b'
+          : 'bg-transparent border-b border-white/10'
+      }`}
+      style={{
+        fontFamily: "'Poppins', sans-serif",
+        borderColor: scrolled ? '#E8E3DA' : 'transparent',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8">
+        <nav className="flex items-center justify-between" style={{ height: '80px' }}>
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group transition-opacity hover:opacity-80">
-            <IconBadge 
-              icon={PawPrint} 
-              variant="primary" 
-              size="md"
-              className="shadow-md group-hover:shadow-lg transition-all duration-300"
-            />
-            <div className="flex flex-col leading-none">
-              <span className="text-lg font-bold text-gray-900">
+          <Link href="/" className="flex items-center gap-3 flex-shrink-0 group transition-all duration-300 hover:opacity-80">
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
+              style={{ backgroundColor: '#E6D18B' }}
+            >
+              <PawPrint size={20} className="text-white" />
+            </div>
+            <div className="flex flex-col leading-tight min-w-fit">
+              <span
+                className="text-base font-bold transition-colors duration-300"
+                style={{ color: scrolled ? '#383838' : 'white' }}
+              >
                 Cikal Pet Care
               </span>
-              <span className="text-xs text-gray-500 font-medium mt-0.5">Polewali Mandar</span>
+              <span
+                className="text-xs font-medium transition-colors duration-300"
+                style={{ color: scrolled ? '#707070' : 'rgba(255,255,255,0.7)' }}
+              >
+                Polewali Mandar
+              </span>
             </div>
           </Link>
 
           {/* Desktop Menu */}
-          <ul className="hidden lg:flex items-center gap-1">
+          <ul className="hidden lg:flex items-center gap-1 flex-grow justify-center">
             {navLinks.map((link) => (
               <li key={link.path}>
                 <Link
                   href={link.path}
-                  className={`inline-flex items-center gap-2 font-medium transition-all duration-200 px-4 py-2 rounded-lg text-sm relative group leading-none ${
+                  className={`relative inline-flex items-center px-5 py-2 text-sm font-medium transition-all duration-200 rounded-lg ${
                     isActive(link.path)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                      ? scrolled
+                        ? 'text-[#383838] bg-[#F3EFE8]'
+                        : 'text-white bg-white/20'
+                      : scrolled
+                        ? 'text-[#707070] hover:text-[#383838] hover:bg-[#F3EFE8]'
+                        : 'text-white/80 hover:text-white hover:bg-white/15'
                   }`}
                 >
                   {link.label}
-                  <span className={`absolute -bottom-0.5 left-4 right-4 h-0.5 bg-blue-600 transition-all duration-200 ${
-                    isActive(link.path) ? 'w-auto' : 'w-0 group-hover:w-auto group-hover:left-4 group-hover:right-4'
-                  }`}></span>
                 </Link>
               </li>
             ))}
             
             {/* Cart Button */}
-            <li className="ml-2">
+            <li className="ml-4">
               <CartButton variant="desktop" />
             </li>
           </ul>
@@ -87,35 +102,42 @@ export default function Navbar() {
           {/* Mobile Menu Button & Cart */}
           <div className="flex items-center gap-2 lg:hidden">
             <CartButton variant="mobile" />
-            
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors"
+              className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors"
+              style={{
+                backgroundColor: scrolled ? '#F3EFE8' : 'rgba(255,255,255,0.1)',
+                color: scrolled ? '#383838' : 'white',
+              }}
               aria-label="Toggle menu"
             >
-              <AppIcon 
-                icon={isOpen ? X : Menu} 
-                size="lg"
-                className="text-gray-700"
-              />
+              <AppIcon icon={isOpen ? X : Menu} size="lg" />
             </button>
           </div>
         </nav>
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="lg:hidden py-3 border-t border-gray-200">
-            <ul className="flex flex-col gap-1">
+          <div
+            className="lg:hidden py-4 border-t"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.98)',
+              backdropFilter: 'blur(12px)',
+              borderColor: '#E8E3DA',
+            }}
+          >
+            <ul className="flex flex-col gap-1 px-2">
               {navLinks.map((link) => (
                 <li key={link.path}>
                   <Link
                     href={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-2 py-3 px-4 font-medium rounded-lg transition-colors text-sm leading-none ${
+                    className={`flex items-center py-3 px-4 font-medium rounded-lg transition-colors text-sm ${
                       isActive(link.path)
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                        ? 'text-[#383838] bg-[#F3EFE8]'
+                        : 'text-[#707070] hover:bg-[#F3EFE8] hover:text-[#383838]'
                     }`}
+                    style={isActive(link.path) ? { borderLeft: '3px solid #E6D18B' } : {}}
                   >
                     {link.label}
                   </Link>

@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, Button } from '@/components/ui';
 import { Copy, Check, QrCode, Building2 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 
 export default function PaymentInstructionsPage() {
   const [copied, setCopied] = useState('');
@@ -36,199 +34,112 @@ export default function PaymentInstructionsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-bg py-12 px-4">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-h1 font-bold text-text">Cara Pembayaran</h1>
-          <p className="text-body text-muted">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+      {/* Hero Header */}
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+            Cara Pembayaran
+          </h1>
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
             Pilih metode pembayaran yang sesuai untuk menyelesaikan pesanan Anda
           </p>
         </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
+        </div>
+      </section>
 
-        {/* QRIS Payment */}
-        <Card>
-          <Card.Header>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <QrCode className="w-6 h-6 text-primary" />
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-6 sm:px-8 py-14 md:py-20">
+        <div className="space-y-8">
+          {/* QRIS Payment */}
+          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
+                <QrCode className="w-6 h-6 text-white" />
               </div>
               <div>
-                <Card.Title>QRIS (Semua E-Wallet & Mobile Banking)</Card.Title>
-                <Card.Description>
-                  Bayar dengan scan QR code menggunakan aplikasi favorit Anda
-                </Card.Description>
+                <h3 className="text-xl font-bold" style={{ color: '#383838' }}>QRIS (Semua E-Wallet & Mobile Banking)</h3>
+                <p style={{ color: '#707070' }}>Bayar dengan scan QR code menggunakan aplikasi favorit Anda</p>
               </div>
             </div>
-          </Card.Header>
-          <Card.Content className="space-y-4">
-            <div className="bg-surface2 p-6 rounded-button text-center">
-              <div className="w-64 h-64 mx-auto bg-white p-4 rounded-button mb-4">
-                {/* Placeholder - Replace with actual QRIS QR code */}
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-muted">
-                  QR Code Here
-                </div>
-              </div>
-              <p className="text-small text-muted">
+            <div className="p-6 rounded-[15px] text-center border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
+              <p style={{ color: '#707070' }} className="mb-4">
                 Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda
               </p>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-small font-semibold text-text">Langkah-langkah:</p>
-              <ol className="list-decimal list-inside space-y-1 text-small text-text">
+              <ol className="list-decimal list-inside space-y-2 text-sm" style={{ color: '#707070' }} className="text-left">
                 <li>Buka aplikasi e-wallet atau mobile banking Anda (GoPay, OVO, DANA, ShopeePay, dll)</li>
-                <li>Pilih menu "Scan QR" atau "QRIS"</li>
+                <li>Pilih menu "Scan QRIS" atau "Bayar dengan QR"</li>
                 <li>Arahkan kamera ke QR code di atas</li>
-                <li>Periksa total pembayaran</li>
-                <li>Konfirmasi pembayaran</li>
-                <li>Simpan bukti transfer dan upload di halaman pesanan</li>
+                <li>Periksa nominal pembayaran dan tekan "Bayar"</li>
               </ol>
             </div>
-          </Card.Content>
-        </Card>
+          </div>
 
-        {/* Bank Transfer */}
-        <Card>
-          <Card.Header>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-accent" />
+          {/* Bank Transfer */}
+          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <div className="flex items-start gap-4 mb-6">
+              <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
+                <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <Card.Title>Transfer Bank</Card.Title>
-                <Card.Description>
-                  Transfer ke salah satu rekening bank berikut
-                </Card.Description>
+                <h3 className="text-xl font-bold" style={{ color: '#383838' }}>Transfer Bank</h3>
+                <p style={{ color: '#707070' }}>Transfer langsung ke rekening kami</p>
               </div>
             </div>
-          </Card.Header>
-          <Card.Content className="space-y-6">
-            {bankAccounts.map((account) => (
-              <div key={account.code} className="bg-surface2 p-6 rounded-button space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-h3 font-bold text-text">{account.bank}</p>
-                  <div className="px-3 py-1 bg-primary/10 text-primary text-caption font-semibold rounded-full">
-                    {account.code}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-caption text-muted">Nomor Rekening</p>
-                      <p className="text-body font-mono font-semibold text-text">
-                        {account.accountNumber}
-                      </p>
+            <div className="space-y-4">
+              {bankAccounts.map((account, idx) => (
+                <div key={idx} className="p-4 rounded-[12px] border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
+                  <h4 className="font-bold mb-3" style={{ color: '#383838' }}>{account.bank}</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: '#707070' }}>Nomor Rekening:</span>
+                      <span className="font-mono" style={{ color: '#383838' }}>{account.accountNumber}</span>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <div className="flex justify-between items-center">
+                      <span style={{ color: '#707070' }}>Atas Nama:</span>
+                      <span style={{ color: '#383838' }}>{account.accountName}</span>
+                    </div>
+                    <button
                       onClick={() => copyToClipboard(account.accountNumber, account.code)}
+                      className="w-full mt-3 py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-white"
+                      style={{ backgroundColor: '#E6D18B' }}
                     >
                       {copied === account.code ? (
                         <>
-                          <Check className="w-4 h-4 mr-2 text-success" />
-                          Copied
+                          <Check size={16} />
+                          Tersalin
                         </>
                       ) : (
                         <>
-                          <Copy className="w-4 h-4 mr-2" />
-                          Copy
+                          <Copy size={16} />
+                          Salin Nomor Rekening
                         </>
                       )}
-                    </Button>
-                  </div>
-
-                  <div>
-                    <p className="text-caption text-muted">Nama Pemilik</p>
-                    <p className="text-body font-semibold text-text">{account.accountName}</p>
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
-
-            <div className="space-y-2">
-              <p className="text-small font-semibold text-text">Langkah-langkah:</p>
-              <ol className="list-decimal list-inside space-y-1 text-small text-text">
-                <li>Pilih salah satu rekening bank di atas</li>
-                <li>Lakukan transfer sesuai total pembayaran yang tertera di halaman pesanan Anda</li>
-                <li>Transfer harus <strong>sesuai jumlah nominal</strong> (termasuk 3 digit unik jika ada)</li>
-                <li>Simpan bukti transfer</li>
-                <li>Upload bukti transfer di halaman "Pesanan Saya"</li>
-                <li>Tunggu konfirmasi dari tim kami (maks. 1x24 jam)</li>
-              </ol>
+              ))}
             </div>
+          </div>
 
-            <div className="p-4 bg-accent/10 border border-accent rounded-button">
-              <p className="text-small text-text">
-                <strong>Penting:</strong> Transfer harus dilakukan dalam 24 jam setelah pemesanan. 
-                Pesanan akan dibatalkan otomatis jika tidak ada konfirmasi pembayaran.
-              </p>
-            </div>
-          </Card.Content>
-        </Card>
-
-        {/* Additional Info */}
-        <Card>
-          <Card.Header>
-            <Card.Title>Informasi Penting</Card.Title>
-          </Card.Header>
-          <Card.Content className="space-y-3">
-            <div className="flex gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-caption font-bold">1</span>
-              </div>
-              <div>
-                <p className="text-small font-semibold text-text">Periksa Total Pembayaran</p>
-                <p className="text-small text-muted">
-                  Pastikan jumlah yang ditransfer sesuai dengan total di halaman pesanan Anda
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-caption font-bold">2</span>
-              </div>
-              <div>
-                <p className="text-small font-semibold text-text">Upload Bukti Transfer</p>
-                <p className="text-small text-muted">
-                  Setelah transfer, segera upload bukti transfer untuk mempercepat verifikasi
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-caption font-bold">3</span>
-              </div>
-              <div>
-                <p className="text-small font-semibold text-text">Verifikasi Maksimal 24 Jam</p>
-                <p className="text-small text-muted">
-                  Tim kami akan memverifikasi pembayaran Anda dalam waktu maksimal 1x24 jam
-                </p>
-              </div>
-            </div>
-          </Card.Content>
-        </Card>
-
-        {/* Contact Support */}
-        <div className="text-center space-y-2">
-          <p className="text-body text-muted">
-            Ada pertanyaan tentang pembayaran?
-          </p>
-          <a 
-            href="https://wa.me/628123456789" 
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline">
-              Hubungi Customer Service
-            </Button>
-          </a>
+          {/* Tips */}
+          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <h3 className="text-xl font-bold mb-4" style={{ color: '#383838' }}>💡 Tips Pembayaran</h3>
+            <ul className="space-y-2 text-sm" style={{ color: '#707070' }}>
+              <li>✓ Pastikan nominal pembayaran sesuai dengan total pesanan</li>
+              <li>✓ Simpan bukti pembayaran untuk konfirmasi</li>
+              <li>✓ Hubungi kami jika ada kesalahan dalam pembayaran</li>
+              <li>✓ Pesanan akan diproses setelah pembayaran dikonfirmasi</li>
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    </main>
+  )
 }

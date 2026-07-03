@@ -110,28 +110,29 @@ export default function ServicesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
       {/* Header */}
-      <section className="pt-24 md:pt-32 pb-12 md:pb-16 bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-indigo-50 text-indigo-700 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
-              <AppIcon icon={Sparkles} size="xs" className="text-indigo-600" />
-              <span className="leading-none">Layanan Profesional</span>
-            </span>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
-              Layanan Perawatan Kucing
-            </h1>
-            <p className="text-base md:text-lg text-slate-600 leading-relaxed">
-              Layanan kesehatan dan perawatan profesional untuk kucing kesayangan Anda
-            </p>
-          </div>
+      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+            Layanan Perawatan Kucing
+          </h1>
+          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
+            Layanan kesehatan dan perawatan profesional untuk kucing kesayangan Anda
+          </p>
+        </div>
+        {/* Wave bottom */}
+        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
+          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
+          </svg>
         </div>
       </section>
 
       {/* Filter Section */}
-      <section className="py-6 md:py-8 bg-white border-b border-slate-100 sticky top-16 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-6 md:py-8 bg-white border-b sticky top-20 z-20" style={{ borderColor: '#E8E3DA' }}>
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
             <div className="relative w-full sm:w-80">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -142,7 +143,8 @@ export default function ServicesPage() {
                 placeholder="Cari layanan..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 md:pl-10 pr-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm md:text-base"
+                className="w-full pl-9 md:pl-10 pr-4 py-2.5 md:py-3 border rounded-full focus:ring-2 focus:border-transparent transition-colors text-sm md:text-base"
+              style={{ borderColor: '#E8E3DA', outlineColor: '#E6D18B' }}
               />
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3 w-full sm:w-auto">
@@ -176,8 +178,8 @@ export default function ServicesPage() {
       </section>
 
       {/* Services Grid */}
-      <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-14 md:py-20">
+        <div className="max-w-5xl mx-auto px-6 sm:px-8">
           {services.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-24 h-24 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -205,7 +207,10 @@ export default function ServicesPage() {
               {filteredServices.map((service) => (
                 <div
                   key={service.id}
-                  className="group bg-white rounded-2xl overflow-hidden border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-300"
+                  className="group bg-white transition-all duration-300 hover:-translate-y-2"
+                  style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
                 >
                   {/* Image */}
                   <div className="relative h-44 md:h-48 overflow-hidden">
@@ -216,10 +221,10 @@ export default function ServicesPage() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 flex items-center gap-2">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg flex items-center justify-center text-indigo-600">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center" style={{ color: '#B66D6D' }}>
                         <AppIcon icon={getServiceIcon(service.type)} size="sm" />
                       </div>
-                      <span className="px-2.5 py-1 md:px-3 md:py-1 bg-white/90 text-slate-700 text-[10px] md:text-xs font-semibold rounded-lg uppercase leading-none">
+                      <span className="px-2.5 py-1 md:px-3 md:py-1 bg-white/90 text-[10px] md:text-xs font-semibold rounded-full uppercase leading-none" style={{ color: '#383838' }}>
                         {service.type}
                       </span>
                     </div>
@@ -243,12 +248,13 @@ export default function ServicesPage() {
                     </p>
 
                     <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-100">
-                      <span className="text-lg md:text-xl font-bold text-indigo-600">
+                      <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
                         {formatCurrency(service.price)}
                       </span>
                       <button
                         onClick={() => handleAddToCart(service)}
-                        className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-semibold rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold rounded-full transition-all duration-300 hover:opacity-90"
+                        style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}
                       >
                         <AppIcon icon={ShoppingCart} size="sm" />
                         <span className="leading-none">Tambah</span>
