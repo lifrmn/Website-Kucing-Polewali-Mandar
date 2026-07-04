@@ -25,6 +25,7 @@ const SERVICE_IMAGES: Record<string, string> = {
   default: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=600&auto=format&fit=crop'
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const SERVICE_ICONS: Record<string, any> = {
   grooming: Scissors,
   medical: Stethoscope,

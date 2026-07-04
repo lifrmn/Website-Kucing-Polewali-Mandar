@@ -7,15 +7,6 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { blogService } from '@/services/blogService';
 
-const slugify = (text: string) => {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
-
 export default function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -35,8 +26,10 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
     is_published: false,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchPost();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchPost = async () => {
@@ -75,7 +68,6 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
     setLoading(true);
 
     try {
-      const wasPublished = formData.is_published;
       const response = await blogService.updatePost(id, {
         title: formData.title,
         slug: formData.slug,

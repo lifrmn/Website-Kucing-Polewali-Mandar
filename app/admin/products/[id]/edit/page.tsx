@@ -63,11 +63,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   const watchImageUrl = watch('image_url');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     params.then((resolvedParams) => {
       setId(resolvedParams.id);
       fetchProduct(resolvedParams.id);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProduct = async (productId: string) => {

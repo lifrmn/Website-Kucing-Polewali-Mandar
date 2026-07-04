@@ -34,7 +34,7 @@ export async function GET(
       success: true,
       data: packageWithFeatures,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET package error:', error);
     return NextResponse.json(
       {
@@ -61,6 +61,7 @@ export async function PUT(
       ? features.join(', ') 
       : features;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
@@ -79,7 +80,7 @@ export async function PUT(
       data: updatedPackage,
       message: 'Paket berhasil diupdate',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT package error:', error);
     return NextResponse.json(
       {
@@ -107,7 +108,7 @@ export async function DELETE(
       success: true,
       message: 'Paket berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE package error:', error);
     return NextResponse.json(
       {

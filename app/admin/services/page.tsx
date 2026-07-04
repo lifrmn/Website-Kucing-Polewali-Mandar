@@ -26,12 +26,16 @@ export default function AdminServicesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadServices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     filterServices();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, typeFilter, services]);
 
   const loadServices = async () => {

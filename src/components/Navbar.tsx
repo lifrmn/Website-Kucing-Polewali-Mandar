@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import CartButton from './CartButton';
-import IconBadge from './IconBadge';
 import AppIcon from './AppIcon';
 import { PawPrint } from 'lucide-react';
 

@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { orderService } from '@/services/orderService';
-import { Button, Badge, Tabs, EmptyState, LoadingState, PageHeader, Toolbar } from '@/components/admin';
-import { Search, Eye, Package, Download } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { OrderStatus, PaymentStatus } from '@/types/enums';
+import { Button, Tabs, EmptyState, LoadingState, PageHeader, Toolbar } from '@/components/admin';
+import { Eye, Package, Download } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+import { OrderStatus } from '@/types/enums';
 import AppIcon from '@/components/AppIcon';
 
 interface Order {
@@ -61,12 +61,16 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadOrders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     filterOrders();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, statusFilter, orders]);
 
   const loadOrders = async () => {

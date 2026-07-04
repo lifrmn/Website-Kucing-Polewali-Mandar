@@ -109,7 +109,6 @@ export const useCartStore = create<CartState>()(
 
       // Enhanced: Validate stock before checkout
       validateStock: async () => {
-        const errors: string[] = [];
         const items = get().items;
         
         try {
@@ -182,6 +181,7 @@ export const useCartStore = create<CartState>()(
       name: 'cikal-pet-care-cart',
       version: CART_VERSION,
       storage: createJSONStorage(() => localStorage),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persistedState: any, version: number) => {
         // Handle cart schema migrations
         if (version < CART_VERSION) {

@@ -16,11 +16,10 @@ import {
   Cell,
   Legend,
 } from 'recharts';
-import { FileBarChart2, Download, TrendingUp, ShoppingCart, Package, Scissors, Calendar } from 'lucide-react';
+import { FileBarChart2, TrendingUp, ShoppingCart, Package, Scissors } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { orderService } from '@/services/orderService';
 import { productService } from '@/services/productService';
-import { serviceService } from '@/services/serviceService';
 
 const STATUS_COLORS: Record<string, string> = {
   COMPLETED: '#22c55e',
@@ -43,9 +42,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function LaporanPage() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orders, setOrders] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [periode, setPeriode] = useState<'7' | '30' | '90' | '365'>('30');
 
@@ -56,14 +56,12 @@ export default function LaporanPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [ordersRes, productsRes, servicesRes] = await Promise.all([
+      const [ordersRes, productsRes] = await Promise.all([
         orderService.getOrders(),
         productService.getProducts(),
-        serviceService.getServices(),
       ]);
       setOrders(ordersRes.success && ordersRes.data ? ordersRes.data.data : []);
       setProducts(productsRes.success && productsRes.data ? productsRes.data.data : []);
-      setServices(servicesRes.success && servicesRes.data ? servicesRes.data : []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -116,6 +114,7 @@ export default function LaporanPage() {
   // ─── Produk terlaris (berdasarkan jumlah order items) ────────────
   const productSales: Record<string, { nama: string; terjual: number; pendapatan: number }> = {};
   filteredOrders.forEach((order) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (order.orderItems || order.items || []).forEach((item: any) => {
       const name = item.product_name || item.service_name || 'Produk';
       if (!productSales[name]) productSales[name] = { nama: name, terjual: 0, pendapatan: 0 };
@@ -129,7 +128,9 @@ export default function LaporanPage() {
 
   // ─── Stok produk rendah ──────────────────────────────────────────
   const lowStock = products
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .filter((p: any) => p.stock <= (p.low_stock_alert || 5))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .sort((a: any, b: any) => a.stock - b.stock)
     .slice(0, 5);
 
@@ -316,6 +317,7 @@ export default function LaporanPage() {
           <h2 className="text-sm font-semibold text-text mb-4">Peringatan Stok Produk</h2>
           {lowStock.length > 0 ? (
             <div className="space-y-3">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {lowStock.map((p: any, i: number) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">

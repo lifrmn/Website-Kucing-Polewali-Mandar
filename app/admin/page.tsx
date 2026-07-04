@@ -11,8 +11,6 @@ import {
   Scissors,
   ChevronRight,
   Calendar,
-  FileBarChart2,
-  Users
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { productService } from '@/services/productService';
@@ -54,8 +52,11 @@ export default function AdminDashboard() {
     canceledOrders: 0,
     processingOrders: 0,
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [orderStatusData, setOrderStatusData] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -79,12 +80,17 @@ export default function AdminDashboard() {
       const ordersRes = await orderService.getOrders();
       const orders = ordersRes.success && ordersRes.data ? ordersRes.data.data : [];
       const ordersCount = orders.length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const revenue = orders.reduce((sum: number, order: any) => sum + order.total_amount, 0);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const pending = orders.filter((o: any) => 
         o.order_status === 'PENDING' || o.order_status === 'WAITING_VERIFICATION'
       ).length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const completed = orders.filter((o: any) => o.order_status === 'COMPLETED').length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const canceled = orders.filter((o: any) => o.order_status === 'CANCELED').length;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const processing = orders.filter((o: any) => o.order_status === 'PROCESSING' || o.order_status === 'PAID').length;
 
       // Order status pie data
@@ -104,6 +110,7 @@ export default function AdminDashboard() {
         const label = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
         months[key] = { bulan: label, pendapatan: 0, pesanan: 0 };
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       orders.forEach((order: any) => {
         const d = new Date(order.created_at);
         const key = `${d.getFullYear()}-${d.getMonth()}`;

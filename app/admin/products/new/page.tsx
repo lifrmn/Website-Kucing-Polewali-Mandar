@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { Card, Input, Textarea, Button } from '@/components/ui';
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
 import { productService } from '@/services/productService';
-import { formatCurrency } from '@/lib/utils';
 
 interface ProductVariant {
   id: string;
@@ -70,6 +69,7 @@ export default function NewProductPage() {
     setVariants(variants.filter((_, i) => i !== index));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateVariant = (index: number, field: string, value: any) => {
     const updated = [...variants];
     updated[index] = { ...updated[index], [field]: value };

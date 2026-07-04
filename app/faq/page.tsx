@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { HelpCircle, ChevronDown } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'FAQ - Pertanyaan yang Sering Diajukan | Cikal Pet Care Polman',

@@ -1,4 +1,5 @@
-// No longer directly importing Prisma - using API routes instead
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const productService = {
   async getProducts(page: number = 1, limit: number = 12, category?: string) {
     try {

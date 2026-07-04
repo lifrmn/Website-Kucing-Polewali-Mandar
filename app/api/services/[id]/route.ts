@@ -26,7 +26,7 @@ export async function GET(
       success: true,
       data: service,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET service error:', error);
     return NextResponse.json(
       {
@@ -65,7 +65,7 @@ export async function PUT(
       data: service,
       message: 'Layanan berhasil diupdate',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT service error:', error);
     return NextResponse.json(
       {
@@ -92,7 +92,7 @@ export async function DELETE(
       success: true,
       message: 'Layanan berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE service error:', error);
     return NextResponse.json(
       {

@@ -1,8 +1,6 @@
 'use client'
 
-import { useState } from 'react'
 import { MapPin, Phone, Clock, Mail } from 'lucide-react'
-import AppIcon from '@/components/AppIcon'
 
 export default function ContactPage() {
   const contactItems = [

@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { Search } from 'lucide-react';
-import Input from './Input';
 import Select from './Select';
 import Button from './Button';
 

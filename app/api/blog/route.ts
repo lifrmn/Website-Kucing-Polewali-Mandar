@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause
-    const where: any = {};
+    const where: { is_published?: boolean; category?: string } = {};
     
     // If 'all' parameter is not present, only show published posts
     if (all !== 'true') {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: posts,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET blog posts error:', error);
     return NextResponse.json(
       {
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       data: post,
       message: 'Artikel berhasil ditambahkan',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST blog post error:', error);
     return NextResponse.json(
       {

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { emailService } from '@/services/emailService';
 
+interface OrderItemInput {
+  item_type: 'product' | 'service';
+  item_id: string;
+  quantity: number;
+  unit_price: number;
+}
+
 // GET all orders
 export async function GET(request: NextRequest) {
   try {
@@ -78,7 +85,7 @@ export async function GET(request: NextRequest) {
         total: transformedOrders.length,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET orders error:', error);
     return NextResponse.json(
       {
@@ -116,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total
-    const subtotal = items.reduce((sum: number, item: any) => {
+    const subtotal = items.reduce((sum: number, item: OrderItemInput) => {
       return sum + (item.unit_price * item.quantity);
     }, 0);
 
@@ -150,7 +157,7 @@ export async function POST(request: NextRequest) {
         status: 'pending',
         notes: notes,
         orderItems: {
-          create: items.map((item: any) => ({
+          create: items.map((item: OrderItemInput) => ({
             product_id: item.item_type === 'product' ? item.item_id : null,
             service_id: item.item_type === 'service' ? item.item_id : null,
             quantity: item.quantity,
@@ -190,7 +197,7 @@ export async function POST(request: NextRequest) {
       data: order,
       message: 'Pesanan berhasil dibuat',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST order error:', error);
     return NextResponse.json(
       {

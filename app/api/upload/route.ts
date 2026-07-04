@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // Upload to Cloudinary
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await new Promise<any>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -94,12 +95,12 @@ export async function POST(request: NextRequest) {
         format: result.format,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Upload error:', error);
     return NextResponse.json(
       {
         success: false,
-        message: 'Upload gagal: ' + error.message,
+        message: 'Upload gagal: ' + (error instanceof Error ? error.message : String(error)),
       },
       { status: 500 }
     );
@@ -125,12 +126,12 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Gambar berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Delete error:', error);
     return NextResponse.json(
       {
         success: false,
-        message: 'Gagal menghapus gambar: ' + error.message,
+        message: 'Gagal menghapus gambar: ' + (error instanceof Error ? error.message : String(error)),
       },
       { status: 500 }
     );

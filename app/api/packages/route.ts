@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 // GET all penitipan packages
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const packages = await prisma.penitipanPackage.findMany({
       where: { is_active: true },
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: packagesWithFeatures,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET packages error:', error);
     return NextResponse.json(
       {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       data: newPackage,
       message: 'Paket penitipan berhasil dibuat',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST package error:', error);
     return NextResponse.json(
       {

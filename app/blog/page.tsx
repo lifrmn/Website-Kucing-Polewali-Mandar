@@ -90,7 +90,7 @@ export default function BlogPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post, index) => (
+            {posts.map((post) => (
               <article
                 key={post.id}
                 className="group bg-white rounded-[20px] overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-2 hover:scale-105" style={{ borderColor: '#E8E3DA' }}

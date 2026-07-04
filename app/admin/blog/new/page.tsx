@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, Button, Input, Textarea } from '@/components/ui';
-import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { blogService } from '@/services/blogService';
 

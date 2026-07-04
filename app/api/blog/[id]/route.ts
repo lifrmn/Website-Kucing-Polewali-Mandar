@@ -26,7 +26,7 @@ export async function GET(
       success: true,
       data: post,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET blog post error:', error);
     return NextResponse.json(
       {
@@ -75,7 +75,7 @@ export async function PUT(
       data: post,
       message: 'Artikel berhasil diupdate',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT blog post error:', error);
     return NextResponse.json(
       {
@@ -102,7 +102,7 @@ export async function DELETE(
       success: true,
       message: 'Artikel berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE blog post error:', error);
     return NextResponse.json(
       {

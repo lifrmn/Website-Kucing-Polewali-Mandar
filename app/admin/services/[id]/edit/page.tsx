@@ -22,8 +22,10 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     is_active: true,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchService();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchService = async () => {

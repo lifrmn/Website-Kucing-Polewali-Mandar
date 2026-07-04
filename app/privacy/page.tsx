@@ -1,6 +1,4 @@
 import { Metadata } from 'next'
-import { Shield } from 'lucide-react'
-import AppIcon from '@/components/AppIcon'
 
 export const metadata: Metadata = {
   title: 'Kebijakan Privasi | Cikal Pet Care Polman',

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, use } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { orderService } from '@/services/orderService';
 import { Card, Badge, Button, Modal } from '@/components/ui';
@@ -21,7 +20,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { OrderStatus, PaymentStatus } from '@/types/enums';
+import { OrderStatus } from '@/types/enums';
 
 interface OrderDetail {
   id: string;
@@ -63,7 +62,6 @@ const statusVariants: Record<string, 'primary' | 'accent' | 'success' | 'danger'
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -71,8 +69,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const [adminNotes, setAdminNotes] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadOrder();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadOrder = async () => {

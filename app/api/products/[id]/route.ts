@@ -29,7 +29,7 @@ export async function GET(
       success: true,
       data: product,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET product error:', error);
     return NextResponse.json(
       {
@@ -129,7 +129,7 @@ export async function PUT(
       data: product,
       message: 'Produk berhasil diperbarui',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT product error:', error);
 
     if (error instanceof z.ZodError) {
@@ -146,7 +146,7 @@ export async function PUT(
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Gagal memperbarui produk',
+        error: error instanceof Error ? error.message : 'Gagal memperbarui produk',
       },
       { status: 500 }
     );
@@ -193,7 +193,7 @@ export async function DELETE(
       success: true,
       message: 'Produk berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE product error:', error);
     return NextResponse.json(
       {

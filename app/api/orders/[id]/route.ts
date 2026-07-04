@@ -36,7 +36,7 @@ export async function GET(
       success: true,
       data: order,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET order error:', error);
     return NextResponse.json(
       {
@@ -58,7 +58,7 @@ export async function PUT(
     const body = await request.json();
     const { payment_status, status } = body;
 
-    const updateData: any = {};
+    const updateData: { payment_status?: string; status?: string } = {};
 
     if (payment_status) {
       updateData.payment_status = payment_status;
@@ -115,7 +115,7 @@ export async function PUT(
       data: order,
       message: `Status berhasil diubah`,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT order error:', error);
     return NextResponse.json(
       {
@@ -147,7 +147,7 @@ export async function PATCH(
       );
     }
 
-    const order = await prisma.order.update({
+    await prisma.order.update({
       where: { id },
       data: { payment_proof_url },
     });
@@ -157,7 +157,7 @@ export async function PATCH(
       data: payment_proof_url,
       message: 'Bukti pembayaran berhasil disimpan',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PATCH payment proof error:', error);
     return NextResponse.json(
       {

@@ -30,7 +30,7 @@ export async function GET(
       success: true,
       data: booking,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET booking error:', error);
     return NextResponse.json(
       {
@@ -76,7 +76,7 @@ export async function PUT(
       data: updatedBooking,
       message: 'Status booking berhasil diupdate',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('PUT booking error:', error);
     return NextResponse.json(
       {
@@ -104,7 +104,7 @@ export async function DELETE(
       success: true,
       message: 'Booking berhasil dihapus',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE booking error:', error);
     return NextResponse.json(
       {

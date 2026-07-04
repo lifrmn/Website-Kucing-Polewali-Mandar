@@ -1,9 +1,8 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { Menu, Bell, Search, User, LogOut, Settings } from 'lucide-react';
+import { Menu, Bell, Search, LogOut, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import AppIcon from './AppIcon';
 

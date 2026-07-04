@@ -1,6 +1,4 @@
 import { Metadata } from 'next'
-import { FileText } from 'lucide-react'
-import AppIcon from '@/components/AppIcon'
 
 export const metadata: Metadata = {
   title: 'Syarat & Ketentuan | Cikal Pet Care Polman',

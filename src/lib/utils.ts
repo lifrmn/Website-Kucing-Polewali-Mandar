@@ -58,6 +58,7 @@ export function truncate(text: string, maxLength: number): string {
 /**
  * Debounce function
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -118,7 +119,7 @@ export function sleep(ms: number): Promise<void> {
 /**
  * Check if value is empty (null, undefined, empty string, empty array, empty object)
  */
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true;
   if (typeof value === 'string') return value.trim().length === 0;
   if (Array.isArray(value)) return value.length === 0;

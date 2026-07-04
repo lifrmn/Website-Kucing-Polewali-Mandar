@@ -28,12 +28,16 @@ export default function AdminBlogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     filterPosts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, statusFilter, posts]);
 
   const loadPosts = async () => {

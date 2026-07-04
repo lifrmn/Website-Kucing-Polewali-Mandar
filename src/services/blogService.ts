@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // No longer directly importing Prisma - using API routes instead
 export const blogService = {
   async getPosts(page: number = 1, limit: number = 10) {

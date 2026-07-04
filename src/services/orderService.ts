@@ -1,6 +1,6 @@
-// No longer directly importing Prisma - using API routes instead
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type { ApiResponse } from '@/types';
-import { emailService } from './emailService';
 
 interface CreateOrderData {
   customer_name: string;

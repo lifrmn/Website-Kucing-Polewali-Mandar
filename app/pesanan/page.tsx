@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { orderService } from '@/services/orderService'
-import { Loader2, ShoppingBag, Clock, CheckCircle, XCircle, Search, RotateCcw, Eye } from 'lucide-react'
-import { toast } from 'react-toastify'
+import { Loader2, ShoppingBag, Search } from 'lucide-react'
 import AppIcon from '@/components/AppIcon'
 
 interface Order {

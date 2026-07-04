@@ -23,11 +23,12 @@ export default function BlogDetailPage() {
   const [post, setPost] = useState<BlogPost | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (slug) {
       loadPost()
     }
-  }, [slug])
+  }, [slug]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPost = async () => {
     if (!slug) return

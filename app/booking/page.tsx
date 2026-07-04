@@ -93,7 +93,7 @@ export default function BookingPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {packages.map((pkg, index) => {
+            {packages.map((pkg) => {
               const getTierStyle = () => {
                 if (pkg.name.toLowerCase().includes('premium') || pkg.name.toLowerCase().includes('vip')) {
                   return {

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: bookings,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET bookings error:', error);
     return NextResponse.json(
       {
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
       data: booking,
       message: 'Booking berhasil dibuat',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST booking error:', error);
     return NextResponse.json(
       {

@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
     
     if (type) {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
       success: true,
       data: services,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET services error:', error);
     return NextResponse.json(
       {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       data: service,
       message: 'Layanan berhasil ditambahkan',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST service error:', error);
     return NextResponse.json(
       {

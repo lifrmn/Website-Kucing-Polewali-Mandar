@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
-import Image from 'next/image';
+import { AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Plus, Search, Pencil, Trash2, Eye, EyeOff, Package } from 'lucide-react';
 import Image from 'next/image';
 
@@ -29,7 +28,6 @@ const CATEGORIES = [
 ];
 
 export default function AdminProductsPage() {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,8 +36,10 @@ export default function AdminProductsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadProducts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, categoryFilter, page]);
 
   const loadProducts = async () => {

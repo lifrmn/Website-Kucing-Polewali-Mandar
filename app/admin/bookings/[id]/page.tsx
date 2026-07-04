@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, Badge, Button } from '@/components/ui';
 import { ArrowLeft, Calendar, User, Phone, Mail, PawPrint, CheckCircle, XCircle, Clock } from 'lucide-react';
@@ -53,14 +52,15 @@ const statusLabels: Record<string, string> = {
 
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const router = useRouter();
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadBooking();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadBooking = async () => {

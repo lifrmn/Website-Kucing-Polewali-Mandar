@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const all = searchParams.get('all'); // For admin to see all including inactive
 
     const skip = (page - 1) * limit;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
 
     // Search by name, sku, or description
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET products error:', error);
     return NextResponse.json(
       {
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
       data: product,
       message: 'Produk berhasil ditambahkan',
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST product error:', error);
 
     if (error instanceof z.ZodError) {
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error.message || 'Gagal menambahkan produk',
+        error: error instanceof Error ? error.message : 'Gagal menambahkan produk',
       },
       { status: 500 }
     );

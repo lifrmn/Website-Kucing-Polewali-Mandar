@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Card, Badge, Button } from '@/components/ui';
-import { Calendar, Search, Eye, CheckCircle, XCircle, Clock, PawPrint } from 'lucide-react';
+import { Calendar, Search, CheckCircle, XCircle, PawPrint } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import AppIcon from '@/components/AppIcon';
 
