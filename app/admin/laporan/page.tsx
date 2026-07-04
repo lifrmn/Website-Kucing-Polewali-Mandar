@@ -220,7 +220,7 @@ export default function LaporanPage() {
               <XAxis dataKey="tanggal" tick={{ fontSize: 10 }} interval={Math.floor(dailyData.length / 6)} />
               <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                formatter={(value: number) => [formatCurrency(value), 'Pendapatan']}
+                formatter={(value: unknown) => [formatCurrency(Number(value) || 0), 'Pendapatan']}
                 contentStyle={{ fontSize: 12, borderRadius: 8 }}
               />
               <Line type="monotone" dataKey="pendapatan" stroke="#3b82f6" strokeWidth={2} dot={false} />
@@ -272,7 +272,7 @@ export default function LaporanPage() {
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(v: number) => [v, 'Pesanan']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                <Tooltip formatter={(v: unknown) => [Number(v) || 0, 'Pesanan']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                 <Legend iconType="circle" iconSize={10} wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>

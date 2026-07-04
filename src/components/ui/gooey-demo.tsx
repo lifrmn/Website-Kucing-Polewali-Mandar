@@ -4,7 +4,7 @@ import { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { GooeyFilter } from "@/components/ui/gooey-filter"
 import { useScreenSize } from "@/hooks/use-screen-size"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/RadixButton"
 
 const TAB_CONTENT = [
   {

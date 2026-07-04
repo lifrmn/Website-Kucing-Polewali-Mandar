@@ -72,7 +72,7 @@ export default function PaymentInstructionsPage() {
               <p style={{ color: '#707070' }} className="mb-4">
                 Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda
               </p>
-              <ol className="list-decimal list-inside space-y-2 text-sm" style={{ color: '#707070' }} className="text-left">
+              <ol className="list-decimal list-inside space-y-2 text-sm text-left" style={{ color: '#707070' }}>
                 <li>Buka aplikasi e-wallet atau mobile banking Anda (GoPay, OVO, DANA, ShopeePay, dll)</li>
                 <li>Pilih menu "Scan QRIS" atau "Bayar dengan QR"</li>
                 <li>Arahkan kamera ke QR code di atas</li>

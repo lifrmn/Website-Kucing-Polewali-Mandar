@@ -22,7 +22,7 @@ const productSchema = z.object({
     message: 'Stok tidak boleh negatif',
   }),
   category: z.enum(['MAKANAN', 'ALAT', 'OBAT', 'AKSESORIS'], {
-    errorMap: () => ({ message: 'Pilih kategori yang valid' }),
+    message: 'Pilih kategori yang valid',
   }),
   is_active: z.boolean(),
   image_url: z.string().optional(),
