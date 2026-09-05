@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Check, Minus, Package, Plus, ShoppingCart, X } from 'lucide-react'
 import { toast } from 'react-toastify'
@@ -25,10 +25,17 @@ interface ProductDetail {
 export default function ProductDetailClient({ product }: { product: ProductDetail }) {
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants[0]?.id || '')
   const [quantity, setQuantity] = useState(1)
+  const [imageUrl, setImageUrl] = useState(product.image_url || '/placeholder-product.svg')
+  const imageRef = useRef<HTMLImageElement>(null)
   const { addItem, openCart } = useCartStore()
   const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId)
   const stock = selectedVariant?.stock ?? product.stock
   const price = selectedVariant?.price ?? product.price
+
+  useEffect(() => {
+    const image = imageRef.current
+    if (image?.complete && image.naturalWidth === 0) setImageUrl('/placeholder-product.svg')
+  }, [])
 
   const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -76,12 +83,13 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
         <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-14 items-start">
           <div className="relative aspect-square overflow-hidden bg-white rounded-lg border border-stone-200">
             <img
-              src={product.image_url || '/placeholder-product.svg'}
+              ref={imageRef}
+              src={imageUrl}
               alt={product.name}
               className="w-full h-full object-cover"
               onError={(event) => {
                 event.currentTarget.onerror = null
-                event.currentTarget.src = '/placeholder-product.svg'
+                setImageUrl('/placeholder-product.svg')
               }}
             />
           </div>
