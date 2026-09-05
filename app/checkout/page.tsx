@@ -9,7 +9,7 @@ import { Loader2, ShoppingCart } from 'lucide-react'
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, getTotal, clearCart } = useCartStore()
+  const { items, getTotal, clearCart, syncWithServer } = useCartStore()
   const [loading, setLoading] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -76,18 +76,24 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
+      const synchronization = await syncWithServer()
+      if (!synchronization.valid) {
+        const messages = [...synchronization.errors, ...synchronization.changes]
+        toast.error(messages[0] || 'Keranjang berubah. Periksa kembali sebelum checkout.')
+        return
+      }
+      const synchronizedItems = useCartStore.getState().items
       const orderData = {
         customer_name: formData.name,
         customer_email: formData.email,
         customer_phone: formData.phone,
         customer_address: formData.address,
         order_type: 'product' as const,
-        items: items.map((item) => ({
+        items: synchronizedItems.map((item) => ({
           item_type: item.type as 'product' | 'service',
           item_id: item.id,
-          item_name: item.name,
+          variant_id: item.variantId,
           quantity: item.quantity,
-          unit_price: item.price,
         })),
         payment_method: formData.payment_method as 'qris' | 'transfer',
         notes: formData.notes,
@@ -97,6 +103,10 @@ export default function CheckoutPage() {
 
       if (result.success && result.data) {
         toast.success('Pesanan berhasil dibuat!')
+        sessionStorage.setItem(
+          `order-phone:${result.data.order_number}`,
+          formData.phone.replace(/\s+/g, '')
+        )
         clearCart()
         router.push(`/cara-pembayaran?order=${result.data.order_number}`)
       } else {

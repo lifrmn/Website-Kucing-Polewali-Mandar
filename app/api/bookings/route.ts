@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { authorizeAdmin } from '@/lib/authorization';
+import { consumeRateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/client-ip';
+import { boardingBookingSchema } from '@/lib/validations/booking';
+import {
+  BoardingBookingError,
+  createBoardingBooking,
+} from '@/services/boardingBookingService';
+import { emailService } from '@/services/emailService';
 
 // GET all bookings
 export async function GET(request: NextRequest) {
   try {
+    const authorization = await authorizeAdmin('bookings:read');
+    if (!authorization.authorized) return authorization.response;
+
     const { searchParams } = new URL(request.url);
     const bookingNumber = searchParams.get('bookingNumber');
 
@@ -63,118 +76,72 @@ export async function GET(request: NextRequest) {
 // POST create booking
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const {
-      package_id,
-      customer_name,
-      customer_phone,
-      customer_email,
-      cat_name,
-      cat_age,
-      cat_gender,
-      cat_health_condition,
-      check_in_date,
-      check_out_date,
-      special_requests,
-    } = body;
-
-    // Validation
-    if (!package_id || !customer_name || !customer_phone || !cat_name || !check_in_date || !check_out_date) {
+    const clientIp = getClientIp(request);
+    const limit = consumeRateLimit(`boarding-booking:${clientIp}`, 10, 15 * 60 * 1000);
+    if (!limit.allowed) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Data pelanggan, kucing, dan tanggal check-in/out harus diisi',
-        },
+        { success: false, error: 'Terlalu banyak percobaan booking. Silakan coba lagi nanti.' },
+        { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+      );
+    }
+
+    const idempotencyKey = request.headers.get('idempotency-key')?.trim();
+    if (!idempotencyKey || idempotencyKey.length < 16 || idempotencyKey.length > 100) {
+      return NextResponse.json(
+        { success: false, error: 'Idempotency-Key tidak valid' },
         { status: 400 }
       );
     }
 
-    // Get package to calculate price
-    const pkg = await prisma.penitipanPackage.findUnique({
-      where: { id: package_id },
-    });
-
-    if (!pkg) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Paket tidak ditemukan',
-        },
-        { status: 404 }
-      );
-    }
-
-    // Calculate total nights
-    const checkInDate = new Date(check_in_date);
-    const checkOutDate = new Date(check_out_date);
-    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
-    const totalNights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (totalNights <= 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Tanggal check-out harus setelah tanggal check-in',
-        },
-        { status: 400 }
-      );
-    }
-
-    const totalPrice = pkg.price_per_night * totalNights;
-
-    // Generate booking number
-    const date = new Date();
-    const year = date.getFullYear().toString().slice(-2);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const random = Math.random().toString(36).substr(2, 4).toUpperCase();
-    const bookingNumber = `BOK-${year}${month}${day}-${random}`;
-
-    // Create or find customer
-    let customer = await prisma.customer.findFirst({
-      where: { phone: customer_phone },
-    });
-
-    if (!customer) {
-      customer = await prisma.customer.create({
-        data: {
-          name: customer_name,
-          phone: customer_phone,
-          email: customer_email,
-        },
+    const input = boardingBookingSchema.parse(await request.json());
+    const { booking, replayed } = await createBoardingBooking(prisma, input, idempotencyKey);
+    if (!replayed) {
+      await emailService.sendBookingConfirmationEmail({
+        customerEmail: booking.customer.email,
+        customerName: booking.customer.name,
+        bookingLabel: booking.booking_number,
+        schedule: `${input.check_in_date} sampai ${input.check_out_date}`,
+        petName: booking.cat_name,
       });
     }
 
-    // Create booking
-    const booking = await prisma.penitipanBooking.create({
-      data: {
-        booking_number: bookingNumber,
-        customer_id: customer.id,
-        package_id,
-        cat_name,
-        cat_age,
-        cat_gender,
-        cat_health_condition,
-        check_in_date,
-        check_out_date,
-        total_nights: totalNights,
-        total_price: totalPrice,
-        status: 'pending',
-        special_requests,
-      },
-      include: {
-        customer: true,
-        package: true,
-      },
-    });
-
     return NextResponse.json({
       success: true,
-      data: booking,
-      message: 'Booking berhasil dibuat',
+      data: {
+        id: booking.id,
+        booking_number: booking.booking_number,
+        package_name: booking.package.name,
+        check_in_date: booking.check_in_date,
+        check_out_date: booking.check_out_date,
+        total_nights: booking.total_nights,
+        total_price: booking.total_price,
+        status: booking.status,
+      },
+      message: replayed ? 'Booking sudah dibuat sebelumnya' : 'Booking berhasil dibuat',
     });
   } catch (error: unknown) {
     console.error('POST booking error:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Data booking tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
+
+    const conflictMessages: Record<string, string> = {
+      PACKAGE_UNAVAILABLE: 'Paket penitipan tidak tersedia',
+      INVALID_DATE_RANGE: 'Tanggal check-out harus setelah check-in, maksimal 30 malam',
+      PAST_CHECK_IN: 'Tanggal check-in tidak boleh di masa lalu',
+      CAPACITY_FULL: 'Kapasitas penitipan penuh pada salah satu tanggal yang dipilih',
+    };
+    if (error instanceof BoardingBookingError) {
+      return NextResponse.json(
+        { success: false, error: conflictMessages[error.code] },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,

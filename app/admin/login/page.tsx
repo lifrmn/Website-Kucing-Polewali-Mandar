@@ -123,20 +123,6 @@ export default function AdminLoginPage() {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
 
-              {/* Dev Credentials Info */}
-              {process.env.NODE_ENV === 'development' && (
-                <div className="mt-6 p-4 bg-surface2 rounded-button border border-border">
-                  <p className="text-caption font-semibold text-muted mb-2">
-                    🔧 Development Credentials:
-                  </p>
-                  <p className="text-caption text-muted">
-                    Email: <span className="font-mono">admin@cikalpetcare.com</span>
-                  </p>
-                  <p className="text-caption text-muted">
-                    Password: <span className="font-mono">admin123</span>
-                  </p>
-                </div>
-              )}
             </form>
           </CardContent>
         </Card>

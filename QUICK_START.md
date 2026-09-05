@@ -190,12 +190,10 @@ cikal-pet-care/
 # Database
 DATABASE_URL="file:./dev.db"
 
-# WhatsApp
-NEXT_PUBLIC_WHATSAPP_NUMBER=6285255478706
-
 # NextAuth
-AUTH_SECRET="cikal-pet-care-secret-key-change-in-production-2026"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_SECRET="generate-with-openssl-rand-base64-32"
+AUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
 
 # ⚠️ UPDATE INI - Resend Email
 RESEND_API_KEY="re_YourActualAPIKey"

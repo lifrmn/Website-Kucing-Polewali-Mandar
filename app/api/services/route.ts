@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { authorizeAdmin } from '@/lib/authorization';
+import { createServiceSchema } from '@/lib/validations/service';
 
 // GET all services
 export async function GET(request: NextRequest) {
@@ -8,7 +11,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: any = { is_active: true };
     
     if (type) {
       where.type = type;
@@ -38,35 +41,27 @@ export async function GET(request: NextRequest) {
 // POST create service
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, description, type, duration, price } = body;
+    const authorization = await authorizeAdmin('services:manage');
+    if (!authorization.authorized) return authorization.response;
 
-    // Validation
-    if (!name || !type || !price) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Nama, tipe, dan harga harus diisi',
-        },
-        { status: 400 }
-      );
-    }
+    const input = createServiceSchema.parse(await request.json());
 
     // Generate slug from name
-    const slug = name
+    const slug = input.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
     const service = await prisma.service.create({
       data: {
-        name,
+        name: input.name,
         slug,
-        description,
-        type,
-        duration: duration ? Number(duration) : null,
-        price: Number(price),
-        is_active: true,
+        description: input.description,
+        type: input.type,
+        duration: input.duration,
+        price: input.price,
+        max_bookings_per_day: input.max_bookings_per_day,
+        is_active: input.is_active ?? true,
       },
     });
 
@@ -77,6 +72,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error('POST service error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Data layanan tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

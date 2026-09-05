@@ -6,6 +6,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import WhatsAppFloat from './WhatsAppFloat';
 import Cart from './Cart';
+import { SiteSettingsProvider } from './SiteSettingsContext';
 
 export default function PublicLayoutWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -18,14 +19,16 @@ export default function PublicLayoutWrapper({ children }: { children: ReactNode 
   }
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
-      <WhatsAppFloat />
-      <Cart />
-    </div>
+    <SiteSettingsProvider>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+        <WhatsAppFloat />
+        <Cart />
+      </div>
+    </SiteSettingsProvider>
   );
 }

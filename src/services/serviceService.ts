@@ -81,6 +81,7 @@ export const serviceService = {
     type: string;
     duration?: number;
     price: number;
+    max_bookings_per_day?: number;
     is_active?: boolean;
   }) {
     try {
@@ -109,6 +110,7 @@ export const serviceService = {
     type?: string;
     duration?: number;
     price?: number;
+    max_bookings_per_day?: number;
     is_active?: boolean;
   }) {
     try {

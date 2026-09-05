@@ -39,6 +39,7 @@ const statusVariants: Record<string, 'primary' | 'accent' | 'success' | 'danger'
   CONFIRMED: 'primary',
   CHECKED_IN: 'success',
   CHECKED_OUT: 'success',
+  COMPLETED: 'success',
   CANCELED: 'danger',
 };
 
@@ -47,7 +48,17 @@ const statusLabels: Record<string, string> = {
   CONFIRMED: 'Confirmed',
   CHECKED_IN: 'Checked In',
   CHECKED_OUT: 'Checked Out',
+  COMPLETED: 'Completed',
   CANCELED: 'Canceled',
+};
+
+const allowedStatusActions: Record<string, string[]> = {
+  PENDING: ['CONFIRMED', 'CANCELED'],
+  CONFIRMED: ['CHECKED_IN', 'CANCELED'],
+  CHECKED_IN: ['CHECKED_OUT'],
+  CHECKED_OUT: ['COMPLETED'],
+  COMPLETED: [],
+  CANCELED: [],
 };
 
 export default function BookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -335,12 +346,11 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
               <Card.Title>Update Status</Card.Title>
             </Card.Header>
             <Card.Content className="space-y-2">
-              {Object.entries(statusLabels).map(([key, label]) => (
+              {(allowedStatusActions[booking.status] || []).map((key) => (
                 <Button
                   key={key}
-                  variant={booking.status === key ? 'primary' : 'outline'}
+                  variant={key === 'CANCELED' ? 'destructive' : 'outline'}
                   onClick={() => handleUpdateStatus(key)}
-                  disabled={booking.status === key}
                   isLoading={updating}
                   className="w-full justify-start"
                   size="sm"
@@ -349,10 +359,14 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
                   {key === 'CONFIRMED' && <CheckCircle className="w-4 h-4 mr-2" />}
                   {key === 'CHECKED_IN' && <PawPrint className="w-4 h-4 mr-2" />}
                   {key === 'CHECKED_OUT' && <CheckCircle className="w-4 h-4 mr-2" />}
+                  {key === 'COMPLETED' && <CheckCircle className="w-4 h-4 mr-2" />}
                   {key === 'CANCELED' && <XCircle className="w-4 h-4 mr-2" />}
-                  {label}
+                  {statusLabels[key]}
                 </Button>
               ))}
+              {(allowedStatusActions[booking.status] || []).length === 0 && (
+                <p className="text-small text-muted">Booking ini sudah berada pada status akhir.</p>
+              )}
             </Card.Content>
           </Card>
         </div>

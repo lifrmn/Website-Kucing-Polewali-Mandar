@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { settingsService } from '@/services/settingsService';
+import { authorizeAdmin } from '@/lib/authorization';
+import { socialSettingsSchema } from '@/lib/validations/settings';
+import { getRequestIp } from '@/lib/audit';
 
 /**
  * GET /api/settings/social
@@ -25,25 +29,14 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { instagram, facebook, tiktok, youtube } = body;
+    const authorization = await authorizeAdmin('settings:manage');
+    if (!authorization.authorized) return authorization.response;
 
-    const updates: Promise<boolean>[] = [];
-
-    if (instagram !== undefined) {
-      updates.push(settingsService.updateSetting('social_instagram', instagram));
-    }
-    if (facebook !== undefined) {
-      updates.push(settingsService.updateSetting('social_facebook', facebook));
-    }
-    if (tiktok !== undefined) {
-      updates.push(settingsService.updateSetting('social_tiktok', tiktok));
-    }
-    if (youtube !== undefined) {
-      updates.push(settingsService.updateSetting('social_youtube', youtube));
-    }
-
-    await Promise.all(updates);
+    const input = socialSettingsSchema.parse(await request.json());
+    await settingsService.updateSocialMediaLinks(input, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
+    });
 
     return NextResponse.json({
       success: true,
@@ -51,6 +44,12 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error('Error updating social links:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Tautan media sosial tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       { success: false, error: 'Failed to update social media links' },
       { status: 500 }

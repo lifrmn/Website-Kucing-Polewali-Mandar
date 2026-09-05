@@ -1,14 +1,26 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import type { PenitipanPackage } from '@/types'
-import { Check, Crown, Star, PawPrint, Zap, Home, MessageCircle } from 'lucide-react'
+import { CalendarPlus, Check, Crown, Star, PawPrint, Zap, Home, MessageCircle, X } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
+import { useSiteSettings } from '@/components/SiteSettingsContext'
+import { toWhatsAppNumber } from '@/lib/whatsapp'
 
 export default function BookingPage() {
+  const settings = useSiteSettings()
   const [packages, setPackages] = useState<PenitipanPackage[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedPackage, setSelectedPackage] = useState<PenitipanPackage | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [bookingError, setBookingError] = useState('')
+  const [bookingResult, setBookingResult] = useState<{
+    booking_number: string
+    total_nights: number
+    total_price: number
+  } | null>(null)
+  const idempotencyKey = useRef('')
 
   useEffect(() => {
     loadPackages()
@@ -34,6 +46,50 @@ export default function BookingPage() {
       currency: 'IDR',
       minimumFractionDigits: 0,
     }).format(amount)
+  }
+
+  const minimumBookingDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Makassar',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
+  const openBooking = (pkg: PenitipanPackage) => {
+    idempotencyKey.current = crypto.randomUUID()
+    setBookingError('')
+    setBookingResult(null)
+    setSelectedPackage(pkg)
+  }
+
+  const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!selectedPackage) return
+    setSubmitting(true)
+    setBookingError('')
+
+    try {
+      const formData = new FormData(event.currentTarget)
+      const payload = Object.fromEntries(formData.entries())
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey.current,
+        },
+        body: JSON.stringify({ ...payload, package_id: selectedPackage.id }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) {
+        setBookingError(data.error || 'Booking belum dapat dibuat')
+        return
+      }
+      setBookingResult(data.data)
+    } catch {
+      setBookingError('Koneksi bermasalah. Silakan coba lagi dengan data yang sama.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   if (loading) {
@@ -80,7 +136,7 @@ export default function BookingPage() {
                 Silakan hubungi kami untuk informasi lebih lanjut
               </p>
               <a 
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+                href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:opacity-90"
@@ -190,16 +246,15 @@ export default function BookingPage() {
                       </ul>
                     )}
 
-                    <a
-                      href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=Halo, saya tertarik dengan paket ${pkg.name}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => openBooking(pkg)}
                       className="w-full py-3 px-5 text-white font-bold rounded-xl transition-opacity duration-300 inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90"
                       style={{ backgroundColor: '#E6D18B' }}
                     >
-                      <AppIcon icon={MessageCircle} size="sm" />
+                      <AppIcon icon={CalendarPlus} size="sm" />
                       <span className="leading-none">Booking Sekarang</span>
-                    </a>
+                    </button>
                   </div>
                 </div>
               );
@@ -207,6 +262,57 @@ export default function BookingPage() {
           </div>
         )}
       </div>
+
+      {selectedPackage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+          <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-5 py-4" style={{ borderColor: '#E8E3DA' }}>
+              <div>
+                <h2 id="booking-title" className="text-xl font-bold" style={{ color: '#383838' }}>Booking {selectedPackage.name}</h2>
+                <p className="text-sm" style={{ color: '#707070' }}>{formatCurrency(selectedPackage.price_per_night)} per malam</p>
+              </div>
+              <button type="button" onClick={() => setSelectedPackage(null)} className="p-2 rounded-full hover:bg-stone-100" aria-label="Tutup form booking">
+                <AppIcon icon={X} size="sm" />
+              </button>
+            </div>
+
+            {bookingResult ? (
+              <div className="p-8 text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700">
+                  <AppIcon icon={Check} size="lg" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2" style={{ color: '#383838' }}>Booking berhasil diterima</h3>
+                <p className="text-sm mb-5" style={{ color: '#707070' }}>Simpan nomor booking untuk konfirmasi dengan tim kami.</p>
+                <p className="font-mono text-xl font-bold mb-2" style={{ color: '#B66D6D' }}>{bookingResult.booking_number}</p>
+                <p className="text-sm" style={{ color: '#707070' }}>{bookingResult.total_nights} malam · {formatCurrency(bookingResult.total_price)}</p>
+                <button type="button" onClick={() => setSelectedPackage(null)} className="mt-7 px-6 py-3 rounded-xl font-semibold" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>Selesai</button>
+              </div>
+            ) : (
+              <form onSubmit={submitBooking} className="p-5 md:p-7">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="text-sm font-medium">Nama pelanggan<input name="customer_name" required minLength={2} maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Nomor WhatsApp<input name="customer_phone" required inputMode="tel" placeholder="081234567890" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Email (opsional)<input name="customer_email" type="email" maxLength={254} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Tanggal check-in<input name="check_in_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Tanggal check-out<input name="check_out_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Nama kucing<input name="cat_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Usia kucing<input name="cat_age" maxLength={50} placeholder="Contoh: 2 tahun" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jenis kelamin<select name="cat_gender" className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih</option><option value="Jantan">Jantan</option><option value="Betina">Betina</option></select></label>
+                  <label className="text-sm font-medium">Ras (opsional)<input name="cat_breed" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Kondisi kesehatan<textarea name="cat_health_condition" maxLength={1000} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Permintaan khusus<textarea name="special_requests" maxLength={1000} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Kontak darurat<input name="emergency_contact" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                </div>
+                {bookingError && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{bookingError}</p>}
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" onClick={() => setSelectedPackage(null)} className="px-5 py-2.5 rounded-xl border font-semibold">Batal</button>
+                  <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-xl font-semibold disabled:opacity-60" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>{submitting ? 'Memproses...' : 'Kirim Booking'}</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   )
 }

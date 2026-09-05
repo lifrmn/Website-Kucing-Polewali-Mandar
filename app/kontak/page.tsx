@@ -1,31 +1,46 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { MapPin, Phone, Clock, Mail } from 'lucide-react'
+import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
+import { formatPhone } from '@/lib/utils'
 
 export default function ContactPage() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((response) => response.json())
+      .then((result) => {
+        if (result.success) setSettings(result.data)
+      })
+      .catch(() => undefined)
+  }, [])
+
+  const whatsappNumber = formatPhone(settings.whatsapp).replace(/\D/g, '')
   const contactItems = [
     {
       icon: MapPin,
       title: 'Alamat',
-      content: 'Darma, Kec. Polewali, Kabupaten Polewali Mandar, Sulawesi Barat 91311',
+      content: settings.address,
       emoji: '📍'
     },
     {
       icon: Phone,
       title: 'Telepon/WhatsApp',
-      content: '0852-5547-8706',
+      content: settings.whatsapp,
       emoji: '📱'
     },
     {
       icon: Mail,
       title: 'Email',
-      content: 'info@cikalpetcare.com',
+      content: settings.email,
       emoji: '✉️'
     },
     {
       icon: Clock,
       title: 'Jam Operasional',
-      content: 'Senin - Minggu: 08:00 - 20:00',
+      content: `${settings.openDays}: ${settings.openHours}`,
       emoji: '⏰'
     }
   ];
@@ -85,7 +100,7 @@ export default function ContactPage() {
               <h3 className="text-2xl font-bold mb-3" style={{ color: '#383838' }}>Chat Langsung</h3>
               <p className="mb-6" style={{ color: '#707070' }}>Hubungi kami via WhatsApp untuk respons super cepat dan friendly!</p>
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+                href={`https://wa.me/${whatsappNumber}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-block px-8 py-4 rounded-xl font-bold text-white hover:opacity-90 transition-opacity w-full" 

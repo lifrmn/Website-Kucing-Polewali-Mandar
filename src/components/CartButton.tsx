@@ -40,7 +40,7 @@ export default function CartButton({ variant = 'desktop', className }: CartButto
         'active:scale-95',
         variant === 'desktop' 
           ? 'h-11 w-11 rounded-xl shadow-md' 
-          : 'h-10 w-10 rounded-lg shadow-sm',
+          : 'h-[40px] w-[40px] rounded-lg shadow-sm',
         className
       )}
       aria-label={`Keranjang belanja - ${itemCount} item`}

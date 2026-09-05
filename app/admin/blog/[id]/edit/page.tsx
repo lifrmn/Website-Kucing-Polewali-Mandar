@@ -76,6 +76,8 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
         featured_image: formData.featured_image || undefined,
         category: formData.category || undefined,
         tags: formData.tags || undefined,
+        meta_title: formData.meta_title || undefined,
+        meta_description: formData.meta_description || undefined,
         is_published: formData.is_published,
       });
 

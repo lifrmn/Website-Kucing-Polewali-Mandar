@@ -1,0 +1,59 @@
+{
+  "planHash": "aa8ba488fefd77bdd7b52025c07086df25757993eb6dbad71a7d9608e82cb18f",
+  "phase": "postupgrade",
+  "recordedAtUtc": "2026-09-04T22:00:20.4657137Z",
+  "retryCount": 0,
+  "resetBaseline": false,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 2107,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "tsc-no-emit",
+        "kind": "process",
+        "verificationMethod": "exit-code",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E cikal-pet-care-polman@1.0.0 type-check\r\n\u003E tsc --noEmit\r\n\r\n",
+        "durationMs": 3675
+      },
+      {
+        "name": "anonymous-orders-api-rejected",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 401\n{\u0022success\u0022:false,\u0022error\u0022:\u0022Unauthorized\u0022}",
+        "durationMs": 36
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E cikal-pet-care-polman@1.0.0 test\r\n\u003E tsx --test tests/**/*.test.ts\r\n\r\nTAP version 13\r\n# Subtest: blog lifecycle keeps drafts private and preserves first publication time\r\nok 1 - blog lifecycle keeps drafts private and preserves first publication time\r\n  ---\r\n  duration_ms: 102.8425\r\n  ...\r\n# Subtest: boarding uses server price, reserves every night, and replays idempotently\r\nok 2 - boarding uses server price, reserves every night, and replays idempotently\r\n  ---\r\n  duration_ms: 81.9164\r\n  ...\r\n# Subtest: overlapping stays share nightly capacity and a full night rolls back all changes\r\nok 3 - overlapping stays share nightly capacity and a full night rolls back all changes\r\n  ---\r\n  duration_ms: 72.8376\r\n  ...\r\n# Subtest: cancellation releases capacity once and terminal state cannot be reopened\r\nok 4 - cancellation releases capacity once and terminal state cannot be reopened\r\n  ---\r\n  duration_ms: 58.325\r\n  ...\r\n# Subtest: inactive package and invalid dates are rejected before persistence\r\nok 5 - inactive package and invalid dates are rejected before persistence\r\n  ---\r\n  duration_ms: 14.0397\r\n  ...\r\n# Subtest: service booking enforces the database daily limit and reuses customers\r\nok 6 - service booking enforces the database daily limit and reuses customers\r\n  ---\r\n  duration_ms: 57.6066\r\n  ...\r\n# Subtest: service booking rejects inactive services and past slots\r\nok 7 - service booking rejects inactive services and past slots\r\n  ---\r\n  duration_ms: 11.098\r\n  ...\r\n# Subtest: checkout uses server price, decrements stock, and replays idempotently\r\nok 8 - checkout uses server price, decrements stock, and replays idempotently\r\n  ---\r\n  duration_ms: 85.1495\r\n  ...\r\n# Subtest: checkout rejects a variant owned by another product\r\nok 9 - checkout rejects a variant owned by another product\r\n  ---\r\n  duration_ms: 29.2595\r\n  ...\r\n# Subtest: checkout requires an active variant and uses its price and stock\r\nok 10 - checkout requires an active variant and uses its price and stock\r\n  ---\r\n  duration_ms: 55.0119\r\n  ...\r\n# Subtest: insufficient stock rolls back all stock and customer changes\r\nok 11 - insufficient stock rolls back all stock and customer changes\r\n  ---\r\n  duration_ms: 26.6339\r\n  ...\r\n# Subtest: order updates persist fields and cancellation restores stock exactly once\r\nok 12 - order updates persist fields and cancellation restores stock exactly once\r\n  ---\r\n  duration_ms: 64.3712\r\n  ...\r\n# Subtest: customer lookup requires matching phone and does not return customer PII\r\nok 13 - customer lookup requires matching phone and does not return customer PII\r\n  ---\r\n  duration_ms: 21.1726\r\n  ...\r\n# Subtest: dashboard counts only authoritative active and paid records\r\nok 14 - dashboard counts only authoritative active and paid records\r\n  ---\r\n  duration_ms: 118.8926\r\n  ...\r\n# Subtest: production environment rejects missing and documented placeholder secrets\r\nok 15 - production environment rejects missing and documented placeholder secrets\r\n  ---\r\n  duration_ms: 2.4891\r\n  ...\r\n# Subtest: production environment accepts a durable database URL and HTTPS auth URL\r\nok 16 - production environment accepts a durable database URL and HTTPS auth URL\r\n  ---\r\n  duration_ms: 0.3992\r\n  ...\r\n# Subtest: development environment does not require production credentials\r\nok 17 - development environment does not require production credentials\r\n  ---\r\n  duration_ms: 0.2778\r\n  ...\r\n# Subtest: blog sanitizer removes executable HTML while retaining safe formatting\r\nok 18 - blog sanitizer removes executable HTML while retaining safe formatting\r\n  ---\r\n  duration_ms: 4.1685\r\n  ...\r\n# Subtest: application status validators reject lowercase and unknown values\r\nok 19 - application status validators reject lowercase and unknown values\r\n  ---\r\n  duration_ms: 0.4173\r\n  ...\r\n# Subtest: checkout validation ignores browser prices and rejects invalid quantity\r\nok 20 - checkout validation ignores browser prices and rejects invalid quantity\r\n  ---\r\n  duration_ms: 3.7743\r\n  ...\r\n# Subtest: image validation rejects executable bytes with an image MIME type\r\nok 21 - image va\n\u2026[truncated]",
+        "durationMs": 4268,
+        "testResults": {
+          "testFramework": "unknown",
+          "runnerDetectedFrom": "none",
+          "testsTotal": 0,
+          "testsPassed": 0,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": true
+        }
+      }
+    ]
+  }
+}

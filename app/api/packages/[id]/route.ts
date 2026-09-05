@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { authorizeAdmin } from '@/lib/authorization';
+import { updatePackageSchema } from '@/lib/validations/package';
 
 // GET single package
 export async function GET(
@@ -7,6 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('packages:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
     const pkg = await prisma.penitipanPackage.findUnique({
       where: { id },
@@ -52,23 +58,18 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('packages:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
-    const body = await request.json();
-    const { name, description, price_per_night, features, max_cats, is_active } = body;
+    const input = updatePackageSchema.parse(await request.json());
 
     // Convert features array to string if needed
-    const featuresString = Array.isArray(features) 
-      ? features.join(', ') 
-      : features;
+    const featuresString = Array.isArray(input.features)
+      ? input.features.join(', ')
+      : input.features;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: any = {};
-    if (name !== undefined) updateData.name = name;
-    if (description !== undefined) updateData.description = description;
-    if (price_per_night !== undefined) updateData.price_per_night = parseFloat(price_per_night);
-    if (featuresString !== undefined) updateData.features = featuresString;
-    if (max_cats !== undefined) updateData.max_cats = parseInt(max_cats);
-    if (is_active !== undefined) updateData.is_active = is_active;
+    const updateData = { ...input, features: featuresString };
 
     const updatedPackage = await prisma.penitipanPackage.update({
       where: { id },
@@ -82,6 +83,12 @@ export async function PUT(
     });
   } catch (error: unknown) {
     console.error('PUT package error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Data paket tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -98,15 +105,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('packages:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
     
-    await prisma.penitipanPackage.delete({
+    await prisma.penitipanPackage.update({
       where: { id },
+      data: { is_active: false },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Paket berhasil dihapus',
+      message: 'Paket berhasil dinonaktifkan',
     });
   } catch (error: unknown) {
     console.error('DELETE package error:', error);

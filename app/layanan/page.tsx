@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { serviceService } from '@/services/serviceService'
 import { useCartStore } from '@/store/cartStore'
 import { toast } from 'react-toastify'
-import { Clock, ShoppingCart, Search, Scissors, Stethoscope, Home, Sparkles } from 'lucide-react'
+import { CalendarPlus, Check, Clock, ShoppingCart, Search, Scissors, Stethoscope, Home, Sparkles, X } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
 
@@ -40,6 +40,15 @@ export default function ServicesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [bookingError, setBookingError] = useState('')
+  const [bookingResult, setBookingResult] = useState<{
+    service_name: string
+    booking_date: string
+    booking_time: string
+  } | null>(null)
+  const idempotencyKey = useRef('')
   const { addItem, openCart } = useCartStore()
 
   useEffect(() => {
@@ -85,6 +94,13 @@ export default function ServicesPage() {
     }).format(amount)
   }
 
+  const minimumBookingDate = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Makassar',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date())
+
   const handleAddToCart = (service: Service) => {
     addItem({
       id: service.id,
@@ -95,6 +111,41 @@ export default function ServicesPage() {
     })
     toast.success(`${service.name} ditambahkan ke keranjang!`)
     openCart()
+  }
+
+  const openBooking = (service: Service) => {
+    idempotencyKey.current = crypto.randomUUID()
+    setBookingError('')
+    setBookingResult(null)
+    setSelectedService(service)
+  }
+
+  const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!selectedService) return
+    setSubmitting(true)
+    setBookingError('')
+    try {
+      const payload = Object.fromEntries(new FormData(event.currentTarget).entries())
+      const response = await fetch('/api/service-bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey.current,
+        },
+        body: JSON.stringify({ ...payload, service_id: selectedService.id, pet_type: 'Kucing' }),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) {
+        setBookingError(data.error || 'Booking layanan belum dapat dibuat')
+        return
+      }
+      setBookingResult(data.data)
+    } catch {
+      setBookingError('Koneksi bermasalah. Silakan coba lagi dengan data yang sama.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const getServiceImage = (type: string) => SERVICE_IMAGES[type] || SERVICE_IMAGES.default
@@ -248,18 +299,30 @@ export default function ServicesPage() {
                       {service.description || 'Layanan profesional untuk kucing Anda'}
                     </p>
 
-                    <div className="flex items-center justify-between pt-3 md:pt-4 border-t border-slate-100">
+                    <div className="pt-3 md:pt-4 border-t border-slate-100">
+                      <div className="flex items-center justify-between mb-3">
                       <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
                         {formatCurrency(service.price)}
                       </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
                       <button
                         onClick={() => handleAddToCart(service)}
-                        className="flex items-center gap-2 px-4 py-2 text-xs md:text-sm font-semibold rounded-full transition-all duration-300 hover:opacity-90"
-                        style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}
+                        className="flex items-center justify-center gap-2 px-3 py-2 text-xs md:text-sm font-semibold rounded-full border transition-colors hover:bg-stone-50"
+                        style={{ borderColor: '#E6D18B', color: '#4a4632' }}
                       >
                         <AppIcon icon={ShoppingCart} size="sm" />
                         <span className="leading-none">Tambah</span>
                       </button>
+                      <button
+                        onClick={() => openBooking(service)}
+                        className="flex items-center justify-center gap-2 px-3 py-2 text-xs md:text-sm font-semibold rounded-full transition-opacity hover:opacity-90"
+                        style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}
+                      >
+                        <AppIcon icon={CalendarPlus} size="sm" />
+                        <span className="leading-none">Jadwalkan</span>
+                      </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -268,6 +331,49 @@ export default function ServicesPage() {
           )}
         </div>
       </section>
+
+      {selectedService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true" aria-labelledby="service-booking-title">
+          <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-white px-5 py-4" style={{ borderColor: '#E8E3DA' }}>
+              <div>
+                <h2 id="service-booking-title" className="text-xl font-bold text-slate-900">Jadwalkan {selectedService.name}</h2>
+                <p className="text-sm text-slate-500">{formatCurrency(selectedService.price)}{selectedService.duration ? ` · ${selectedService.duration} menit` : ''}</p>
+              </div>
+              <button type="button" onClick={() => setSelectedService(null)} className="p-2 rounded-full hover:bg-stone-100" aria-label="Tutup form booking">
+                <AppIcon icon={X} size="sm" />
+              </button>
+            </div>
+
+            {bookingResult ? (
+              <div className="p-8 text-center">
+                <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700"><AppIcon icon={Check} size="lg" /></div>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Jadwal berhasil dikirim</h3>
+                <p className="text-slate-500">{bookingResult.service_name}</p>
+                <p className="mt-2 font-semibold text-slate-800">{new Date(bookingResult.booking_date).toLocaleDateString('id-ID', { dateStyle: 'long', timeZone: 'UTC' })} pukul {bookingResult.booking_time} WITA</p>
+                <button type="button" onClick={() => setSelectedService(null)} className="mt-7 px-6 py-3 rounded-xl font-semibold" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>Selesai</button>
+              </div>
+            ) : (
+              <form onSubmit={submitBooking} className="p-5 md:p-7">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="text-sm font-medium">Nama pelanggan<input name="customer_name" required minLength={2} maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Nomor WhatsApp<input name="customer_phone" required inputMode="tel" placeholder="081234567890" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Email (opsional)<input name="customer_email" type="email" maxLength={254} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Tanggal layanan<input name="booking_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jam layanan (WITA)<input name="booking_time" type="time" required className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Nama kucing<input name="pet_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Catatan (opsional)<textarea name="notes" maxLength={1000} rows={3} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                </div>
+                {bookingError && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{bookingError}</p>}
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" onClick={() => setSelectedService(null)} className="px-5 py-2.5 rounded-xl border font-semibold">Batal</button>
+                  <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-xl font-semibold disabled:opacity-60" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>{submitting ? 'Memproses...' : 'Kirim Jadwal'}</button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </main>
   )
 }

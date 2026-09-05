@@ -6,12 +6,28 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Starting database seeding...')
 
-  // Clear existing data (optional - be careful in production!)
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Database seed tidak boleh dijalankan dengan NODE_ENV=production')
+  }
+
+  if (process.env.SEED_RESET_DATABASE !== 'true') {
+    throw new Error('Set SEED_RESET_DATABASE=true untuk mengizinkan reset database development')
+  }
+
+  const adminEmail = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase()
+  const adminPassword = process.env.INITIAL_ADMIN_PASSWORD
+  if (!adminEmail || !adminPassword || adminPassword.length < 12) {
+    throw new Error('INITIAL_ADMIN_EMAIL dan INITIAL_ADMIN_PASSWORD minimal 12 karakter wajib diisi')
+  }
+
   console.log('🗑️  Clearing existing data...')
+  await prisma.activityLog.deleteMany()
   await prisma.orderItem.deleteMany()
   await prisma.order.deleteMany()
-  await prisma.customer.deleteMany()
+  await prisma.serviceBooking.deleteMany()
   await prisma.penitipanBooking.deleteMany()
+  await prisma.bookingCapacity.deleteMany()
+  await prisma.customer.deleteMany()
   await prisma.penitipanPackage.deleteMany()
   await prisma.blogPost.deleteMany()
   await prisma.product.deleteMany()
@@ -20,13 +36,13 @@ async function main() {
 
   // Seed Admin User
   console.log('👤 Creating admin user...')
-  const hashedPassword = await bcrypt.hash('admin123', 10)
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@cikalpetcare.com',
+      email: adminEmail,
       name: 'Admin Cikal Pet Care',
       password: hashedPassword,
-      role: 'ADMIN',
+      role: 'SUPER_ADMIN',
     },
   })
   console.log(`✅ Admin user created: ${admin.email}`)
@@ -43,7 +59,7 @@ async function main() {
         price: 285000,
         stock: 15,
         category: 'Makanan',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
         featured: true,
       },
@@ -55,7 +71,7 @@ async function main() {
         price: 295000,
         stock: 20,
         category: 'Makanan',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
         featured: true,
       },
@@ -67,7 +83,7 @@ async function main() {
         price: 18000,
         stock: 50,
         category: 'Makanan',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -78,7 +94,7 @@ async function main() {
         price: 65000,
         stock: 30,
         category: 'Pasir',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
         featured: true,
       },
@@ -90,7 +106,7 @@ async function main() {
         price: 95000,
         stock: 25,
         category: 'Pasir',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -101,7 +117,7 @@ async function main() {
         price: 45000,
         stock: 40,
         category: 'Grooming',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -112,7 +128,7 @@ async function main() {
         price: 55000,
         stock: 35,
         category: 'Grooming',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -123,7 +139,7 @@ async function main() {
         price: 125000,
         stock: 15,
         category: 'Mainan',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -134,7 +150,7 @@ async function main() {
         price: 350000,
         stock: 8,
         category: 'Kandang',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
       {
@@ -145,7 +161,7 @@ async function main() {
         price: 150000,
         stock: 20,
         category: 'Aksesoris',
-        image_url: '/placeholder-product.jpg',
+        image_url: '/placeholder-product.svg',
         is_active: true,
       },
     ],
@@ -302,7 +318,7 @@ Bawa kucing Persia Anda ke grooming profesional minimal 1-2 bulan sekali untuk p
 
 *Butuh bantuan merawat kucing Persia Anda? Hubungi Cikal Pet Care Polman sekarang!*`,
         excerpt: 'Kucing Persia membutuhkan perawatan khusus. Pelajari 5 tips penting merawat kucing Persia agar tetap sehat dan bahagia.',
-        featured_image: '/placeholder-product.jpg',
+        featured_image: '/placeholder-product.svg',
         category: 'Tips Perawatan',
         tags: 'kucing persia, perawatan, grooming',
         author: 'Cikal Pet Care',
@@ -347,7 +363,7 @@ Efek samping yang umum dan normal:
 
 *Hubungi Cikal Pet Care Polman untuk jadwal vaksinasi kucing Anda!*`,
         excerpt: 'Pelajari mengapa vaksinasi sangat penting untuk kesehatan kucing Anda dan kapan jadwal vaksinasi yang tepat.',
-        featured_image: '/placeholder-product.jpg',
+        featured_image: '/placeholder-product.svg',
         category: 'Kesehatan',
         tags: 'vaksinasi, kesehatan, pencegahan penyakit',
         author: 'Cikal Pet Care',
@@ -405,7 +421,7 @@ Memilih makanan yang tepat sangat penting untuk kesehatan dan kebahagiaan kucing
 
 *Temukan makanan kucing berkualitas di Cikal Pet Care Polman!*`,
         excerpt: 'Panduan lengkap memilih makanan kucing berdasarkan usia, kondisi kesehatan, dan kebutuhan nutrisi.',
-        featured_image: '/placeholder-product.jpg',
+        featured_image: '/placeholder-product.svg',
         category: 'Nutrisi',
         tags: 'makanan kucing, nutrisi, kesehatan',
         author: 'Cikal Pet Care',

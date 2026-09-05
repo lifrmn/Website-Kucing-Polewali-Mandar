@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { auth } from '@/auth';
+import { authorizeAdmin } from '@/lib/authorization';
 import { productUpdateSchema } from '@/lib/validations/product';
+import { toProductResponse } from '@/lib/product-response';
 import { z } from 'zod';
 
 // GET single product
@@ -11,11 +12,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const includeInactive = new URL(request.url).searchParams.get('all') === 'true';
+    if (includeInactive) {
+      const authorization = await authorizeAdmin('products:manage');
+      if (!authorization.authorized) return authorization.response;
+    }
+
     const product = await prisma.product.findUnique({
       where: { id },
+      include: {
+        variants: {
+          where: { is_active: true },
+          orderBy: { created_at: 'asc' },
+        },
+      },
     });
 
-    if (!product) {
+    if (!product || (!includeInactive && !product.is_active)) {
       return NextResponse.json(
         {
           success: false,
@@ -27,7 +40,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: product,
+      data: toProductResponse(product),
     });
   } catch (error: unknown) {
     console.error('GET product error:', error);
@@ -47,14 +60,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const authorization = await authorizeAdmin('products:manage');
+    if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
     const body = await request.json();
@@ -62,6 +69,7 @@ export async function PUT(
     // Check if product exists
     const existingProduct = await prisma.product.findUnique({
       where: { id },
+      include: { variants: true },
     });
 
     if (!existingProduct) {
@@ -100,33 +108,73 @@ export async function PUT(
       }
     }
 
-    // Check if SKU already exists (excluding current product)
-    if (validatedData.sku && validatedData.sku !== existingProduct.sku) {
-      const existingSku = await prisma.product.findUnique({
-        where: { sku: validatedData.sku },
-      });
-
-      if (existingSku) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'SKU sudah digunakan',
-          },
-          { status: 400 }
-        );
-      }
+    const { id: _, variants, ...updateData } = validatedData;
+    const submittedSkus = [
+      updateData.sku ?? existingProduct.sku,
+      ...(variants?.map((variant) => variant.sku) ?? []),
+    ];
+    if (new Set(submittedSkus).size !== submittedSkus.length) {
+      return NextResponse.json(
+        { success: false, error: 'SKU produk dan varian harus unik' },
+        { status: 400 }
+      );
     }
 
-    const { id: _, ...updateData } = validatedData;
+    if (variants?.some((variant) => variant.id && !existingProduct.variants.some((item) => item.id === variant.id))) {
+      return NextResponse.json(
+        { success: false, error: 'Varian tidak dimiliki produk ini' },
+        { status: 400 }
+      );
+    }
 
-    const product = await prisma.product.update({
-      where: { id },
-      data: updateData,
-    });
+    const [productSkuConflict, variantSkuConflict] = await Promise.all([
+      prisma.product.findFirst({
+        where: { id: { not: id }, sku: { in: submittedSkus } },
+      }),
+      prisma.productVariant.findFirst({
+        where: {
+          sku: { in: submittedSkus },
+          id: { notIn: variants?.flatMap((variant) => variant.id ? [variant.id] : []) ?? [] },
+        },
+      }),
+    ]);
+    if (productSkuConflict || variantSkuConflict) {
+      return NextResponse.json(
+        { success: false, error: 'SKU produk atau varian sudah digunakan' },
+        { status: 409 }
+      );
+    }
+
+    const product = await prisma.$transaction(async (tx) => {
+      await tx.product.update({ where: { id }, data: updateData });
+
+      if (variants) {
+        const retainedIds = variants.flatMap((variant) => variant.id ? [variant.id] : []);
+        await tx.productVariant.updateMany({
+          where: { product_id: id, id: { notIn: retainedIds } },
+          data: { is_active: false },
+        });
+
+        for (const variant of variants) {
+          const { id: variantId, attributes, ...variantData } = variant;
+          const data = { ...variantData, attributes: JSON.stringify(attributes) };
+          if (variantId) {
+            await tx.productVariant.update({ where: { id: variantId }, data });
+          } else {
+            await tx.productVariant.create({ data: { ...data, product_id: id } });
+          }
+        }
+      }
+
+      return tx.product.findUniqueOrThrow({
+        where: { id },
+        include: { variants: { where: { is_active: true }, orderBy: { created_at: 'asc' } } },
+      });
+    }, { isolationLevel: 'Serializable', timeout: 10_000 });
 
     return NextResponse.json({
       success: true,
-      data: product,
+      data: toProductResponse(product),
       message: 'Produk berhasil diperbarui',
     });
   } catch (error: unknown) {
@@ -159,14 +207,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const authorization = await authorizeAdmin('products:manage');
+    if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
 
@@ -185,13 +227,14 @@ export async function DELETE(
       );
     }
 
-    await prisma.product.delete({
-      where: { id },
-    });
+    await prisma.$transaction([
+      prisma.product.update({ where: { id }, data: { is_active: false } }),
+      prisma.productVariant.updateMany({ where: { product_id: id }, data: { is_active: false } }),
+    ]);
 
     return NextResponse.json({
       success: true,
-      message: 'Produk berhasil dihapus',
+      message: 'Produk berhasil dinonaktifkan',
     });
   } catch (error: unknown) {
     console.error('DELETE product error:', error);

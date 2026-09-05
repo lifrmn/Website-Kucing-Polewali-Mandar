@@ -8,6 +8,7 @@ import { useCartStore } from '@/store/cartStore'
 import { toast } from 'react-toastify'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
+import Link from 'next/link'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -16,6 +17,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const { addItem, openCart } = useCartStore()
 
   useEffect(() => {
@@ -62,17 +64,26 @@ export default function ProductsPage() {
   }
 
   const handleAddToCart = (product: Product) => {
-    if (product.stock <= 0) {
+    const variant = product.variants?.find(item => item.id === selectedVariants[product.id])
+      || product.variants?.[0]
+    const stock = variant?.stock ?? product.stock
+    if (stock <= 0) {
       toast.error('Produk ini sedang habis')
       return
     }
     addItem({
       id: product.id,
       type: 'product',
-      name: product.name,
-      price: product.price,
+      name: variant ? `${product.name} - ${variant.name}` : product.name,
+      price: variant?.price ?? product.price,
       image_url: product.image_url,
       description: product.description,
+      stock,
+      maxQuantity: stock,
+      sku: variant?.sku ?? product.sku,
+      variantId: variant?.id,
+      variantName: variant?.name,
+      variantAttributes: variant?.attributes,
     })
     toast.success(`${product.name} ditambahkan ke keranjang!`)
     openCart()
@@ -182,7 +193,14 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
-              {filteredProducts.map((product) => (
+              {filteredProducts.map((product) => {
+                const selectedVariant = product.variants?.find(
+                  variant => variant.id === selectedVariants[product.id]
+                ) || product.variants?.[0]
+                const displayStock = selectedVariant?.stock ?? product.stock
+                const displayPrice = selectedVariant?.price ?? product.price
+
+                return (
                 <div
                   key={product.id}
                   className="group bg-white transition-all duration-300 hover:-translate-y-2"
@@ -191,15 +209,19 @@ export default function ProductsPage() {
                   onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
                 >
                   {/* Image */}
-                  <div className="relative h-44 md:h-48 overflow-hidden bg-slate-100">
+                  <Link href={`/produk/${product.slug}`} className="relative block h-44 md:h-48 overflow-hidden bg-slate-100">
                     <img
-                      src={product.image_url || 'https://images.unsplash.com/photo-1589883661923-6476cb0ae9f2?w=400&auto=format&fit=crop'}
+                      src={product.image_url || '/placeholder-product.svg'}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null
+                        event.currentTarget.src = '/placeholder-product.svg'
+                      }}
                     />
                     {/* Stock Badge */}
                     <div className="absolute top-3 right-3">
-                      {product.stock > 0 ? (
+                      {displayStock > 0 ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-semibold rounded-full" style={{ backgroundColor: '#4ade80' }}>
                           <AppIcon icon={Check} size="xs" />
                           <span className="leading-none">Tersedia</span>
@@ -211,37 +233,57 @@ export default function ProductsPage() {
                         </span>
                       )}
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Content */}
                   <div className="p-4 md:p-5">
-                    <h3 className="font-bold text-sm md:text-base mb-2 md:mb-3 line-clamp-2 min-h-[2.5rem]" style={{ color: '#383838' }}>
-                      {product.name}
-                    </h3>
+                    <Link href={`/produk/${product.slug}`} className="block mb-2 md:mb-3">
+                      <h3 className="font-bold text-sm md:text-base line-clamp-2 min-h-[2.5rem] hover:text-emerald-700 transition-colors" style={{ color: '#383838' }}>
+                        {product.name}
+                      </h3>
+                    </Link>
+
+                    {product.variants && product.variants.length > 0 && (
+                      <select
+                        value={selectedVariant?.id}
+                        onChange={(event) => setSelectedVariants((current) => ({
+                          ...current,
+                          [product.id]: event.target.value,
+                        }))}
+                        aria-label={`Pilih varian ${product.name}`}
+                        className="w-full mb-3 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
+                        {product.variants.map((variant) => (
+                          <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
+                            {variant.name} ({variant.stock > 0 ? `${variant.stock} tersedia` : 'habis'})
+                          </option>
+                        ))}
+                      </select>
+                    )}
 
                     <div className="flex items-center justify-between mb-3 md:mb-4">
                       <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
-                        {formatCurrency(product.price)}
+                        {formatCurrency(displayPrice)}
                       </span>
                       <span className="text-xs md:text-sm" style={{ color: '#707070' }}>
-                        Stok: {product.stock}
+                        Stok: {displayStock}
                       </span>
                     </div>
 
                     <button
                       onClick={() => handleAddToCart(product)}
-                      disabled={product.stock <= 0}
+                      disabled={displayStock <= 0}
                       className={`w-full py-2.5 md:py-3 px-4 rounded-full font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-sm ${
-                        product.stock > 0
+                        displayStock > 0
                           ? 'hover:opacity-90'
                           : 'cursor-not-allowed opacity-50'
                       }`}
-                      style={product.stock > 0
+                      style={displayStock > 0
                         ? { backgroundColor: '#E6D18B', color: '#2a2a1a' }
                         : { backgroundColor: '#E8E3DA', color: '#707070' }
                       }
                     >
-                      {product.stock > 0 ? (
+                      {displayStock > 0 ? (
                         <>
                           <AppIcon icon={ShoppingCart} size="sm" />
                           <span className="leading-none">Tambah ke Keranjang</span>
@@ -255,7 +297,8 @@ export default function ProductsPage() {
                     </button>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

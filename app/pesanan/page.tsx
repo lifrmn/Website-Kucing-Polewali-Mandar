@@ -1,125 +1,65 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { orderService } from '@/services/orderService'
-import { Loader2, ShoppingBag, Search } from 'lucide-react'
-import AppIcon from '@/components/AppIcon'
+import { FormEvent, useEffect, useState } from 'react'
+import { Loader2, Package, Search, Truck } from 'lucide-react'
 
-interface Order {
-  id: string
-  order_number: string
-  customer_name: string
-  customer_email: string
-  customer_phone: string
-  order_type: string
-  total_amount: number
-  payment_method: string
-  payment_status: 'pending' | 'paid' | 'failed'
-  order_status: 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled'
-  created_at: Date | string
+import AppIcon from '@/components/AppIcon'
+import { CustomerOrderSummary, orderService } from '@/services/orderService'
+
+const statusLabels: Record<string, string> = {
+  PENDING: 'Menunggu pembayaran',
+  WAITING_VERIFICATION: 'Menunggu verifikasi',
+  PAID: 'Pembayaran diterima',
+  PROCESSING: 'Sedang diproses',
+  SHIPPED: 'Sedang dikirim',
+  COMPLETED: 'Selesai',
+  CANCELED: 'Dibatalkan',
+  REFUNDED: 'Dana dikembalikan',
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [orderNumber, setOrderNumber] = useState('')
+  const [phone, setPhone] = useState('')
+  const [order, setOrder] = useState<CustomerOrderSummary | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    loadOrders()
+    const number = new URLSearchParams(window.location.search).get('order') || ''
+    if (!number) return
+    setOrderNumber(number)
+    setPhone(sessionStorage.getItem(`order-phone:${number}`) || '')
   }, [])
 
-  const loadOrders = async () => {
+  const handleLookup = async (event: FormEvent) => {
+    event.preventDefault()
     setLoading(true)
-    const response = await orderService.getOrders()
+    setError('')
+    setOrder(null)
+    const response = await orderService.lookupCustomerOrder(orderNumber, phone)
     if (response.success && response.data) {
-      setOrders(response.data.data || [])
-      setFilteredOrders(response.data.data || [])
+      setOrder(response.data)
+      sessionStorage.setItem(`order-phone:${response.data.order_number}`, phone.replace(/\s+/g, ''))
+    } else {
+      setError(response.error || 'Pesanan tidak ditemukan')
     }
     setLoading(false)
   }
 
-  // Filter orders
-  useEffect(() => {
-    let filtered = [...orders]
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(order => 
-        order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(order => order.order_status === statusFilter)
-    }
-
-    // Sort by date (newest first)
-    filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-
-    setFilteredOrders(filtered)
-  }, [searchQuery, statusFilter, orders])
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const formatDate = (date: Date | string) => {
-    const d = new Date(date)
-    return new Intl.DateTimeFormat('id-ID', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(d)
-  }
-
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      pending: { color: '#FCD34D', text: 'Menunggu' },
-      confirmed: { color: '#60A5FA', text: 'Dikonfirmasi' },
-      processing: { color: '#A78BFA', text: 'Diproses' },
-      completed: { color: '#86EFAC', text: 'Selesai' },
-      cancelled: { color: '#F87171', text: 'Dibatalkan' },
-    }
-    const badge = badges[status as keyof typeof badges] || badges.pending
-    return badge
-  }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
-        <div className="text-center">
-          <Loader2 className="animate-spin w-16 h-16 mx-auto mb-4" style={{ color: '#E6D18B' }} />
-          <p className="text-lg font-medium" style={{ color: '#383838' }}>Memuat pesanan Anda...</p>
-        </div>
-      </main>
-    )
-  }
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(amount)
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
-      {/* Hero Header */}
       <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
-            Pesanan Saya
-          </h1>
-          <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Kelola dan pantau status pesanan Anda
-          </p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Cek Pesanan</h1>
+          <p className="text-base md:text-lg" style={{ color: 'rgba(255,255,255,0.7)' }}>Pantau pembayaran, proses, dan pengiriman pesanan Anda</p>
         </div>
-        {/* Wave bottom */}
         <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
           <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
             <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
@@ -127,92 +67,82 @@ export default function OrdersPage() {
         </div>
       </section>
 
-      {/* Content */}
-      <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20">
-        {/* Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="relative">
-            <AppIcon icon={Search} size="sm" className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#707070' }} />
-            <input
-              type="text"
-              placeholder="Cari nomor pesanan atau nama..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent transition-all"
-              style={{ borderColor: '#E8E3DA' }}
-            />
-          </div>
-          <div className="flex gap-3 flex-wrap">
-            {['all', 'pending', 'confirmed', 'processing', 'completed', 'cancelled'].map(status => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className="px-4 py-2 rounded-lg font-semibold transition-all text-sm" 
-                style={{
-                  backgroundColor: statusFilter === status ? '#E6D18B' : 'white',
-                  color: statusFilter === status ? 'white' : '#383838',
-                  border: `2px solid ${statusFilter === status ? '#E6D18B' : '#E8E3DA'}`
-                }}
-              >
-                {status === 'all' ? 'Semua' : status.charAt(0).toUpperCase() + status.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="max-w-md mx-auto bg-white rounded-[20px] p-12 shadow-md border-2" style={{ borderColor: '#E8E3DA' }}>
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FAF8F5' }}>
-                <ShoppingBag className="w-10 h-10" style={{ color: '#E6D18B' }} />
-              </div>
-              <p className="text-lg font-semibold mb-3" style={{ color: '#383838' }}>Tidak ada pesanan</p>
-              <p style={{ color: '#707070' }}>Belum ada pesanan yang sesuai dengan filter Anda</p>
+      <div className="max-w-3xl mx-auto px-6 sm:px-8 py-14 md:py-20 space-y-6">
+        <form onSubmit={handleLookup} className="bg-white rounded-[20px] shadow-md border-2 p-6 md:p-8" style={{ borderColor: '#E8E3DA' }}>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2" style={{ color: '#383838' }}>Nomor Pesanan</label>
+              <input
+                required
+                value={orderNumber}
+                onChange={(event) => setOrderNumber(event.target.value)}
+                placeholder="INV-..."
+                className="w-full h-12 px-4 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                style={{ borderColor: '#E8E3DA' }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-2" style={{ color: '#383838' }}>Nomor Telepon</label>
+              <input
+                required
+                type="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder="08xxxxxxxxxx"
+                className="w-full h-12 px-4 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                style={{ borderColor: '#E8E3DA' }}
+              />
             </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => {
-              const statusBadge = getStatusBadge(order.order_status)
-              return (
-                <div
-                  key={order.id}
-                  className="bg-white rounded-[20px] shadow-md p-6 border-2 hover:shadow-lg transition-all hover:scale-105"
-                  style={{ borderColor: '#E8E3DA' }}
-                >
-                  <div className="grid md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p style={{ color: '#707070' }} className="text-sm mb-1">Nomor Pesanan</p>
-                      <p className="text-lg font-bold" style={{ color: '#383838' }}>{order.order_number}</p>
-                    </div>
-                    <div className="text-right">
-                      <p style={{ color: '#707070' }} className="text-sm mb-1">Total</p>
-                      <p className="text-lg font-bold" style={{ color: '#E6D18B' }}>{formatCurrency(order.total_amount)}</p>
-                    </div>
+          {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-5 w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <AppIcon icon={Search} size="sm" />}
+            Periksa Pesanan
+          </button>
+        </form>
+
+        {order && (
+          <section className="bg-white rounded-[20px] shadow-md border-2 p-6 md:p-8 space-y-6" style={{ borderColor: '#E8E3DA' }}>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <p className="text-sm" style={{ color: '#707070' }}>Nomor Pesanan</p>
+                <h2 className="text-xl font-bold" style={{ color: '#383838' }}>{order.order_number}</h2>
+              </div>
+              <span className="self-start px-3 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+                {statusLabels[order.status] || order.status}
+              </span>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4 py-5 border-y" style={{ borderColor: '#E8E3DA' }}>
+              <div><p className="text-xs text-slate-500">Total</p><p className="font-bold">{formatCurrency(order.total_amount)}</p></div>
+              <div><p className="text-xs text-slate-500">Pembayaran</p><p className="font-bold">{order.payment_status.replace(/_/g, ' ')}</p></div>
+              <div><p className="text-xs text-slate-500">Metode</p><p className="font-bold">{order.payment_method.replace(/_/g, ' ')}</p></div>
+            </div>
+
+            <div>
+              <h3 className="font-bold mb-3 flex items-center gap-2"><Package className="w-5 h-5" /> Item Pesanan</h3>
+              <div className="space-y-2">
+                {order.orderItems.map((item) => (
+                  <div key={item.id} className="flex justify-between gap-4 text-sm py-2">
+                    <span>{item.name} × {item.quantity}</span>
+                    <span className="font-semibold">{formatCurrency(item.subtotal)}</span>
                   </div>
-                  <div className="grid md:grid-cols-3 gap-4 mb-4 text-sm" style={{ color: '#707070' }}>
-                    <div>
-                      <p className="mb-1">Tanggal Pesanan</p>
-                      <p style={{ color: '#383838' }}>{formatDate(order.created_at)}</p>
-                    </div>
-                    <div>
-                      <p className="mb-1">Status Pesanan</p>
-                      <span
-                        className="inline-block px-3 py-1 rounded-lg text-white text-xs font-bold"
-                        style={{ backgroundColor: statusBadge.color }}
-                      >
-                        {statusBadge.text}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="mb-1">Metode Pembayaran</p>
-                      <p style={{ color: '#383838' }}>{order.payment_method.toUpperCase()}</p>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+                ))}
+              </div>
+            </div>
+
+            {order.tracking_number && (
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+                <Truck className="w-5 h-5 text-emerald-700 mt-0.5" />
+                <div><p className="text-sm text-emerald-700">Nomor Resi</p><p className="font-mono font-bold text-emerald-900">{order.tracking_number}</p></div>
+              </div>
+            )}
+          </section>
         )}
       </div>
     </main>

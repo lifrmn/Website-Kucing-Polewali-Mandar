@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { blogService } from '@/services/blogService'
-import { Loader2, Calendar, ArrowRight } from 'lucide-react'
+import { Loader2, Calendar, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface BlogPost {
   id: string
   title: string
   slug: string
   excerpt: string | null
-  content: string
   featured_image: string | null
   published_at: Date | string | null
   is_published: boolean
@@ -19,16 +18,19 @@ interface BlogPost {
 export default function BlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([])
   const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
-    loadPosts()
-  }, [])
+    loadPosts(page)
+  }, [page]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const loadPosts = async () => {
+  const loadPosts = async (requestedPage: number) => {
     setLoading(true)
-    const response = await blogService.getPosts()
+    const response = await blogService.getPosts(requestedPage, 9)
     if (response.success && response.data) {
       setPosts(response.data.data)
+      setTotalPages(response.data.totalPages)
     }
     setLoading(false)
   }
@@ -101,6 +103,10 @@ export default function BlogPage() {
                       src={post.featured_image}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null
+                        event.currentTarget.src = '/placeholder-product.svg'
+                      }}
                     />
                   </div>
                 ) : (
@@ -122,7 +128,7 @@ export default function BlogPage() {
                   </h2>
 
                   <p className="mb-4 line-clamp-3 text-sm leading-relaxed" style={{ color: '#707070' }}>
-                    {post.excerpt || post.content.substring(0, 150) + '...'}
+                    {post.excerpt || 'Baca artikel selengkapnya.'}
                   </p>
 
                   <Link
@@ -136,6 +142,35 @@ export default function BlogPage() {
               </article>
             ))}
           </div>
+        )}
+        {totalPages > 1 && (
+          <nav className="mt-10 flex items-center justify-center gap-4" aria-label="Navigasi halaman artikel">
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={page === 1}
+              className="w-10 h-10 inline-flex items-center justify-center rounded-lg border-2 disabled:opacity-40"
+              style={{ borderColor: '#E8E3DA', color: '#383838' }}
+              aria-label="Halaman sebelumnya"
+              title="Halaman sebelumnya"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-semibold" style={{ color: '#707070' }}>
+              {page} / {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              disabled={page === totalPages}
+              className="w-10 h-10 inline-flex items-center justify-center rounded-lg border-2 disabled:opacity-40"
+              style={{ borderColor: '#E8E3DA', color: '#383838' }}
+              aria-label="Halaman berikutnya"
+              title="Halaman berikutnya"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </nav>
         )}
       </div>
     </main>

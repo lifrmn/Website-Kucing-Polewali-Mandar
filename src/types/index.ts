@@ -56,6 +56,7 @@ export interface Database {
 export interface Product {
   id: string;
   name: string;
+  slug: string;
   description?: string | null;
   category: string;
   price: number;
@@ -70,6 +71,18 @@ export interface Product {
   meta_keywords?: string[];
   created_at: string | Date;
   updated_at: string | Date;
+  variants?: ProductVariant[];
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  name: string;
+  sku: string;
+  price?: number | null;
+  stock: number;
+  attributes: Record<string, string>;
+  is_active: boolean;
 }
 
 export type ProductCategory = 

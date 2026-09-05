@@ -118,6 +118,7 @@ export const productService = {
 
   async createProduct(data: {
     name: string;
+    slug: string;
     description?: string;
     price: number;
     stock: number;
@@ -125,6 +126,13 @@ export const productService = {
     image_url?: string;
     is_active?: boolean;
     sku?: string;
+    variants?: Array<{
+      name: string;
+      sku: string;
+      price: number | null;
+      stock: number;
+      attributes: Record<string, string>;
+    }>;
   }) {
     try {
       const response = await fetch('/api/products', {
@@ -154,6 +162,15 @@ export const productService = {
     category?: string;
     image_url?: string;
     is_active?: boolean;
+    variants?: Array<{
+      id?: string;
+      name: string;
+      sku: string;
+      price: number | null;
+      stock: number;
+      attributes: Record<string, string>;
+      is_active?: boolean;
+    }>;
   }) {
     try {
       const response = await fetch(`/api/products/${id}`, {

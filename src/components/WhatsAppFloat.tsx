@@ -4,10 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { MessageCircle } from 'lucide-react';
 import AppIcon from './AppIcon';
 import { cn } from '@/lib/utils';
-
-const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '6285255478706';
+import { useSiteSettings } from './SiteSettingsContext';
+import { toWhatsAppNumber } from '@/lib/whatsapp';
 
 export default function WhatsAppFloat() {
+  const settings = useSiteSettings();
   const [showTooltip, setShowTooltip] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [isFooterVisible, setIsFooterVisible] = useState(false);
@@ -83,7 +84,7 @@ export default function WhatsAppFloat() {
     const message = encodeURIComponent(
       'Halo Admin Cikal Pet Care Polman,\n\nSaya ingin bertanya tentang layanan Cikal Pet Care. Terima kasih.'
     );
-    window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}?text=${message}`, '_blank');
   };
 
   return (

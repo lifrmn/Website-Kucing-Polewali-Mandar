@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { auth } from '@/auth';
+import { authorizeAdmin } from '@/lib/authorization';
 import { productSchema } from '@/lib/validations/product';
+import { toProductResponse } from '@/lib/product-response';
 import { z } from 'zod';
 
 // GET all products with search, filter, pagination
@@ -14,6 +15,11 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const featured = searchParams.get('featured');
     const all = searchParams.get('all'); // For admin to see all including inactive
+
+    if (all === 'true') {
+      const authorization = await authorizeAdmin('products:manage');
+      if (!authorization.authorized) return authorization.response;
+    }
 
     const skip = (page - 1) * limit;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,6 +55,12 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
         orderBy: { created_at: 'desc' },
+        include: {
+          variants: {
+            where: { is_active: true },
+            orderBy: { created_at: 'asc' },
+          },
+        },
       }),
       prisma.product.count({ where }),
     ]);
@@ -56,7 +68,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: {
-        data: products,
+        data: products.map(toProductResponse),
         total,
         page,
         limit,
@@ -78,14 +90,8 @@ export async function GET(request: NextRequest) {
 // POST create product (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await auth();
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    const authorization = await authorizeAdmin('products:manage');
+    if (!authorization.authorized) return authorization.response;
 
     const body = await request.json();
 
@@ -112,28 +118,42 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if SKU already exists
-    const existingSku = await prisma.product.findUnique({
-      where: { sku: validatedData.sku },
-    });
-
-    if (existingSku) {
+    const { variants, ...productData } = validatedData;
+    const submittedSkus = [productData.sku, ...variants.map((variant) => variant.sku)];
+    if (new Set(submittedSkus).size !== submittedSkus.length) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'SKU sudah digunakan',
-        },
+        { success: false, error: 'SKU produk dan varian harus unik' },
         { status: 400 }
       );
     }
 
+    const [existingProductSku, existingVariantSku] = await Promise.all([
+      prisma.product.findFirst({ where: { sku: { in: submittedSkus } } }),
+      prisma.productVariant.findFirst({ where: { sku: { in: submittedSkus } } }),
+    ]);
+    if (existingProductSku || existingVariantSku) {
+      return NextResponse.json(
+        { success: false, error: 'SKU produk atau varian sudah digunakan' },
+        { status: 409 }
+      );
+    }
+
     const product = await prisma.product.create({
-      data: validatedData,
+      data: {
+        ...productData,
+        variants: {
+          create: variants.map(({ id: _, attributes, ...variant }) => ({
+            ...variant,
+            attributes: JSON.stringify(attributes),
+          })),
+        },
+      },
+      include: { variants: true },
     });
 
     return NextResponse.json({
       success: true,
-      data: product,
+      data: toProductResponse(product),
       message: 'Produk berhasil ditambahkan',
     });
   } catch (error: unknown) {

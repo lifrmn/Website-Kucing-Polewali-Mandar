@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-labelledby="title description">
+  <title id="title">Cikal Pet Care</title>
+  <desc id="description">Placeholder gambar produk dan artikel Cikal Pet Care</desc>
+  <rect width="800" height="600" fill="#f3efe8"/>
+  <circle cx="400" cy="250" r="112" fill="#e6d18b"/>
+  <g fill="#ffffff">
+    <ellipse cx="400" cy="272" rx="58" ry="52"/>
+    <circle cx="338" cy="210" r="25"/>
+    <circle cx="385" cy="184" r="25"/>
+    <circle cx="433" cy="184" r="25"/>
+    <circle cx="478" cy="214" r="25"/>
+  </g>
+  <text x="400" y="430" text-anchor="middle" fill="#383838" font-family="Arial, sans-serif" font-size="42" font-weight="700">Cikal Pet Care</text>
+  <text x="400" y="474" text-anchor="middle" fill="#707070" font-family="Arial, sans-serif" font-size="24">Gambar segera tersedia</text>
+</svg>

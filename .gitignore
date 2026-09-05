@@ -37,6 +37,9 @@ dist
 # Testing
 coverage
 
+# Local database backups
+backups/
+
 # Misc
 .cache
 .parcel-cache

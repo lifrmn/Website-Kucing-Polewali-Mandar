@@ -1,88 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
+import { authorizeAdmin } from '@/lib/authorization';
+import { consumeRateLimit } from '@/lib/rate-limit';
+import {
+  deleteImage,
+  ImageValidationError,
+  uploadImage,
+  validateImageFile,
+} from '@/lib/image-upload';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+const UPLOAD_FOLDER = 'cikal-pet-care';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Cloudinary is configured
-    if (
-      !process.env.CLOUDINARY_CLOUD_NAME ||
-      !process.env.CLOUDINARY_API_KEY ||
-      !process.env.CLOUDINARY_API_SECRET
-    ) {
+    const authorization = await authorizeAdmin('uploads:manage');
+    if (!authorization.authorized) return authorization.response;
+
+    const uploadLimit = consumeRateLimit(
+      `upload:${authorization.session.user.id}`,
+      30,
+      15 * 60 * 1000
+    );
+    if (!uploadLimit.allowed) {
       return NextResponse.json(
+        { success: false, message: 'Terlalu banyak upload. Silakan coba lagi nanti.' },
         {
-          success: false,
-          message: 'Cloudinary belum dikonfigurasi. Silakan setup di .env',
-        },
-        { status: 500 }
+          status: 429,
+          headers: { 'Retry-After': String(uploadLimit.retryAfterSeconds) },
+        }
       );
     }
 
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get('file');
 
-    if (!file) {
+    if (!(file instanceof File)) {
       return NextResponse.json(
         { success: false, message: 'File tidak ditemukan' },
         { status: 400 }
       );
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Format file tidak didukung. Gunakan JPG, PNG, atau WebP',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Ukuran file terlalu besar. Maksimal 5MB',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Convert file to buffer
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Upload to Cloudinary
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await new Promise<any>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'cikal-pet-care', // Organize uploads in folder
-          resource_type: 'auto',
-          transformation: [
-            { width: 1200, crop: 'limit' }, // Optimize images (max width 1200px)
-            { quality: 'auto:good' }, // Auto quality optimization
-          ],
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-
-      uploadStream.end(buffer);
-    });
+    const buffer = await validateImageFile(file);
+    const result = await uploadImage(buffer, UPLOAD_FOLDER);
 
     return NextResponse.json({
       success: true,
@@ -97,6 +56,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error('Upload error:', error);
+    if (error instanceof ImageValidationError) {
+      return NextResponse.json(
+        { success: false, message: error.message },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -110,6 +75,9 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint to remove image from Cloudinary
 export async function DELETE(request: NextRequest) {
   try {
+    const authorization = await authorizeAdmin('uploads:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { searchParams } = new URL(request.url);
     const publicId = searchParams.get('publicId');
 
@@ -120,7 +88,17 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await cloudinary.uploader.destroy(publicId);
+    if (!new RegExp(`^${UPLOAD_FOLDER}/[A-Za-z0-9_-]+$`).test(publicId)) {
+      return NextResponse.json(
+        { success: false, message: 'Public ID tidak valid' },
+        { status: 400 }
+      );
+    }
+
+    const result = await deleteImage(publicId);
+    if (result.result !== 'ok' && result.result !== 'not found') {
+      throw new Error('Cloudinary menolak penghapusan gambar');
+    }
 
     return NextResponse.json({
       success: true,

@@ -18,8 +18,6 @@ import {
 } from 'recharts';
 import { FileBarChart2, TrendingUp, ShoppingCart, Package, Scissors } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { orderService } from '@/services/orderService';
-import { productService } from '@/services/productService';
 
 const STATUS_COLORS: Record<string, string> = {
   COMPLETED: '#22c55e',
@@ -42,97 +40,57 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function LaporanPage() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [orders, setOrders] = useState<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [products, setProducts] = useState<any[]>([]);
+  const [report, setReport] = useState<{
+    summary: { totalRevenue: number; totalOrders: number; completedOrders: number; averagePaidOrder: number };
+    dailyData: Array<{ tanggal: string; pendapatan: number; pesanan: number }>;
+    statusData: Array<{ status: string; value: number }>;
+    topProducts: Array<{ nama: string; terjual: number; pendapatan: number }>;
+    lowStock: Array<{ id: string; name: string; stock: number; low_stock_alert: number }>;
+    recentOrders: Array<{
+      id: string;
+      order_number: string;
+      customer_name: string;
+      total_amount: number;
+      payment_status: string;
+      order_status: string;
+      created_at: string;
+    }>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [periode, setPeriode] = useState<'7' | '30' | '90' | '365'>('30');
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let canceled = false;
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/dashboard?report=true&period=${periode}`);
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Laporan gagal dimuat');
+        if (!canceled) setReport(result.data);
+      } catch (error) {
+        console.error(error);
+        if (!canceled) setReport(null);
+      } finally {
+        if (!canceled) setLoading(false);
+      }
+    };
+    void loadData();
+    return () => {
+      canceled = true;
+    };
+  }, [periode]);
 
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      const [ordersRes, productsRes] = await Promise.all([
-        orderService.getOrders(),
-        productService.getProducts(),
-      ]);
-      setOrders(ordersRes.success && ordersRes.data ? ordersRes.data.data : []);
-      setProducts(productsRes.success && productsRes.data ? productsRes.data.data : []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ─── Filter berdasarkan periode ──────────────────────────────────
-  const filteredOrders = orders.filter((o) => {
-    const diff = (Date.now() - new Date(o.created_at).getTime()) / (1000 * 60 * 60 * 24);
-    return diff <= Number(periode);
-  });
-
-  // ─── Ringkasan statistik ─────────────────────────────────────────
-  const totalRevenue = filteredOrders.reduce((s, o) => s + o.total_amount, 0);
-  const totalPesanan = filteredOrders.length;
-  const totalSelesai = filteredOrders.filter((o) => o.order_status === 'COMPLETED').length;
-  const rataOrder = totalPesanan > 0 ? totalRevenue / totalPesanan : 0;
-
-  // ─── Pendapatan harian ───────────────────────────────────────────
-  const dailyMap: Record<string, { tanggal: string; pendapatan: number; pesanan: number }> = {};
-  const days = Number(periode) <= 30 ? Number(periode) : 30;
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    const label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-    dailyMap[key] = { tanggal: label, pendapatan: 0, pesanan: 0 };
-  }
-  filteredOrders.forEach((o) => {
-    const key = new Date(o.created_at).toISOString().slice(0, 10);
-    if (dailyMap[key]) {
-      dailyMap[key].pendapatan += o.total_amount;
-      dailyMap[key].pesanan += 1;
-    }
-  });
-  const dailyData = Object.values(dailyMap);
-
-  // ─── Distribusi status ───────────────────────────────────────────
-  const statusCount: Record<string, number> = {};
-  filteredOrders.forEach((o) => {
-    statusCount[o.order_status] = (statusCount[o.order_status] || 0) + 1;
-  });
-  const pieData = Object.entries(statusCount).map(([k, v]) => ({
-    name: STATUS_LABEL[k] || k,
-    value: v,
-    color: STATUS_COLORS[k] || '#6b7280',
+  const summary = report?.summary || { totalRevenue: 0, totalOrders: 0, completedOrders: 0, averagePaidOrder: 0 };
+  const dailyData = report?.dailyData || [];
+  const pieData = (report?.statusData || []).map((entry) => ({
+    name: STATUS_LABEL[entry.status] || entry.status,
+    value: entry.value,
+    color: STATUS_COLORS[entry.status] || '#6b7280',
   }));
-
-  // ─── Produk terlaris (berdasarkan jumlah order items) ────────────
-  const productSales: Record<string, { nama: string; terjual: number; pendapatan: number }> = {};
-  filteredOrders.forEach((order) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (order.orderItems || order.items || []).forEach((item: any) => {
-      const name = item.product_name || item.service_name || 'Produk';
-      if (!productSales[name]) productSales[name] = { nama: name, terjual: 0, pendapatan: 0 };
-      productSales[name].terjual += item.quantity || 1;
-      productSales[name].pendapatan += (item.price || 0) * (item.quantity || 1);
-    });
-  });
-  const topProducts = Object.values(productSales)
-    .sort((a, b) => b.terjual - a.terjual)
-    .slice(0, 5);
-
-  // ─── Stok produk rendah ──────────────────────────────────────────
-  const lowStock = products
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .filter((p: any) => p.stock <= (p.low_stock_alert || 5))
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .sort((a: any, b: any) => a.stock - b.stock)
-    .slice(0, 5);
+  const topProducts = report?.topProducts || [];
+  const lowStock = report?.lowStock || [];
+  const recentOrders = report?.recentOrders || [];
 
   if (loading) {
     return (
@@ -184,35 +142,35 @@ export default function LaporanPage() {
             <TrendingUp className="w-5 h-5 text-green-600" />
           </div>
           <p className="text-xs text-muted mb-1">Total Pendapatan</p>
-          <p className="text-xl font-bold text-text">{formatCurrency(totalRevenue)}</p>
+          <p className="text-xl font-bold text-text">{formatCurrency(summary.totalRevenue)}</p>
         </div>
         <div className="bg-surface rounded-lg border border-border p-5">
           <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center mb-3">
             <ShoppingCart className="w-5 h-5 text-blue-600" />
           </div>
           <p className="text-xs text-muted mb-1">Total Pesanan</p>
-          <p className="text-xl font-bold text-text">{totalPesanan}</p>
+          <p className="text-xl font-bold text-text">{summary.totalOrders}</p>
         </div>
         <div className="bg-surface rounded-lg border border-border p-5">
           <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center mb-3">
             <Package className="w-5 h-5 text-purple-600" />
           </div>
           <p className="text-xs text-muted mb-1">Pesanan Selesai</p>
-          <p className="text-xl font-bold text-text">{totalSelesai}</p>
+          <p className="text-xl font-bold text-text">{summary.completedOrders}</p>
         </div>
         <div className="bg-surface rounded-lg border border-border p-5">
           <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center mb-3">
             <Scissors className="w-5 h-5 text-amber-600" />
           </div>
           <p className="text-xs text-muted mb-1">Rata-rata per Pesanan</p>
-          <p className="text-xl font-bold text-text">{formatCurrency(rataOrder)}</p>
+          <p className="text-xl font-bold text-text">{formatCurrency(summary.averagePaidOrder)}</p>
         </div>
       </div>
 
       {/* Grafik Pendapatan Harian */}
       <div className="bg-surface rounded-lg border border-border p-5">
         <h2 className="text-sm font-semibold text-text mb-4">
-          Grafik Pendapatan Harian ({periode === '7' ? '7 Hari' : periode === '30' ? '30 Hari' : periode === '90' ? '3 Bulan (30 hari terakhir)' : '1 Tahun (30 hari terakhir)'})
+          Grafik Pendapatan Harian ({periode === '7' ? '7 Hari' : periode === '30' ? '30 Hari' : periode === '90' ? '3 Bulan' : '1 Tahun'})
         </h2>
         {dailyData.some((d) => d.pendapatan > 0) ? (
           <ResponsiveContainer width="100%" height={250}>
@@ -317,8 +275,7 @@ export default function LaporanPage() {
           <h2 className="text-sm font-semibold text-text mb-4">Peringatan Stok Produk</h2>
           {lowStock.length > 0 ? (
             <div className="space-y-3">
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {lowStock.map((p: any, i: number) => (
+              {lowStock.map((p, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${p.stock === 0 ? 'bg-red-500' : 'bg-amber-400'}`} />
@@ -345,7 +302,7 @@ export default function LaporanPage() {
       {/* Tabel Rekap Pesanan */}
       <div className="bg-surface rounded-lg border border-border p-5">
         <h2 className="text-sm font-semibold text-text mb-4">Rekap Pesanan — {periode === '7' ? '7 Hari' : periode === '30' ? '30 Hari' : periode === '90' ? '3 Bulan' : '1 Tahun'} Terakhir</h2>
-        {filteredOrders.length > 0 ? (
+        {recentOrders.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border">
@@ -358,7 +315,7 @@ export default function LaporanPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredOrders.slice(0, 20).map((order, i) => (
+                {recentOrders.map((order, i) => (
                   <tr key={order.id} className={`border-b border-border last:border-0 ${i % 2 === 0 ? '' : 'bg-bg'}`}>
                     <td className="py-2 px-3 font-mono text-xs text-primary">
                       #{order.id.slice(0, 8)}
@@ -387,11 +344,6 @@ export default function LaporanPage() {
                 ))}
               </tbody>
             </table>
-            {filteredOrders.length > 20 && (
-              <p className="text-xs text-muted text-center mt-3 py-2 border-t border-border">
-                Menampilkan 20 dari {filteredOrders.length} pesanan. Lihat semua di halaman Pesanan.
-              </p>
-            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-24 text-sm text-muted">

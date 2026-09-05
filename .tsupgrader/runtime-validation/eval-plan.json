@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-09-05T00:00:00Z",
+  "generatedOnPlatform": "win32",
+  "projectType": "webapp",
+  "setup": [
+    {
+      "command": "npm",
+      "args": ["install"],
+      "timeoutSeconds": 600
+    }
+  ],
+  "assertions": [
+    {
+      "name": "tsc-no-emit",
+      "kind": "process",
+      "command": "npm",
+      "args": ["run", "type-check"],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 180
+    },
+    {
+      "name": "anonymous-orders-api-rejected",
+      "kind": "http-probe",
+      "startCommand": "cmd.exe",
+      "startArgs": ["/d", "/s", "/c", "set DATABASE_URL=file:./dev.db&& set AUTH_SECRET=runtime-validation-secret-value&& npm run dev -- --port 3107"],
+      "url": "http://localhost:3107/api/orders",
+      "verificationMethod": "http-status",
+      "expected": "401",
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "tests-pass",
+      "kind": "process",
+      "command": "npm",
+      "args": ["test"],
+      "verificationMethod": "test-results",
+      "expected": "0",
+      "timeoutSeconds": 300
+    }
+  ]
+}

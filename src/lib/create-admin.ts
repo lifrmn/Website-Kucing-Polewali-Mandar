@@ -8,9 +8,18 @@ import { UserRole } from '@/types/enums';
  */
 async function createInitialAdmin() {
   try {
+    const email = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase();
+    const password = process.env.INITIAL_ADMIN_PASSWORD;
+
+    if (!email || !password || password.length < 12) {
+      throw new Error(
+        'INITIAL_ADMIN_EMAIL dan INITIAL_ADMIN_PASSWORD (minimal 12 karakter) wajib diisi'
+      );
+    }
+
     // Check if admin already exists
     const existingAdmin = await prisma.user.findUnique({
-      where: { email: 'admin@cikalpetcare.com' },
+      where: { email },
     });
 
     if (existingAdmin) {
@@ -18,13 +27,12 @@ async function createInitialAdmin() {
       return;
     }
 
-    // Hash password (default: admin123)
-    const hashedPassword = await bcrypt.hash('admin123', 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Create admin user
     const admin = await prisma.user.create({
       data: {
-        email: 'admin@cikalpetcare.com',
+        email,
         name: 'Super Admin',
         password: hashedPassword,
         role: UserRole.SUPER_ADMIN,
@@ -32,9 +40,7 @@ async function createInitialAdmin() {
     });
 
     console.log('✅ Initial admin user created successfully!');
-    console.log('📧 Email: admin@cikalpetcare.com');
-    console.log('🔑 Password: admin123');
-    console.log('⚠️  Please change the password after first login!');
+    console.log(`Admin user created: ${admin.email}`);
     
     return admin;
   } catch (error) {

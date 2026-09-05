@@ -55,6 +55,7 @@ export default function Cart() {
           <button
             onClick={closeCart}
             className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-300 hover:rotate-90 hover:scale-110"
+            aria-label="Tutup keranjang"
           >
             <X className="w-6 h-6" />
           </button>
@@ -105,7 +106,7 @@ export default function Cart() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.type, item.quantity - 1)
+                            updateQuantity(item.id, item.type, item.quantity - 1, item.variantId)
                           }
                           className="w-9 h-9 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-lg hover:from-primary-500 hover:to-emerald-600 hover:text-white hover:border-primary-500 transition-all duration-300 font-bold hover:scale-110 active:scale-95"
                         >
@@ -116,7 +117,7 @@ export default function Cart() {
                         </span>
                         <button
                           onClick={() =>
-                            updateQuantity(item.id, item.type, item.quantity + 1)
+                            updateQuantity(item.id, item.type, item.quantity + 1, item.variantId)
                           }
                           className="w-9 h-9 flex items-center justify-center bg-gradient-to-br from-primary-500 to-emerald-600 text-white border-2 border-primary-500 rounded-lg hover:from-primary-600 hover:to-emerald-700 transition-all duration-300 font-bold hover:scale-110 active:scale-95"
                           disabled={item.stock ? item.quantity >= item.stock : false}
@@ -135,7 +136,7 @@ export default function Cart() {
 
                     {/* Remove Button */}
                     <button
-                      onClick={() => removeItem(item.id, item.type)}
+                      onClick={() => removeItem(item.id, item.type, item.variantId)}
                       className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-12 active:scale-95"
                       title="Hapus item"
                     >

@@ -1,5 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Resend } from 'resend';
+import { defaultSiteSettings } from '@/lib/validations/settings';
+import { settingsService } from '@/services/settingsService';
 
 // Initialize Resend lazily — only when API key is present
 const resend = process.env.RESEND_API_KEY
@@ -8,6 +9,11 @@ const resend = process.env.RESEND_API_KEY
 
 // Default sender email
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Cikal Pet Care Polman <onboarding@resend.dev>';
+const SITE_URL = (process.env.AUTH_URL || 'http://localhost:3000').replace(/\/$/, '');
+
+async function getEmailSettings() {
+  return settingsService.getSiteSettings().catch(() => defaultSiteSettings);
+}
 
 interface SendEmailParams {
   to: string;
@@ -15,36 +21,41 @@ interface SendEmailParams {
   html: string;
 }
 
+interface OrderEmailItem {
+  name: string;
+  quantity: number;
+  unit_price: number;
+}
+
 export const emailService = {
   /**
    * Send email using Resend
    */
   async sendEmail({ to, subject, html }: SendEmailParams): Promise<boolean> {
-    try {
-      // Check if Resend is configured
-      if (!process.env.RESEND_API_KEY) {
-        console.warn('⚠️ RESEND_API_KEY not configured. Email not sent.');
-        return false;
-      }
-
-      const { data, error } = await resend!.emails.send({
-        from: FROM_EMAIL,
-        to: [to],
-        subject: subject,
-        html: html,
-      });
-
-      if (error) {
-        console.error('❌ Error sending email:', error);
-        return false;
-      }
-
-      console.log('✅ Email sent successfully:', data);
-      return true;
-    } catch (error) {
-      console.error('❌ Exception sending email:', error);
+    if (!resend) {
+      console.warn('RESEND_API_KEY not configured. Email not sent.');
       return false;
     }
+
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        const { data, error } = await resend.emails.send({
+          from: FROM_EMAIL,
+          to: [to],
+          subject,
+          html,
+        });
+        if (!error) {
+          console.info('Email sent successfully:', data?.id);
+          return true;
+        }
+        console.error(`Email attempt ${attempt} failed:`, error);
+      } catch (error) {
+        console.error(`Email attempt ${attempt} raised an exception:`, error);
+      }
+      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    return false;
   },
 
   /**
@@ -54,9 +65,10 @@ export const emailService = {
     customerEmail: string,
     customerName: string,
     orderNumber: string,
-    items: any[],
+    items: OrderEmailItem[],
     totalAmount: number
   ): Promise<boolean> {
+    const settings = await getEmailSettings();
     const subject = `✅ Pesanan Berhasil Dibuat - Order #${orderNumber}`;
     
     const itemsHtml = items.map(item => `
@@ -106,7 +118,7 @@ export const emailService = {
                     </p>
                     
                     <p style="color: #333333; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
-                      Terima kasih telah berbelanja di Cikal Pet Care Polman! Pesanan Anda telah berhasil kami terima.
+                      Terima kasih telah berbelanja di ${settings.siteName}! Pesanan Anda telah berhasil kami terima.
                     </p>
                     
                     <!-- Order Info Box -->
@@ -176,7 +188,7 @@ export const emailService = {
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
                       <tr>
                         <td align="center">
-                          <a href="http://localhost:3000/cara-pembayaran?order=${orderNumber}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                          <a href="${SITE_URL}/cara-pembayaran?order=${encodeURIComponent(orderNumber)}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">
                             💳 Cara Pembayaran
                           </a>
                         </td>
@@ -191,13 +203,13 @@ export const emailService = {
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #10b981; font-weight: bold;">📧 Email:</span>
-                          <span style="color: #333333; margin-left: 10px;">info@cikalpetcare.com</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.email}</span>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #10b981; font-weight: bold;">📱 WhatsApp:</span>
-                          <span style="color: #333333; margin-left: 10px;">0852-5547-8706</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.whatsapp}</span>
                         </td>
                       </tr>
                     </table>
@@ -211,7 +223,7 @@ export const emailService = {
                       Terima kasih telah mempercayai
                     </p>
                     <p style="color: #10b981; font-size: 18px; font-weight: bold; margin: 0 0 15px 0;">
-                      Cikal Pet Care Polman
+                      ${settings.siteName}
                     </p>
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">
                       Email ini dikirim secara otomatis, mohon tidak membalas email ini.
@@ -242,6 +254,7 @@ export const emailService = {
     orderNumber: string,
     totalAmount: number
   ): Promise<boolean> {
+    const settings = await getEmailSettings();
     const subject = `✅ Pembayaran Dikonfirmasi - Order #${orderNumber}`;
     
     const html = `
@@ -336,13 +349,13 @@ export const emailService = {
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #667eea; font-weight: bold;">📧 Email:</span>
-                          <span style="color: #333333; margin-left: 10px;">info@cikalpetcare.com</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.email}</span>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #667eea; font-weight: bold;">📱 WhatsApp:</span>
-                          <span style="color: #333333; margin-left: 10px;">0852-5547-8706</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.whatsapp}</span>
                         </td>
                       </tr>
                     </table>
@@ -356,7 +369,7 @@ export const emailService = {
                       Terima kasih telah berbelanja di
                     </p>
                     <p style="color: #667eea; font-size: 18px; font-weight: bold; margin: 0 0 15px 0;">
-                      Cikal Pet Care Polman
+                      ${settings.siteName}
                     </p>
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">
                       Email ini dikirim secara otomatis, mohon tidak membalas email ini.
@@ -388,45 +401,67 @@ export const emailService = {
     orderStatus: string,
     totalAmount: number
   ): Promise<boolean> {
+    const settings = await getEmailSettings();
     const statusConfig = {
-      pending: {
+      PENDING: {
         emoji: '⏳',
         text: 'Menunggu Konfirmasi',
         color: '#f59e0b',
         bgColor: '#fffbeb',
         message: 'Pesanan Anda sedang menunggu konfirmasi pembayaran.',
       },
-      confirmed: {
+      WAITING_VERIFICATION: {
+        emoji: '🔎',
+        text: 'Menunggu Verifikasi',
+        color: '#f59e0b',
+        bgColor: '#fffbeb',
+        message: 'Bukti pembayaran Anda sedang diverifikasi.',
+      },
+      PAID: {
         emoji: '✅',
         text: 'Dikonfirmasi',
         color: '#3b82f6',
         bgColor: '#eff6ff',
         message: 'Pesanan Anda telah dikonfirmasi dan akan segera kami proses.',
       },
-      processing: {
+      PROCESSING: {
         emoji: '🔄',
         text: 'Sedang Diproses',
         color: '#8b5cf6',
         bgColor: '#f5f3ff',
         message: 'Pesanan Anda sedang kami proses dengan penuh perhatian.',
       },
-      completed: {
+      SHIPPED: {
+        emoji: '🚚',
+        text: 'Dikirim',
+        color: '#2563eb',
+        bgColor: '#eff6ff',
+        message: 'Pesanan Anda telah dikirim dan sedang dalam perjalanan.',
+      },
+      COMPLETED: {
         emoji: '🎉',
         text: 'Selesai',
         color: '#10b981',
         bgColor: '#f0fdf4',
         message: 'Pesanan Anda telah selesai! Terima kasih atas kepercayaan Anda.',
       },
-      cancelled: {
+      CANCELED: {
         emoji: '❌',
         text: 'Dibatalkan',
         color: '#ef4444',
         bgColor: '#fef2f2',
         message: 'Pesanan Anda telah dibatalkan. Jika ada pertanyaan, hubungi kami.',
       },
+      REFUNDED: {
+        emoji: '↩️',
+        text: 'Dikembalikan',
+        color: '#7c3aed',
+        bgColor: '#f5f3ff',
+        message: 'Pengembalian dana untuk pesanan Anda sedang atau telah diproses.',
+      },
     };
 
-    const config = statusConfig[orderStatus as keyof typeof statusConfig] || statusConfig.pending;
+    const config = statusConfig[orderStatus as keyof typeof statusConfig] || statusConfig.PENDING;
     const subject = `${config.emoji} Update Pesanan #${orderNumber} - ${config.text}`;
 
     const html = `
@@ -506,7 +541,7 @@ export const emailService = {
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
                       <tr>
                         <td align="center">
-                          <a href="http://localhost:3000/pesanan" style="display: inline-block; background-color: #667eea; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                          <a href="${SITE_URL}/pesanan" style="display: inline-block; background-color: #667eea; color: #ffffff; text-decoration: none; padding: 15px 40px; border-radius: 8px; font-weight: bold; font-size: 16px;">
                             🔍 Cek Detail Pesanan
                           </a>
                         </td>
@@ -521,13 +556,13 @@ export const emailService = {
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #667eea; font-weight: bold;">📧 Email:</span>
-                          <span style="color: #333333; margin-left: 10px;">info@cikalpetcare.com</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.email}</span>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding: 10px 0;">
                           <span style="color: #667eea; font-weight: bold;">📱 WhatsApp:</span>
-                          <span style="color: #333333; margin-left: 10px;">0852-5547-8706</span>
+                          <span style="color: #333333; margin-left: 10px;">${settings.whatsapp}</span>
                         </td>
                       </tr>
                     </table>
@@ -541,7 +576,7 @@ export const emailService = {
                       Terima kasih telah mempercayai
                     </p>
                     <p style="color: #667eea; font-size: 18px; font-weight: bold; margin: 0 0 15px 0;">
-                      Cikal Pet Care Polman
+                      ${settings.siteName}
                     </p>
                     <p style="color: #9ca3af; font-size: 12px; margin: 0;">
                       Email ini dikirim secara otomatis, mohon tidak membalas email ini.
@@ -561,5 +596,35 @@ export const emailService = {
       subject,
       html,
     });
+  },
+
+  async sendBookingConfirmationEmail(params: {
+    customerEmail?: string | null;
+    customerName: string;
+    bookingLabel: string;
+    schedule: string;
+    petName: string;
+  }): Promise<void> {
+    const settings = await getEmailSettings();
+    const subject = `Booking diterima - ${params.bookingLabel}`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6">
+        <h1 style="font-size: 24px">Booking berhasil diterima</h1>
+        <p>Halo <strong>${params.customerName}</strong>, booking Anda di ${settings.siteName} telah kami terima.</p>
+        <p><strong>Referensi:</strong> ${params.bookingLabel}<br><strong>Hewan:</strong> ${params.petName}<br><strong>Jadwal:</strong> ${params.schedule}</p>
+        <p>Status awal booking adalah menunggu konfirmasi admin.</p>
+        <p>Kontak: ${settings.whatsapp} | ${settings.email}</p>
+      </div>`;
+
+    if (params.customerEmail) {
+      await this.sendEmail({ to: params.customerEmail, subject, html });
+    }
+    if (process.env.EMAIL_ADMIN_TO) {
+      await this.sendEmail({
+        to: process.env.EMAIL_ADMIN_TO,
+        subject: `Booking baru: ${params.bookingLabel}`,
+        html,
+      });
+    }
   },
 };

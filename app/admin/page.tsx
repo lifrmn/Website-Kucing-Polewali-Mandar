@@ -13,9 +13,6 @@ import {
   Calendar,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
-import { productService } from '@/services/productService';
-import { serviceService } from '@/services/serviceService';
-import { orderService } from '@/services/orderService';
 import {
   BarChart,
   Bar,
@@ -51,6 +48,7 @@ export default function AdminDashboard() {
     completedOrders: 0,
     canceledOrders: 0,
     processingOrders: 0,
+    activeBookings: 0,
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
@@ -66,76 +64,14 @@ export default function AdminDashboard() {
 
   const loadStats = async () => {
     setLoading(true);
-    
     try {
-      // Load products
-      const productsRes = await productService.getProducts();
-      const productsCount = productsRes.success && productsRes.data ? productsRes.data.data.length : 0;
-
-      // Load services
-      const servicesRes = await serviceService.getServices();
-      const servicesCount = servicesRes.success && servicesRes.data ? servicesRes.data.length : 0;
-
-      // Load orders
-      const ordersRes = await orderService.getOrders();
-      const orders = ordersRes.success && ordersRes.data ? ordersRes.data.data : [];
-      const ordersCount = orders.length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const revenue = orders.reduce((sum: number, order: any) => sum + order.total_amount, 0);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pending = orders.filter((o: any) => 
-        o.order_status === 'PENDING' || o.order_status === 'WAITING_VERIFICATION'
-      ).length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const completed = orders.filter((o: any) => o.order_status === 'COMPLETED').length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const canceled = orders.filter((o: any) => o.order_status === 'CANCELED').length;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const processing = orders.filter((o: any) => o.order_status === 'PROCESSING' || o.order_status === 'PAID').length;
-
-      // Order status pie data
-      const statusData = [
-        { name: 'Selesai', value: completed, color: '#22c55e' },
-        { name: 'Diproses', value: processing, color: '#3b82f6' },
-        { name: 'Menunggu', value: pending, color: '#f59e0b' },
-        { name: 'Dibatalkan', value: canceled, color: '#ef4444' },
-      ].filter(d => d.value > 0);
-
-      // Monthly revenue data (last 6 months)
-      const now = new Date();
-      const months: Record<string, { bulan: string; pendapatan: number; pesanan: number }> = {};
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${d.getMonth()}`;
-        const label = d.toLocaleDateString('id-ID', { month: 'short', year: '2-digit' });
-        months[key] = { bulan: label, pendapatan: 0, pesanan: 0 };
-      }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      orders.forEach((order: any) => {
-        const d = new Date(order.created_at);
-        const key = `${d.getFullYear()}-${d.getMonth()}`;
-        if (months[key]) {
-          months[key].pendapatan += order.total_amount;
-          months[key].pesanan += 1;
-        }
-      });
-
-      setOrderStatusData(statusData);
-      setMonthlyData(Object.values(months));
-
-      setStats({
-        totalProducts: productsCount,
-        totalServices: servicesCount,
-        totalOrders: ordersCount,
-        totalRevenue: revenue,
-        pendingOrders: pending,
-        completedOrders: completed,
-        canceledOrders: canceled,
-        processingOrders: processing,
-      });
-
-      // Set recent orders (top 5)
-      setRecentOrders(orders.slice(0, 5));
+      const response = await fetch('/api/dashboard');
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.error || 'Dashboard gagal dimuat');
+      setStats(result.data.stats);
+      setOrderStatusData(result.data.statusData);
+      setMonthlyData(result.data.monthlyData);
+      setRecentOrders(result.data.recentOrders);
     } catch (error) {
       console.error('Error loading stats:', error);
     } finally {
@@ -292,7 +228,7 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-sm font-semibold text-text mb-1">Jadwal Booking</p>
                 <p className="text-xs text-muted mb-2">Lihat dan kelola appointment</p>
-                <p className="text-xs font-medium text-green-600">Lihat jadwal</p>
+                <p className="text-xs font-medium text-green-600">{stats.activeBookings} booking aktif</p>
               </div>
             </div>
           </Link>
@@ -423,7 +359,7 @@ export default function AdminDashboard() {
                             href={`/admin/orders/${order.id}`}
                             className="text-sm font-mono font-semibold text-primary hover:text-primary-hover"
                           >
-                            #{order.id}
+                            #{order.order_number}
                           </Link>
                         </td>
                         <td className="py-3 px-4">

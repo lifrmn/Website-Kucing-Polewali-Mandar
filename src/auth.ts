@@ -3,6 +3,11 @@ import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { UserRole } from '@/types/enums';
+import { consumeRateLimit, resetRateLimit } from '@/lib/rate-limit';
+import { getClientIp } from '@/lib/client-ip';
+
+const INVALID_PASSWORD_HASH = bcrypt.hashSync('invalid-credential-sentinel', 10);
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
 // Extend next-auth types
 declare module 'next-auth' {
@@ -33,34 +38,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: 'Email', type: 'email', placeholder: 'admin@cikalpetcare.com' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Email dan password harus diisi');
+          return null;
+        }
+
+        const email = String(credentials.email).trim().toLowerCase();
+        const clientIp = getClientIp(request);
+        const ipRateLimitKey = `login:ip:${clientIp}`;
+        const accountRateLimitKey = `login:account:${email}`;
+        const ipLimit = consumeRateLimit(ipRateLimitKey, 20, LOGIN_WINDOW_MS);
+        const accountLimit = consumeRateLimit(accountRateLimitKey, 8, LOGIN_WINDOW_MS);
+
+        if (!ipLimit.allowed || !accountLimit.allowed) {
+          throw new Error('Terlalu banyak percobaan login. Silakan coba lagi nanti.');
         }
 
         // Find user in database
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         });
 
-        if (!user) {
-          throw new Error('Email atau password salah');
-        }
-
-        // Check if user is active
-        if (!user.is_active) {
-          throw new Error('Akun Anda tidak aktif. Hubungi administrator');
-        }
-
-        // Verify password
         const passwordMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
+          String(credentials.password),
+          user?.password ?? INVALID_PASSWORD_HASH
         );
 
-        if (!passwordMatch) {
-          throw new Error('Email atau password salah');
+        if (!user || !user.is_active || !passwordMatch) {
+          return null;
         }
+
+        resetRateLimit(accountRateLimitKey);
 
         // Update last login
         await prisma.user.update({

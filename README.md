@@ -2,7 +2,7 @@
 
 Website lengkap untuk Cikal Pet Care Polman - Konsultan Kesehatan Kucing & Pet Shop.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-5.22.0-2D3748)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4.1-38B2AC)](https://tailwindcss.com/)
@@ -55,7 +55,7 @@ Website lengkap untuk Cikal Pet Care Polman - Konsultan Kesehatan Kucing & Pet S
 ## 🚀 Teknologi Stack
 
 ### Frontend
-- **Framework**: Next.js 16.1.6 (App Router)
+- **Framework**: Next.js 16.3.4 (App Router)
 - **Language**: TypeScript 5.3.3
 - **Styling**: Tailwind CSS 3.4.1
 - **State**: Zustand 5.0.11
@@ -63,7 +63,7 @@ Website lengkap untuk Cikal Pet Care Polman - Konsultan Kesehatan Kucing & Pet S
 - **Notifications**: React Toastify 11.0.5
 
 ### Backend
-- **Database**: Prisma ORM + SQLite (dev) / PostgreSQL (prod)
+- **Database**: Prisma ORM + SQLite pada persistent volume
 - **Authentication**: NextAuth.js 5.0
 - **Email**: Resend 6.9.2
 - **Image Upload**: Cloudinary 2.9.0
@@ -73,7 +73,7 @@ Website lengkap untuk Cikal Pet Care Polman - Konsultan Kesehatan Kucing & Pet S
 
 ## 📋 Prerequisites
 
-- Node.js 18+ atau 20+
+- Node.js 20.9+ (gunakan versi LTS aktif)
 - npm atau yarn
 - Git
 
@@ -219,7 +219,7 @@ cikal-pet-care/
 ├── public/                 # Static assets
 │   ├── favicon.svg
 │   ├── logo.svg
-│   └── placeholder-product.jpg
+│   └── placeholder-product.svg
 ├── src/
 │   ├── components/         # Reusable components
 │   │   ├── FileUpload.tsx  # Upload component
@@ -254,12 +254,10 @@ File `.env` lengkap:
 # Database
 DATABASE_URL="file:./dev.db"
 
-# WhatsApp
-NEXT_PUBLIC_WHATSAPP_NUMBER=6285255478706
-
 # NextAuth
-AUTH_SECRET="cikal-pet-care-secret-key-change-in-production-2026"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_SECRET="generate-with-openssl-rand-base64-32"
+AUTH_URL="http://localhost:3000"
+AUTH_TRUST_HOST="true"
 
 # Resend Email (REQUIRED)
 RESEND_API_KEY="re_YourActualAPIKey"
@@ -320,21 +318,40 @@ CLOUDINARY_API_SECRET="your_api_secret"
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+Schema saat ini menggunakan SQLite. Jalankan aplikasi pada Node.js host/container dengan persistent volume untuk file database. Jangan deploy konfigurasi SQLite ini ke filesystem ephemeral seperti Vercel Functions karena data dapat hilang saat instance diganti.
 
-```bash
-# Install Vercel CLI
-npm i -g vercel
+Mengganti `DATABASE_URL` saja tidak mengubah SQLite menjadi PostgreSQL/MySQL. Migrasi database tersebut memerlukan perubahan provider Prisma, migration baru, dan pemindahan data terencana.
 
-# Deploy
-vercel
-```
+### Checklist Production
 
-### Update untuk Production
-1. Ganti DATABASE_URL ke PostgreSQL/MySQL
-2. Update AUTH_SECRET dengan value yang aman
-3. Update NEXTAUTH_URL dengan domain production
-4. Setup domain di Cloudinary & Resend
+1. Gunakan `AUTH_SECRET` acak minimal 32 karakter dan `AUTH_URL` domain HTTPS.
+2. Gunakan absolute `DATABASE_URL`, misalnya `file:/data/cikal.db`, pada persistent volume.
+3. Jalankan `npm run db:migrate` sebelum memulai versi aplikasi baru.
+4. Atur Cloudinary dan Resend, lalu verifikasi domain pengirim email.
+5. Jadwalkan `npm run db:backup`; simpan `BACKUP_DIR` pada volume terpisah atau off-host storage.
+6. Monitor `GET /api/health`; status `200` berarti aplikasi dapat membaca database dan `503` berarti tidak siap menerima traffic.
+7. Terminasi TLS di reverse proxy dan hanya teruskan traffic HTTPS ke domain publik.
+8. Konfigurasikan reverse proxy untuk menghapus lalu menulis ulang `X-Forwarded-For`; rate limiter tidak boleh menerima header tersebut langsung dari client.
+
+Rate limiter bawaan bersifat per-process dan dibatasi 10.000 identity. Jalankan satu instance aplikasi untuk deployment SQLite ini. Deployment multi-instance harus mengganti store rate limit dengan Redis atau layanan shared rate limiting.
+
+### Urutan Deploy
+
+1. Hentikan traffic atau instance lama jika migration mengubah schema yang tidak kompatibel.
+2. Jalankan `npm run db:backup` dan salin snapshot tervalidasi ke object storage/off-host storage.
+3. Jalankan `npm run db:migrate` pada persistent database yang sama dengan aplikasi.
+4. Jalankan `npm run build`, lalu `npm start` dengan environment production.
+5. Arahkan traffic hanya setelah `GET /api/health` mengembalikan status `200`.
+
+### Restore SQLite
+
+1. Hentikan seluruh instance aplikasi agar tidak ada proses yang menulis database.
+2. Simpan salinan database aktif dan file `-wal`/`-shm` jika ada untuk kebutuhan investigasi.
+3. Pilih snapshot dari `BACKUP_DIR`, lalu jalankan `PRAGMA integrity_check` terhadap snapshot tersebut.
+4. Salin snapshot ke path absolute pada `DATABASE_URL`; jangan ikut memulihkan file `-wal`/`-shm` lama.
+5. Jalankan `npm run db:migrate`, mulai aplikasi, lalu pastikan `/api/health` berstatus `200` dan lakukan smoke test login/order.
+
+Uji prosedur restore secara berkala di host non-production. Retention lokal bukan disaster recovery; setiap backup harus direplikasi ke storage di luar host dan dienkripsi sesuai kebijakan operasional.
 
 ---
 
@@ -352,6 +369,8 @@ npm start               # Run production build
 npx prisma generate     # Generate Prisma Client
 npx prisma migrate dev  # Run migrations
 npm run db:seed        # Seed database
+npm run db:migrate     # Apply migration production
+npm run db:backup      # Online SQLite backup + retention
 
 # Utilities
 npm run lint           # Run ESLint

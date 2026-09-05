@@ -1,11 +1,20 @@
+'use client';
+
 import Link from 'next/link';
 import { Phone, MapPin, Clock, Mail } from 'lucide-react';
 import SocialMediaBar, { type SocialMediaLinks } from './SocialMediaBar';
 import { PawPrint } from 'lucide-react';
-import { settingsService } from '@/services/settingsService';
+import { useSiteSettings } from './SiteSettingsContext';
 
-export default async function Footer() {
-  const socialLinks: SocialMediaLinks = await settingsService.getSocialMediaLinks();
+export default function Footer() {
+  const settings = useSiteSettings();
+
+  const socialLinks: SocialMediaLinks = {
+    instagram: settings.instagram || undefined,
+    facebook: settings.facebook || undefined,
+    tiktok: settings.tiktok || undefined,
+    youtube: settings.youtube || undefined,
+  };
 
   return (
     <footer style={{ backgroundColor: '#6C6C6C', fontFamily: "'Poppins', sans-serif" }} className="text-white relative z-10">
@@ -26,7 +35,7 @@ export default async function Footer() {
             <PawPrint size={26} className="text-white" />
           </div>
           <div>
-            <p className="font-bold text-white text-lg leading-tight">Cikal Pet Care</p>
+            <p className="font-bold text-white text-lg leading-tight">{settings.siteName}</p>
             <p className="text-white/60 text-xs mt-0.5">Polewali Mandar</p>
           </div>
         </div>
@@ -39,11 +48,11 @@ export default async function Footer() {
             <ul className="space-y-3 text-white/70 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 flex-shrink-0 text-white/50" />
-                <span>Darma, Kec. Polewali, Kabupaten Polewali Mandar, Sulawesi Barat 91311</span>
+                <span>{settings.address}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Clock size={16} className="flex-shrink-0 text-white/50" />
-                <span>Senin – Minggu: 08.00 – 20.00 WITA</span>
+                <span>{settings.openDays}: {settings.openHours}</span>
               </li>
             </ul>
           </div>
@@ -54,11 +63,11 @@ export default async function Footer() {
             <ul className="space-y-3 text-white/70 text-sm">
               <li className="flex items-center gap-3">
                 <Phone size={16} className="flex-shrink-0 text-white/50" />
-                <a href="tel:0852-5547-8706" className="hover:text-white transition-colors">0852-5547-8706</a>
+                <a href={`tel:${settings.whatsapp}`} className="hover:text-white transition-colors">{settings.whatsapp}</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={16} className="flex-shrink-0 text-white/50" />
-                <a href="mailto:info@cikalpetcare.com" className="hover:text-white transition-colors">info@cikalpetcare.com</a>
+                <a href={`mailto:${settings.email}`} className="hover:text-white transition-colors">{settings.email}</a>
               </li>
             </ul>
             <div className="mt-6">
@@ -83,7 +92,7 @@ export default async function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/15 pt-8 text-center">
           <p className="text-white/50 text-xs">
-            © {new Date().getFullYear()} <span className="text-white/80 font-semibold">Cikal Pet Care</span> — Polewali Mandar. All rights reserved.
+            © {new Date().getFullYear()} <span className="text-white/80 font-semibold">{settings.siteName}</span> — Polewali Mandar. All rights reserved.
           </p>
         </div>
       </div>

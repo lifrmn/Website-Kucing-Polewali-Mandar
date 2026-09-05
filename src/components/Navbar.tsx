@@ -45,17 +45,17 @@ export default function Navbar() {
         borderColor: scrolled ? '#E8E3DA' : 'transparent',
       }}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8">
+      <div className="max-w-7xl mx-auto px-[20px] sm:px-[24px] lg:px-[32px]">
         <nav className="flex items-center justify-between" style={{ height: '80px' }}>
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 flex-shrink-0 group transition-all duration-300 hover:opacity-80">
+          <Link href="/" className="flex items-center gap-[12px] flex-shrink-0 group transition-all duration-300 hover:opacity-80">
             <div
-              className="w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
+              className="w-[48px] h-[48px] rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
               style={{ backgroundColor: '#E6D18B' }}
             >
               <PawPrint size={20} className="text-white" />
             </div>
-            <div className="flex flex-col leading-tight min-w-fit">
+            <div className="hidden min-[360px]:flex flex-col leading-tight min-w-fit">
               <span
                 className="text-base font-bold transition-colors duration-300"
                 style={{ color: scrolled ? '#383838' : 'white' }}
@@ -99,11 +99,11 @@ export default function Navbar() {
           </ul>
 
           {/* Mobile Menu Button & Cart */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-[8px] lg:hidden">
             <CartButton variant="mobile" />
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="h-10 w-10 flex items-center justify-center rounded-lg transition-colors"
+              className="h-[40px] w-[40px] flex items-center justify-center rounded-lg transition-colors"
               style={{
                 backgroundColor: scrolled ? '#F3EFE8' : 'rgba(255,255,255,0.1)',
                 color: scrolled ? '#383838' : 'white',

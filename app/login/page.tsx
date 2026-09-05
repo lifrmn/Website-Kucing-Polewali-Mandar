@@ -122,15 +122,6 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Info */}
-          <div className="mt-6 p-4 rounded-[12px] border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
-            <p className="text-sm text-center" style={{ color: '#707070' }}>
-              <strong style={{ color: '#383838' }}>Demo Credentials:</strong><br />
-              Email: admin@cikalpetcare.com<br />
-              Password: admin123
-            </p>
-          </div>
-
           {/* Back to Home */}
           <div className="mt-6 text-center">
             <a

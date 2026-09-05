@@ -20,7 +20,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { OrderStatus } from '@/types/enums';
+import { OrderStatus, PaymentStatus } from '@/types/enums';
 
 interface OrderDetail {
   id: string;
@@ -86,14 +86,12 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setLoading(false);
   };
 
-  const handleUpdateStatus = async (newStatus: string) => {
+  const handleUpdateStatus = async (newStatus: OrderStatus) => {
     if (!order) return;
     if (!confirm(`Update order status to "${newStatus.replace(/_/g, ' ')}"?`)) return;
 
     setUpdating(true);
-    // Convert OrderStatus enum value to lowercase for API
-    const apiStatus = newStatus.toLowerCase() as 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled';
-    const response = await orderService.updateOrderStatus(order.id, apiStatus);
+    const response = await orderService.updateOrderStatus(order.id, newStatus);
     if (response.success) {
       await loadOrder();
     } else {
@@ -109,7 +107,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     setUpdating(true);
     const response = await orderService.updatePaymentStatus(
       order.id,
-      verified ? 'paid' : 'failed'
+      verified ? PaymentStatus.PAID : PaymentStatus.FAILED
     );
     if (response.success) {
       await loadOrder();
@@ -263,7 +261,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
 
-              {order.payment_status === 'PENDING' && order.payment_proof_url && (
+              {['PENDING', 'VERIFYING'].includes(order.payment_status) && order.payment_proof_url && (
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="primary"

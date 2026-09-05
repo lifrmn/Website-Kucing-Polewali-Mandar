@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 
 // Validation schema
@@ -30,6 +30,16 @@ const productSchema = z.object({
 
 type ProductFormData = z.infer<typeof productSchema>;
 
+interface EditProductVariant {
+  id?: string;
+  clientKey: string;
+  name: string;
+  sku: string;
+  price: number;
+  stock: number;
+  attributes: Record<string, string>;
+}
+
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [id, setId] = useState<string>('');
@@ -38,6 +48,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [variants, setVariants] = useState<EditProductVariant[]>([]);
 
   const {
     register,
@@ -75,7 +86,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const fetchProduct = async (productId: string) => {
     setFetchingProduct(true);
     try {
-      const response = await fetch(`/api/products/${productId}`);
+      const response = await fetch(`/api/products/${productId}?all=true`);
       const data = await response.json();
 
       if (data.success && data.data) {
@@ -95,6 +106,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         if (product.image_url) {
           setImagePreview(product.image_url);
         }
+        setVariants((product.variants || []).map((variant: Omit<EditProductVariant, 'clientKey'>) => ({
+          ...variant,
+          clientKey: variant.id || crypto.randomUUID(),
+          price: variant.price ?? product.price,
+        })));
       } else {
         toast('Produk tidak ditemukan', 'error');
         router.push('/admin/products');
@@ -163,6 +179,34 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     setImagePreview(null);
   };
 
+  const addVariant = () => {
+    setVariants((current) => [
+      ...current,
+      {
+        clientKey: crypto.randomUUID(),
+        name: '',
+        sku: '',
+        price: Number(watch('price')) || 1_000,
+        stock: 0,
+        attributes: {},
+      },
+    ]);
+  };
+
+  const removeVariant = (clientKey: string) => {
+    setVariants((current) => current.filter((variant) => variant.clientKey !== clientKey));
+  };
+
+  const updateVariant = (
+    clientKey: string,
+    field: 'name' | 'sku' | 'price' | 'stock',
+    value: string | number
+  ) => {
+    setVariants((current) => current.map((variant) =>
+      variant.clientKey === clientKey ? { ...variant, [field]: value } : variant
+    ));
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     setLoading(true);
     try {
@@ -173,6 +217,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           ...data,
           price: Number(data.price),
           stock: Number(data.stock),
+          variants: variants.map(({ clientKey: _, ...variant }) => variant),
         }),
       });
 
@@ -341,6 +386,72 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       <p className="text-red-500 text-xs mt-1">{errors.stock.message}</p>
                     )}
                   </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white shadow-sm border border-slate-100 p-6">
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <h2 className="text-lg font-semibold text-slate-900">Varian Produk</h2>
+                  <button
+                    type="button"
+                    onClick={addVariant}
+                    className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Tambah Varian
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {variants.map((variant, index) => (
+                    <div key={variant.clientKey} className="border border-slate-200 rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-semibold text-slate-700">Varian {index + 1}</p>
+                        <button
+                          type="button"
+                          onClick={() => removeVariant(variant.clientKey)}
+                          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Hapus varian"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input
+                          required
+                          value={variant.name}
+                          onChange={(event) => updateVariant(variant.clientKey, 'name', event.target.value)}
+                          placeholder="Nama varian"
+                          className="h-11 rounded-lg border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-500 focus:outline-none"
+                        />
+                        <input
+                          required
+                          value={variant.sku}
+                          onChange={(event) => updateVariant(variant.clientKey, 'sku', event.target.value)}
+                          placeholder="SKU varian"
+                          className="h-11 rounded-lg border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-500 focus:outline-none"
+                        />
+                        <input
+                          required
+                          type="number"
+                          min="1000"
+                          value={variant.price}
+                          onChange={(event) => updateVariant(variant.clientKey, 'price', Number(event.target.value))}
+                          placeholder="Harga"
+                          className="h-11 rounded-lg border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-500 focus:outline-none"
+                        />
+                        <input
+                          required
+                          type="number"
+                          min="0"
+                          value={variant.stock}
+                          onChange={(event) => updateVariant(variant.clientKey, 'stock', Number(event.target.value))}
+                          placeholder="Stok"
+                          className="h-11 rounded-lg border border-slate-200 px-3 text-sm focus:ring-2 focus:ring-green-500/30 focus:border-green-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

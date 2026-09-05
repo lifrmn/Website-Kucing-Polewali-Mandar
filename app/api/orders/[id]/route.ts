@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { emailService } from '@/services/emailService';
+import {
+  OrderManagementError,
+  updateManagedPaymentProof,
+  updateManagedOrder,
+} from '@/services/orderManagementService';
+import { authorizeAdmin } from '@/lib/authorization';
+import {
+  orderUpdateSchema,
+  paymentProofUpdateSchema,
+} from '@/lib/validations/order-management';
+import { PaymentStatus } from '@/types/enums';
+import { z } from 'zod';
+import { getRequestIp } from '@/lib/audit';
 
 // GET single order
 export async function GET(
@@ -8,6 +21,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('orders:read');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
     const order = await prisma.order.findUnique({
       where: { id },
@@ -54,49 +70,26 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('orders:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
-    const body = await request.json();
-    const { payment_status, status } = body;
-
-    const updateData: { payment_status?: string; status?: string } = {};
-
-    if (payment_status) {
-      updateData.payment_status = payment_status;
-      
-      // If payment is paid, auto-confirm order
-      if (payment_status === 'paid') {
-        updateData.status = 'confirmed';
-      }
-    }
-
-    if (status) {
-      updateData.status = status;
-    }
-
-    const order = await prisma.order.update({
-      where: { id },
-      data: updateData,
-      include: {
-        customer: true,
-        orderItems: {
-          include: {
-            product: true,
-            service: true,
-          },
-        },
-      },
+    const body = orderUpdateSchema.parse(await request.json());
+    const order = await updateManagedOrder(prisma, id, body, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
     });
 
     // Send email notification if payment is confirmed or order status changed
     try {
-      if (payment_status === 'paid' && order.customer.email) {
+      if (body.payment_status === PaymentStatus.PAID && order.customer.email) {
         await emailService.sendPaymentConfirmationEmail(
           order.customer.email,
           order.customer.name,
           order.order_number,
           order.total_amount
         );
-      } else if (status && order.customer.email) {
+      } else if (body.status && order.customer.email) {
         await emailService.sendOrderStatusUpdateEmail(
           order.customer.email,
           order.customer.name,
@@ -117,6 +110,25 @@ export async function PUT(
     });
   } catch (error: unknown) {
     console.error('PUT order error:', error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Perubahan pesanan tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
+
+    if (error instanceof OrderManagementError) {
+      const messages: Record<OrderManagementError['code'], string> = {
+        ORDER_NOT_FOUND: 'Pesanan tidak ditemukan',
+        CANCELED_ORDER_IS_FINAL: 'Pesanan yang dibatalkan tidak dapat dibuka kembali',
+      };
+      return NextResponse.json(
+        { success: false, error: messages[error.code] },
+        { status: error.code === 'ORDER_NOT_FOUND' ? 404 : 409 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
@@ -133,23 +145,14 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('orders:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
-    const body = await request.json();
-    const { payment_proof_url } = body;
-
-    if (!payment_proof_url) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'URL bukti pembayaran harus diisi',
-        },
-        { status: 400 }
-      );
-    }
-
-    await prisma.order.update({
-      where: { id },
-      data: { payment_proof_url },
+    const { payment_proof_url } = paymentProofUpdateSchema.parse(await request.json());
+    await updateManagedPaymentProof(prisma, id, payment_proof_url, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
     });
 
     return NextResponse.json({
@@ -159,6 +162,18 @@ export async function PATCH(
     });
   } catch (error: unknown) {
     console.error('PATCH payment proof error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'URL bukti pembayaran tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
+    if (error instanceof OrderManagementError && error.code === 'ORDER_NOT_FOUND') {
+      return NextResponse.json(
+        { success: false, error: 'Pesanan tidak ditemukan' },
+        { status: 404 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

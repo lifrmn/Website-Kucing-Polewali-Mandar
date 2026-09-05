@@ -1,10 +1,68 @@
 'use client';
 
-import { useState } from 'react';
-import { Copy, Check, QrCode, Building2 } from 'lucide-react';
+import { FormEvent, useEffect, useState } from 'react';
+import { Copy, Check, QrCode, Building2, Loader2, Search, Upload } from 'lucide-react';
+import { CustomerOrderSummary, orderService } from '@/services/orderService';
+import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings';
 
 export default function PaymentInstructionsPage() {
   const [copied, setCopied] = useState('');
+  const [orderNumber, setOrderNumber] = useState('');
+  const [phone, setPhone] = useState('');
+  const [order, setOrder] = useState<CustomerOrderSummary | null>(null);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({ ...defaultSiteSettings });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((response) => response.json())
+      .then((data) => { if (data.success) setSiteSettings(data.data); })
+      .catch(() => undefined);
+    const number = new URLSearchParams(window.location.search).get('order') || '';
+    if (!number) return;
+    setOrderNumber(number);
+    setPhone(sessionStorage.getItem(`order-phone:${number}`) || '');
+  }, []);
+
+  const lookupOrder = async (event: FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+    setFeedback(null);
+    const response = await orderService.lookupCustomerOrder(orderNumber, phone);
+    if (response.success && response.data) {
+      setOrder(response.data);
+      sessionStorage.setItem(`order-phone:${response.data.order_number}`, phone.replace(/\s+/g, ''));
+    } else {
+      setOrder(null);
+      setFeedback({ type: 'error', message: response.error || 'Pesanan tidak ditemukan' });
+    }
+    setLoading(false);
+  };
+
+  const uploadProof = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!proofFile || !order) return;
+    setUploading(true);
+    setFeedback(null);
+    const response = await orderService.uploadCustomerPaymentProof(order.order_number, phone, proofFile);
+    if (response.success && response.data) {
+      setOrder(response.data);
+      setProofFile(null);
+      setFeedback({ type: 'success', message: response.message || 'Bukti pembayaran berhasil dikirim' });
+    } else {
+      setFeedback({ type: 'error', message: response.error || 'Gagal mengunggah bukti pembayaran' });
+    }
+    setUploading(false);
+  };
+
+  const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(amount);
   
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
@@ -12,26 +70,12 @@ export default function PaymentInstructionsPage() {
     setTimeout(() => setCopied(''), 2000);
   };
 
-  const bankAccounts = [
-    { 
-      bank: 'Bank BCA', 
-      accountNumber: '1234567890',
-      accountName: 'PT Kucingku Indonesia',
-      code: 'BCA'
-    },
-    { 
-      bank: 'Bank Mandiri', 
-      accountNumber: '9876543210',
-      accountName: 'PT Kucingku Indonesia',
-      code: 'MANDIRI'
-    },
-    { 
-      bank: 'Bank BNI', 
-      accountNumber: '5555666677',
-      accountName: 'PT Kucingku Indonesia',
-      code: 'BNI'
-    },
-  ];
+  const bankAccounts = siteSettings.bankAccount ? [{
+    bank: siteSettings.bankName,
+    accountNumber: siteSettings.bankAccount,
+    accountName: siteSettings.bankAccountName,
+    code: siteSettings.bankName || 'BANK',
+  }] : [];
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
@@ -57,6 +101,40 @@ export default function PaymentInstructionsPage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 sm:px-8 py-14 md:py-20">
         <div className="space-y-8">
+          <form onSubmit={lookupOrder} className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <h2 className="text-xl font-bold mb-5" style={{ color: '#383838' }}>Konfirmasi Pesanan</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <input
+                required
+                value={orderNumber}
+                onChange={(event) => setOrderNumber(event.target.value)}
+                placeholder="Nomor pesanan (INV-...)"
+                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                style={{ borderColor: '#E8E3DA' }}
+              />
+              <input
+                required
+                type="tel"
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                placeholder="Nomor telepon checkout"
+                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                style={{ borderColor: '#E8E3DA' }}
+              />
+            </div>
+            <button type="submit" disabled={loading} className="mt-4 w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              Tampilkan Total Pesanan
+            </button>
+            {order && (
+              <div className="mt-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-3">
+                <div><p className="text-sm text-emerald-700">{order.order_number}</p><p className="font-semibold text-emerald-900">{order.payment_status.replace(/_/g, ' ')}</p></div>
+                <p className="text-xl font-bold text-emerald-900">{formatCurrency(order.total_amount)}</p>
+              </div>
+            )}
+            {feedback && <p className={`mt-4 text-sm ${feedback.type === 'error' ? 'text-red-600' : 'text-emerald-700'}`}>{feedback.message}</p>}
+          </form>
+
           {/* QRIS Payment */}
           <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="flex items-start gap-4 mb-6">
@@ -69,8 +147,13 @@ export default function PaymentInstructionsPage() {
               </div>
             </div>
             <div className="p-6 rounded-[15px] text-center border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
+              {siteSettings.qrisImageUrl && (
+                <img src={siteSettings.qrisImageUrl} alt="QRIS Cikal Pet Care" className="mx-auto mb-5 max-h-72 max-w-full object-contain" />
+              )}
               <p style={{ color: '#707070' }} className="mb-4">
-                Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda
+                {siteSettings.qrisImageUrl
+                  ? 'Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda'
+                  : 'QRIS belum tersedia. Silakan gunakan transfer bank atau hubungi kami.'}
               </p>
               <ol className="list-decimal list-inside space-y-2 text-sm text-left" style={{ color: '#707070' }}>
                 <li>Buka aplikasi e-wallet atau mobile banking Anda (GoPay, OVO, DANA, ShopeePay, dll)</li>
@@ -93,6 +176,9 @@ export default function PaymentInstructionsPage() {
               </div>
             </div>
             <div className="space-y-4">
+              {bankAccounts.length === 0 && (
+                <p className="p-4 rounded-xl bg-amber-50 text-amber-800 text-sm">Rekening transfer belum dikonfigurasi. Silakan hubungi kami sebelum membayar.</p>
+              )}
               {bankAccounts.map((account, idx) => (
                 <div key={idx} className="p-4 rounded-[12px] border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
                   <h4 className="font-bold mb-3" style={{ color: '#383838' }}>{account.bank}</h4>
@@ -129,6 +215,32 @@ export default function PaymentInstructionsPage() {
           </div>
 
           {/* Tips */}
+          {order && !['CANCELED', 'COMPLETED', 'REFUNDED'].includes(order.status) && (
+            <form onSubmit={uploadProof} className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+              <div className="flex items-start gap-4 mb-5">
+                <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
+                  <Upload className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold" style={{ color: '#383838' }}>Bukti Pembayaran</h3>
+                  <p style={{ color: '#707070' }}>JPG, PNG, atau WebP, maksimal 5MB</p>
+                </div>
+              </div>
+              <input
+                required
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(event) => setProofFile(event.target.files?.[0] || null)}
+                className="block w-full text-sm border-2 rounded-xl p-3"
+                style={{ borderColor: '#E8E3DA' }}
+              />
+              <button type="submit" disabled={uploading || !proofFile} className="mt-4 w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
+                Kirim untuk Verifikasi
+              </button>
+            </form>
+          )}
+
           <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <h3 className="text-xl font-bold mb-4" style={{ color: '#383838' }}>💡 Tips Pembayaran</h3>
             <ul className="space-y-2 text-sm" style={{ color: '#707070' }}>

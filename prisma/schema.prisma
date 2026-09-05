@@ -133,6 +133,7 @@ model Service {
 
 model ServiceBooking {
   id              String   @id @default(uuid())
+  idempotency_key String?  @unique
   service_id      String
   customer_id     String
   booking_date    DateTime
@@ -214,6 +215,7 @@ model Customer {
 model Order {
   id                 String        @id @default(uuid())
   order_number       String        @unique
+  idempotency_key    String?       @unique
   customer_id        String
   
   // Pricing
@@ -311,6 +313,7 @@ model PenitipanPackage {
 model PenitipanBooking {
   id                   String        @id @default(uuid())
   booking_number       String        @unique
+  idempotency_key      String?       @unique
   customer_id          String
   package_id           String
   
@@ -335,6 +338,7 @@ model PenitipanBooking {
   
   // Additional Info
   special_requests     String?
+  admin_notes          String?
   emergency_contact    String?
   
   // Timestamps
@@ -401,10 +405,12 @@ model BlogPost {
   
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
+  deleted_at     DateTime?
 
   @@index([slug])
   @@index([is_published])
   @@index([category])
+  @@index([deleted_at])
   @@map("blog_posts")
 }
 

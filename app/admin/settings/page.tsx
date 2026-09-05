@@ -1,37 +1,32 @@
 'use client'
 
-import { useState } from 'react'
-import { Save, MessageCircle, Mail, MapPin, Instagram, Facebook, Settings as SettingsIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Save, MessageCircle, Mail, MapPin, Instagram, Facebook, Music2, Youtube, Settings as SettingsIcon } from 'lucide-react'
 import { toast } from 'react-toastify'
+import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
 
 export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false)
-  const [settings, setSettings] = useState({
-    // Site Info
-    siteName: 'Cikal Pet Care Polman',
-    siteDescription: 'Layanan perawatan hewan kesayangan terpercaya di Polewali Mandar',
-    
-    // Contact Info
-    whatsapp: '+62 812-3456-7890',
-    email: 'info@cikalpetcare.com',
-    address: 'Jl. Jend. Sudirman No. 123, Polewali, Sulawesi Barat',
-    
-    // Social Media
-    instagram: '@cikalpetcare',
-    facebook: 'cikalpetcare',
-    
-    // Business Hours
-    openDays: 'Senin - Sabtu',
-    openHours: '09:00 - 17:00 WIB',
-    
-    // Payment Info
-    bankName: 'Bank BRI',
-    bankAccount: '1234567890',
-    bankAccountName: 'Cikal Pet Care',
-    qrisImageUrl: '',
-  })
+  const [loading, setLoading] = useState(true)
+  const [settings, setSettings] = useState<SiteSettings>({ ...defaultSiteSettings })
 
-  const handleChange = (field: string, value: string) => {
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const response = await fetch('/api/settings')
+        const data = await response.json()
+        if (data.success) setSettings(data.data)
+        else toast.error(data.error || 'Gagal memuat pengaturan')
+      } catch {
+        toast.error('Gagal memuat pengaturan')
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadSettings()
+  }, [])
+
+  const handleChange = (field: keyof SiteSettings, value: string) => {
     setSettings({ ...settings, [field]: value })
   }
 
@@ -39,11 +34,24 @@ export default function AdminSettingsPage() {
     e.preventDefault()
     setSaving(true)
     
-    // Simulate saving (in real app, would call API to save to database)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    toast.success('Pengaturan berhasil disimpan!')
-    setSaving(false)
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings),
+      })
+      const data = await response.json()
+      if (!response.ok || !data.success) throw new Error(data.error || 'Gagal menyimpan pengaturan')
+      toast.success(data.message)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Gagal menyimpan pengaturan')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="py-20 text-center text-gray-600">Memuat pengaturan...</div>
   }
 
   return (
@@ -168,7 +176,7 @@ export default function AdminSettingsPage() {
                 value={settings.instagram}
                 onChange={(e) => handleChange('instagram', e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
-                placeholder="@cikalpetcare"
+                placeholder="https://instagram.com/cikalpetcare"
               />
             </div>
             <div>
@@ -181,7 +189,33 @@ export default function AdminSettingsPage() {
                 value={settings.facebook}
                 onChange={(e) => handleChange('facebook', e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="cikalpetcare"
+                placeholder="https://facebook.com/cikalpetcare"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                <Music2 className="inline mr-2 w-5 h-5 text-gray-800" />
+                TikTok
+              </label>
+              <input
+                type="url"
+                value={settings.tiktok}
+                onChange={(e) => handleChange('tiktok', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                placeholder="https://tiktok.com/@cikalpetcare"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                <Youtube className="inline mr-2 w-5 h-5 text-red-600" />
+                YouTube
+              </label>
+              <input
+                type="url"
+                value={settings.youtube}
+                onChange={(e) => handleChange('youtube', e.target.value)}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                placeholder="https://youtube.com/@cikalpetcare"
               />
             </div>
           </div>

@@ -36,7 +36,15 @@ export default function NewProductPage() {
     setLoading(true);
 
     try {
-      const response = await productService.createProduct(formData);
+      const slug = formData.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      const response = await productService.createProduct({
+        ...formData,
+        slug,
+        variants: variants.map(({ id: _, ...variant }) => variant),
+      });
       
       if (response.success) {
         router.push('/admin/products');
@@ -215,12 +223,20 @@ export default function NewProductPage() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <Input
                       label="Variant Name"
                       value={variant.name}
                       onChange={(e) => updateVariant(index, 'name', e.target.value)}
                       placeholder="e.g., Large, Red"
+                      size={3}
+                    />
+                    <Input
+                      label="Variant SKU"
+                      required
+                      value={variant.sku}
+                      onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                      placeholder="e.g., PRODUCT-LARGE"
                       size={3}
                     />
                     <Input

@@ -3,7 +3,7 @@
 export const blogService = {
   async getPosts(page: number = 1, limit: number = 10) {
     try {
-      const response = await fetch('/api/blog');
+      const response = await fetch(`/api/blog?page=${page}&limit=${limit}`);
       const result = await response.json();
 
       if (!result.success) {
@@ -14,7 +14,7 @@ export const blogService = {
       }
 
       const posts = result.data || [];
-      const total = posts.length;
+      const total = result.pagination?.total ?? posts.length;
 
       return {
         success: true,
@@ -22,7 +22,7 @@ export const blogService = {
           data: posts,
           total,
           page,
-          totalPages: Math.ceil(total / limit),
+          totalPages: result.pagination?.totalPages ?? Math.ceil(total / limit),
         },
       };
     } catch (error) {
@@ -61,7 +61,7 @@ export const blogService = {
 
   async getRecentPosts(limit: number = 5) {
     try {
-      const response = await fetch('/api/blog');
+      const response = await fetch(`/api/blog?limit=${limit}`);
       const result = await response.json();
 
       if (!result.success) {
@@ -71,7 +71,7 @@ export const blogService = {
         };
       }
 
-      const posts = (result.data || []).slice(0, limit).map((post: any) => ({
+      const posts = (result.data || []).map((post: any) => ({
         id: post.id,
         title: post.title,
         slug: post.slug,
@@ -151,6 +151,8 @@ export const blogService = {
     tags?: string;
     author?: string;
     is_published?: boolean;
+    meta_title?: string;
+    meta_description?: string;
   }) {
     try {
       const response = await fetch('/api/blog', {
@@ -181,6 +183,8 @@ export const blogService = {
     category?: string;
     tags?: string;
     is_published?: boolean;
+    meta_title?: string;
+    meta_description?: string;
   }) {
     try {
       const response = await fetch(`/api/blog/${id}`, {

@@ -18,7 +18,7 @@ interface CartState {
   
   // Enhanced Actions
   validateStock: () => Promise<{ valid: boolean; errors: string[] }>;
-  syncWithServer: () => Promise<void>;
+  syncWithServer: () => Promise<{ valid: boolean; errors: string[]; changes: string[] }>;
   
   // Calculations
   getTotal: () => number;
@@ -137,13 +137,26 @@ export const useCartStore = create<CartState>()(
         const items = get().items;
         
         try {
-          await fetch('/api/cart/sync', {
+          const response = await fetch('/api/cart/sync', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items }),
+            body: JSON.stringify({
+              items: items.map(({ id, type, variantId, quantity }) => ({ id, type, variantId, quantity })),
+            }),
           });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            return { valid: false, errors: [result.error || 'Gagal menyinkronkan keranjang'], changes: [] };
+          }
+          set({ items: result.data.items });
+          return {
+            valid: result.data.valid,
+            errors: result.data.errors,
+            changes: result.data.changes,
+          };
         } catch (error) {
           console.error('Cart sync error:', error);
+          return { valid: false, errors: ['Gagal menyinkronkan keranjang'], changes: [] };
         }
       },
 

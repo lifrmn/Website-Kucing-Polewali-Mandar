@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { authorizeAdmin } from '@/lib/authorization';
+import { updateServiceSchema } from '@/lib/validations/service';
 
 // GET single service
 export async function GET(
@@ -7,6 +10,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('services:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
     const service = await prisma.service.findUnique({
       where: { id },
@@ -44,20 +50,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('services:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
-    const body = await request.json();
-    const { name, description, type, duration, price, is_active } = body;
+    const input = updateServiceSchema.parse(await request.json());
 
     const service = await prisma.service.update({
       where: { id },
-      data: {
-        name,
-        description,
-        type,
-        duration: duration ? Number(duration) : null,
-        price: Number(price),
-        is_active,
-      },
+      data: input,
     });
 
     return NextResponse.json({
@@ -67,6 +68,12 @@ export async function PUT(
     });
   } catch (error: unknown) {
     console.error('PUT service error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Data layanan tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -83,14 +90,18 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const authorization = await authorizeAdmin('services:manage');
+    if (!authorization.authorized) return authorization.response;
+
     const { id } = await params;
-    await prisma.service.delete({
+    await prisma.service.update({
       where: { id },
+      data: { is_active: false },
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Layanan berhasil dihapus',
+      message: 'Layanan berhasil dinonaktifkan',
     });
   } catch (error: unknown) {
     console.error('DELETE service error:', error);

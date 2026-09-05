@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
+import { authorizeAdmin } from '@/lib/authorization';
+import { createPackageSchema } from '@/lib/validations/package';
 
 // GET all penitipan packages
 export async function GET(_request: NextRequest) {
@@ -36,40 +39,31 @@ export async function GET(_request: NextRequest) {
 // POST create package (for admin)
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, description, price_per_night, features, max_cats } = body;
+    const authorization = await authorizeAdmin('packages:manage');
+    if (!authorization.authorized) return authorization.response;
 
-    // Validation
-    if (!name || !price_per_night) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Nama dan harga per malam harus diisi',
-        },
-        { status: 400 }
-      );
-    }
+    const input = createPackageSchema.parse(await request.json());
 
     // Convert features array to string if needed
-    const featuresString = Array.isArray(features) 
-      ? features.join(', ') 
-      : features;
+    const featuresString = Array.isArray(input.features)
+      ? input.features.join(', ')
+      : input.features;
 
     // Generate slug from name
-    const slug = name
+    const slug = input.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
 
     const newPackage = await prisma.penitipanPackage.create({
       data: {
-        name,
+        name: input.name,
         slug,
-        description,
-        price_per_night: parseFloat(price_per_night),
+        description: input.description,
+        price_per_night: input.price_per_night,
         features: featuresString,
-        max_cats: parseInt(max_cats) || 1,
-        is_active: true,
+        max_cats: input.max_cats,
+        is_active: input.is_active ?? true,
       },
     });
 
@@ -80,6 +74,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error('POST package error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Data paket tidak valid', errors: error.issues },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,

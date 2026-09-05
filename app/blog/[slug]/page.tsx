@@ -100,6 +100,10 @@ export default function BlogDetailPage() {
                 src={post.featured_image}
                 alt={post.title}
                 className="w-full h-full object-cover"
+                onError={(event) => {
+                  event.currentTarget.onerror = null
+                  event.currentTarget.src = '/placeholder-product.svg'
+                }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
             </div>

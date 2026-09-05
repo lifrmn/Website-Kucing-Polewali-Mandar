@@ -19,6 +19,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     type: '',
     duration: '',
     price: '',
+    max_bookings_per_day: '5',
     is_active: true,
   });
 
@@ -38,6 +39,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         type: service.type || '',
         duration: service.duration?.toString() || '',
         price: service.price.toString(),
+        max_bookings_per_day: service.max_bookings_per_day.toString(),
         is_active: service.is_active,
       });
     } else {
@@ -66,6 +68,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         type: formData.type || undefined,
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         price: parseFloat(formData.price),
+        max_bookings_per_day: parseInt(formData.max_bookings_per_day),
         is_active: formData.is_active,
       });
 
@@ -201,6 +204,21 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     onChange={handleChange}
                     placeholder="60"
                     min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-small font-semibold text-text mb-2">
+                    Daily Booking Limit *
+                  </label>
+                  <Input
+                    type="number"
+                    name="max_bookings_per_day"
+                    value={formData.max_bookings_per_day}
+                    onChange={handleChange}
+                    min="1"
+                    max="100"
+                    required
                   />
                 </div>
 

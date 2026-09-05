@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.AUTH_URL || 'http://localhost:3000'),
   title: 'Cikal Pet Care Polman | Sistem Informasi Manajemen Layanan Perawatan Kucing',
   description: 'Sistem Informasi Manajemen Layanan Perawatan Kucing Berbasis Web — Cikal Pet Care Polewali Mandar. Menyediakan layanan grooming, konsultasi kesehatan, penitipan kucing, pemesanan produk, dan laporan manajemen lengkap.',
   keywords: 'sistem informasi pet care, manajemen layanan kucing, pet care polman, klinik kucing polman, grooming kucing, penitipan kucing, dokter hewan polman, polewali mandar, skripsi pet care',

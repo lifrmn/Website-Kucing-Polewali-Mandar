@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, Badge, Button } from '@/components/ui';
-import { Calendar, Search, CheckCircle, XCircle, PawPrint } from 'lucide-react';
+import { Calendar, Clock, Search, CheckCircle, XCircle, PawPrint } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import AppIcon from '@/components/AppIcon';
 
@@ -31,17 +31,29 @@ interface Booking {
   created_at: string;
 }
 
+interface ServiceBooking {
+  id: string;
+  booking_date: string;
+  booking_time: string;
+  pet_name: string;
+  status: string;
+  customer: { name: string; phone: string };
+  service: { name: string; price: number; duration?: number };
+}
+
 const statusVariants: Record<string, 'primary' | 'accent' | 'success' | 'danger'> = {
   PENDING: 'accent',
   CONFIRMED: 'primary',
   CHECKED_IN: 'success',
   CHECKED_OUT: 'success',
+  COMPLETED: 'success',
   CANCELED: 'danger',
 };
 
 export default function AdminBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [serviceBookings, setServiceBookings] = useState<ServiceBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -70,17 +82,36 @@ export default function AdminBookingsPage() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch('/api/bookings');
-      const data = await res.json();
-      if (data.success) {
-        setBookings(data.data);
-        setFilteredBookings(data.data);
+      const [boardingResponse, serviceResponse] = await Promise.all([
+        fetch('/api/bookings'),
+        fetch('/api/service-bookings'),
+      ]);
+      const [boardingData, serviceData] = await Promise.all([
+        boardingResponse.json(),
+        serviceResponse.json(),
+      ]);
+      if (boardingData.success) {
+        setBookings(boardingData.data);
+        setFilteredBookings(boardingData.data);
       }
+      if (serviceData.success) setServiceBookings(serviceData.data);
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleServiceStatus = async (id: string, status: string) => {
+    if (!confirm(`Update booking layanan menjadi "${status}"?`)) return;
+    const response = await fetch(`/api/service-bookings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const data = await response.json();
+    if (data.success) fetchBookings();
+    else alert(data.error || 'Gagal memperbarui booking layanan');
   };
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
@@ -121,8 +152,51 @@ export default function AdminBookingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-h1 font-bold text-text">Bookings</h1>
-          <p className="text-body text-muted">{bookings.length} total bookings</p>
+          <p className="text-body text-muted">{bookings.length} penitipan · {serviceBookings.length} jadwal layanan</p>
         </div>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-h2 font-bold text-text">Jadwal Layanan</h2>
+          <p className="text-small text-muted">Appointment grooming, konsultasi, dan layanan lainnya</p>
+        </div>
+        {serviceBookings.length === 0 ? (
+          <Card><Card.Content className="p-8 text-center text-muted">Belum ada jadwal layanan.</Card.Content></Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {serviceBookings.map((booking) => (
+              <Card key={booking.id}>
+                <Card.Content className="p-5 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-text">{booking.service.name}</p>
+                      <p className="text-small text-muted">{booking.customer.name} · {booking.customer.phone}</p>
+                    </div>
+                    <Badge variant={statusVariants[booking.status] || 'accent'}>{booking.status}</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-4 text-small text-text">
+                    <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-primary" />{formatDate(new Date(booking.booking_date))}</span>
+                    <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-primary" />{booking.booking_time} WITA</span>
+                    <span className="flex items-center gap-1.5"><PawPrint className="w-4 h-4 text-primary" />{booking.pet_name}</span>
+                  </div>
+                  {booking.status === 'PENDING' && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleServiceStatus(booking.id, 'CONFIRMED')} className="flex-1">Konfirmasi</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleServiceStatus(booking.id, 'CANCELED')} className="flex-1">Batalkan</Button>
+                    </div>
+                  )}
+                  {booking.status === 'CONFIRMED' && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => handleServiceStatus(booking.id, 'COMPLETED')} className="flex-1">Selesaikan</Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleServiceStatus(booking.id, 'CANCELED')} className="flex-1">Batalkan</Button>
+                    </div>
+                  )}
+                </Card.Content>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -152,7 +226,7 @@ export default function AdminBookingsPage() {
               >
                 All
               </button>
-              {['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELED'].map((status) => (
+              {['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'COMPLETED', 'CANCELED'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
@@ -285,6 +359,18 @@ export default function AdminBookingsPage() {
                   >
                     <AppIcon icon={CheckCircle} size="sm" className="mr-2" />
                     <span className="leading-none">Check Out</span>
+                  </Button>
+                )}
+
+                {booking.status === 'CHECKED_OUT' && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => handleUpdateStatus(booking.id, 'COMPLETED')}
+                    className="w-full"
+                  >
+                    <AppIcon icon={CheckCircle} size="sm" className="mr-2" />
+                    <span className="leading-none">Complete</span>
                   </Button>
                 )}
               </Card.Content>

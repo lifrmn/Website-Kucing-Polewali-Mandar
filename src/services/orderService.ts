@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { ApiResponse } from '@/types';
+import { OrderStatus, PaymentStatus } from '@/types/enums';
 
 interface CreateOrderData {
   customer_name: string;
@@ -11,20 +12,86 @@ interface CreateOrderData {
   items: Array<{
     item_type: 'product' | 'service';
     item_id: string;
-    item_name: string;
+    variant_id?: string;
     quantity: number;
-    unit_price: number;
   }>;
   payment_method?: 'qris' | 'transfer' | 'cod';
   notes?: string;
 }
 
+export interface CustomerOrderSummary {
+  id: string;
+  order_number: string;
+  subtotal: number;
+  shipping_cost: number;
+  total_amount: number;
+  payment_method: string;
+  payment_status: string;
+  status: string;
+  payment_proof_url?: string | null;
+  tracking_number?: string | null;
+  shipped_at?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+  orderItems: Array<{
+    id: string;
+    name: string;
+    sku?: string | null;
+    quantity: number;
+    price: number;
+    subtotal: number;
+  }>;
+}
+
 export const orderService = {
-  async createOrder(orderData: CreateOrderData): Promise<ApiResponse<any>> {
+  async lookupCustomerOrder(
+    orderNumber: string,
+    customerPhone: string
+  ): Promise<ApiResponse<CustomerOrderSummary>> {
     try {
-      const response = await fetch('/api/orders', {
+      const response = await fetch('/api/orders/customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order_number: orderNumber, customer_phone: customerPhone }),
+      });
+      const result = await response.json();
+      if (!result.success) return { success: false, error: result.error };
+      return { success: true, data: result.data };
+    } catch (error) {
+      console.error('Error looking up customer order:', error);
+      return { success: false, error: 'Gagal memeriksa pesanan' };
+    }
+  },
+
+  async uploadCustomerPaymentProof(
+    orderNumber: string,
+    customerPhone: string,
+    file: File
+  ): Promise<ApiResponse<CustomerOrderSummary>> {
+    try {
+      const formData = new FormData();
+      formData.append('order_number', orderNumber);
+      formData.append('customer_phone', customerPhone);
+      formData.append('file', file);
+      const response = await fetch('/api/orders/customer', { method: 'PUT', body: formData });
+      const result = await response.json();
+      if (!result.success) return { success: false, error: result.error };
+      return { success: true, data: result.data, message: result.message };
+    } catch (error) {
+      console.error('Error uploading customer payment proof:', error);
+      return { success: false, error: 'Gagal mengunggah bukti pembayaran' };
+    }
+  },
+
+  async createOrder(orderData: CreateOrderData): Promise<ApiResponse<any>> {
+    try {
+      const idempotencyKey = crypto.randomUUID();
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': idempotencyKey,
+        },
         body: JSON.stringify(orderData),
       });
 
@@ -206,10 +273,19 @@ export const orderService = {
         payment_method: order.payment_method,
         payment_status: order.payment_status,
         payment_proof_url: order.payment_proof_url,
+        payment_verified_at: order.payment_verified_at,
         order_status: order.status,
+        shipping_address: order.shipping_address,
+        tracking_number: order.tracking_number,
+        admin_notes: order.admin_notes,
         notes: order.notes,
         created_at: order.created_at,
-        items: order.orderItems,
+        items: order.orderItems.map((item: any) => ({
+          id: item.id,
+          product_name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
       };
 
       return {
@@ -227,7 +303,7 @@ export const orderService = {
 
   async updatePaymentStatus(
     orderId: string,
-    paymentStatus: 'pending' | 'paid' | 'failed'
+    paymentStatus: PaymentStatus
   ): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -261,7 +337,7 @@ export const orderService = {
 
   async updateOrderStatus(
     orderId: string,
-    orderStatus: 'pending' | 'confirmed' | 'processing' | 'completed' | 'cancelled'
+    orderStatus: OrderStatus
   ): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`/api/orders/${orderId}`, {
@@ -298,8 +374,6 @@ export const orderService = {
     data: Partial<{
       admin_notes: string;
       tracking_number: string;
-      customer_notes: string;
-      [key: string]: any;
     }>
   ): Promise<ApiResponse<any>> {
     try {

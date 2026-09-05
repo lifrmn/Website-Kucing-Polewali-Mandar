@@ -1,12 +1,15 @@
 import { Metadata } from 'next'
 import { ChevronDown } from 'lucide-react'
+import { toWhatsAppNumber } from '@/lib/whatsapp'
+import { settingsService } from '@/services/settingsService'
 
 export const metadata: Metadata = {
   title: 'FAQ - Pertanyaan yang Sering Diajukan | Cikal Pet Care Polman',
   description: 'Temukan jawaban untuk pertanyaan umum tentang layanan perawatan hewan peliharaan di Cikal Pet Care Polman',
 }
 
-const faqs = [
+function getFaqs(paymentDescription: string) {
+  return [
   {
     category: 'Layanan',
     questions: [
@@ -29,7 +32,7 @@ const faqs = [
     questions: [
       {
         q: 'Metode pembayaran apa saja yang diterima?',
-        a: 'Kami menerima pembayaran tunai, transfer bank (BRI, BNI, Mandiri), dan pembayaran digital melalui QRIS (Gopay, OVO, Dana, ShopeePay, LinkAja).'
+        a: paymentDescription
       },
       {
         q: 'Apakah harus bayar DP dulu?',
@@ -50,9 +53,19 @@ const faqs = [
       },
     ]
   },
-]
+  ]
+}
 
-export default function FAQPage() {
+export default async function FAQPage() {
+  const settings = await settingsService.getSiteSettings()
+  const paymentMethods = [
+    settings.bankAccount && settings.bankName ? `transfer ${settings.bankName}` : '',
+    settings.qrisImageUrl ? 'QRIS' : '',
+  ].filter(Boolean)
+  const paymentDescription = paymentMethods.length > 0
+    ? `Kami menerima pembayaran melalui ${paymentMethods.join(' dan ')}. Detail pembayaran yang berlaku ditampilkan pada halaman Cara Pembayaran.`
+    : 'Metode pembayaran yang tersedia akan diinformasikan pada halaman Cara Pembayaran atau melalui WhatsApp.'
+  const faqs = getFaqs(paymentDescription)
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
       {/* Hero Header */}
@@ -104,7 +117,7 @@ export default function FAQPage() {
           <h3 className="text-2xl font-bold mb-3" style={{ color: '#383838' }}>Masih Ada Pertanyaan?</h3>
           <p className="mb-6" style={{ color: '#707070' }}>Hubungi kami langsung untuk bantuan lebih lanjut</p>
           <a
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`}
+            href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-block px-8 py-3 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity"

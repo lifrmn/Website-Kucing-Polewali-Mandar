@@ -1,11 +1,13 @@
 import { Metadata } from 'next'
+import { settingsService } from '@/services/settingsService'
 
 export const metadata: Metadata = {
   title: 'Kebijakan Privasi | Cikal Pet Care Polman',
   description: 'Kebijakan privasi dan perlindungan data pribadi pelanggan Cikal Pet Care Polman',
 }
 
-export default function PrivacyPolicyPage() {
+export default async function PrivacyPolicyPage() {
+  const settings = await settingsService.getSiteSettings()
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
       {/* Hero Header */}
@@ -77,7 +79,8 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>5. Kontak Kami</h2>
             <p className="leading-relaxed" style={{ color: '#707070' }}>
-              Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami di: <strong style={{ color: '#E6D18B' }}>info@cikalpetcare.com</strong>
+              Jika Anda memiliki pertanyaan tentang kebijakan privasi ini, silakan hubungi kami di:{' '}
+              <a href={`mailto:${settings.email}`} style={{ color: '#E6D18B', fontWeight: 700 }}>{settings.email}</a>
             </p>
           </section>
 
