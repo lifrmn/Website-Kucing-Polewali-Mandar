@@ -8,15 +8,17 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "node scripts/start-production.js",
+    "dev": "dotenvx run -- next dev",
+    "build": "dotenvx run -- prisma generate && dotenvx run -- next build",
+    "start": "dotenvx run -- node scripts/start-production.js",
     "lint": "eslint app src --ext .ts,.tsx",
     "type-check": "tsc --noEmit",
     "test": "tsx --test tests/**/*.test.ts",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate deploy",
-    "db:backup": "node scripts/backup-database.js"
+    "db:seed": "dotenvx run -- tsx prisma/seed.ts",
+    "db:migrate": "dotenvx run -- prisma migrate deploy",
+    "db:backup": "dotenvx run -- node scripts/backup-database.js",
+    "env:encrypt": "dotenvx encrypt -f .env",
+    "env:decrypt": "dotenvx decrypt -f .env"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -45,6 +47,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^2.23.0",
     "@hookform/resolvers": "^5.2.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/react": "^18.2.55",

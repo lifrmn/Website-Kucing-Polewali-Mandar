@@ -248,7 +248,17 @@ cikal-pet-care/
 
 ## 🔐 Environment Variables
 
-File `.env` lengkap:
+Salin `.env.example` menjadi `.env`, isi nilainya, lalu enkripsi file tersebut:
+
+```bash
+npm run env:encrypt
+```
+
+Perintah ini mengubah nilai di `.env` menjadi ciphertext dan membuat `.env.keys`. File kunci tersebut sudah diabaikan Git dan tidak boleh dibagikan. Semua script aplikasi yang membutuhkan environment otomatis mendekripsi nilai hanya di memori melalui `dotenvx`.
+
+Untuk deployment, simpan nilai `DOTENV_PRIVATE_KEY` dari `.env.keys` di secret manager/platform deployment. Jangan menaruh private key di repository. Untuk mengedit konfigurasi lokal, jalankan `npm run env:decrypt`, ubah nilainya, lalu segera jalankan kembali `npm run env:encrypt`.
+
+Isi awal `.env`:
 
 ```env
 # Database
