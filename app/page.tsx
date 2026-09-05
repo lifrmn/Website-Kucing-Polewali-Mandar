@@ -17,10 +17,10 @@ export default function HomePage() {
     <div style={{ backgroundColor: PALETTE.bg, fontFamily: "'Poppins', 'Inter', sans-serif" }}>
 
       {/* ====================================================
-          HERO SECTION — 100vh, split layout, wave bottom
+          HERO SECTION
           ==================================================== */}
       <section
-        className="relative min-h-[760px] overflow-hidden md:min-h-screen"
+        className="relative flex min-h-screen flex-col overflow-hidden"
         style={{ backgroundColor: PALETTE.hero }}
       >
         {/* Right: cat photo */}
@@ -38,10 +38,8 @@ export default function HomePage() {
         </div>
 
         {/* Hero text — left side */}
-        <div
-          className="relative z-10 mx-auto flex min-h-[610px] max-w-6xl items-center px-6 sm:px-8 md:min-h-screen lg:px-12"
-        >
-          <div className="max-w-xl pb-12 pt-24 md:pb-28">
+        <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center px-6 pb-8 pt-28 sm:px-8 md:pb-12 md:pt-32 lg:px-12">
+          <div className="max-w-xl">
             <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: PALETTE.primary }}>
               Cikal Pet Care — Polewali Mandar
             </p>
@@ -55,7 +53,11 @@ export default function HomePage() {
               Grooming, penitipan, dan kebutuhan kucing dalam satu tempat yang aman, bersih, dan ditangani dengan penuh perhatian.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/booking" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary px-7 font-semibold text-[#2A2A1A] hover:bg-primary-hover">
+              <Link
+                href="/booking"
+                data-testid="hero-booking-cta"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary px-7 font-semibold text-[#2A2A1A] hover:bg-primary-hover"
+              >
                 Booking Sekarang <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/layanan" className="inline-flex min-h-12 items-center justify-center rounded-button border border-white/40 bg-white/10 px-7 font-semibold text-white hover:bg-white/15">
@@ -65,9 +67,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Feature cards — floating above wave */}
-        <div className="relative z-20 px-6 pb-10 sm:px-8 md:absolute md:bottom-8 md:left-0 md:right-0 md:pb-0">
-          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Feature cards stay in normal flow so they cannot cover the CTA. */}
+        <div className="relative z-20 w-full px-6 pb-6 sm:px-8 md:pb-8 lg:px-12">
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               { icon: Scissors, bold: 'Grooming', text: 'profesional', link: '/layanan' },
               { icon: Bed,      bold: 'Penitipan', text: 'aman & nyaman', link: '/booking' },
@@ -76,13 +78,14 @@ export default function HomePage() {
               <Link
                 key={i}
                 href={card.link}
-                className="group bg-white rounded-card p-5 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1"
+                data-testid={i === 0 ? 'feature-grooming-card' : undefined}
+                className="group flex h-[140px] cursor-pointer flex-col items-center justify-center rounded-card bg-white p-5 text-center transition-all duration-300 hover:-translate-y-1 focus-visible:-translate-y-1"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
               >
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/35">
-                  <card.icon size={26} className="text-secondary" />
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/35">
+                  <card.icon size={24} strokeWidth={2} className="text-secondary" aria-hidden="true" />
                 </div>
-                <p className="font-semibold text-[#383838] text-sm">
+                <p className="text-sm font-semibold text-[#383838] md:text-[15px]">
                   <span className="font-bold">{card.bold}</span> {card.text}
                 </p>
               </Link>
@@ -90,18 +93,12 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Wave bottom */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden leading-none" style={{ height: 0 }}>
-          <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '80px', marginBottom: '-2px' }}>
-            <path d="M0,60 C240,100 480,20 720,60 C960,100 1200,20 1440,60 L1440,120 L0,120 Z" fill={PALETTE.bg} />
-          </svg>
-        </div>
       </section>
 
       {/* ====================================================
           LAYANAN / GRID SECTION
           ==================================================== */}
-      <section className="py-20 md:py-28" style={{ backgroundColor: PALETTE.bg }}>
+      <section className="pb-20 pt-8 md:pb-28 md:pt-16" style={{ backgroundColor: PALETTE.bg }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8">
           <div className="text-center mb-14">
             <h2
