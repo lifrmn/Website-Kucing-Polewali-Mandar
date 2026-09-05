@@ -44,7 +44,11 @@ test('site settings return complete defaults when DATABASE_URL is missing', () =
     const settings = await settingsServiceModule.settingsService.getSiteSettings();
     process.stdout.write('SETTINGS_RESULT=' + JSON.stringify(settings));
   `;
-  const environment = { ...process.env, DATABASE_URL: '', NODE_ENV: 'production' };
+  const environment: NodeJS.ProcessEnv = {
+    ...process.env,
+    DATABASE_URL: '',
+    NODE_ENV: 'production',
+  };
 
   const output = execFileSync(process.execPath, ['--import', 'tsx', '--eval', script], {
     env: environment,
