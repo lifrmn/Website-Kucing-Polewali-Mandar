@@ -130,7 +130,7 @@ export default function AdminBookingsPage() {
       } else {
         alert(data.error || 'Failed to update status');
       }
-    } catch (error) {
+    } catch {
       alert('An error occurred');
     }
   };

@@ -74,7 +74,7 @@ export default function NewBlogPostPage() {
       } else {
         setError(response.error || 'Failed to create post');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred');
     } finally {
       setLoading(false);

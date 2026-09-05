@@ -50,7 +50,7 @@ export default function NewServicePage() {
       } else {
         setError(response.error || 'Failed to create service');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred');
     } finally {
       setLoading(false);

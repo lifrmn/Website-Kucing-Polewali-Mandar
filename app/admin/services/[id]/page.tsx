@@ -44,7 +44,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       } else {
         setError('Service not found');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load service');
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       } else {
         setError(response.error || 'Failed to update service');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred');
     } finally {
       setSaving(false);

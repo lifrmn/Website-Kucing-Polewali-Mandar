@@ -146,6 +146,13 @@ test('overlapping stays share nightly capacity and a full night rolls back all c
 
 test('cancellation releases capacity once and terminal state cannot be reopened', async () => {
   const pkg = await createPackage();
+  const actor = await prisma.user.create({
+    data: {
+      email: `booking-audit-${randomUUID()}@example.com`,
+      name: 'Booking Audit Admin',
+      password: 'test-only',
+    },
+  });
   const created = await createBoardingBooking(
     prisma,
     bookingInput(pkg.id, '081234567894'),
@@ -159,7 +166,12 @@ test('cancellation releases capacity once and terminal state cannot be reopened'
     where: { date: stayDateFilter },
     orderBy: { date: 'asc' },
   });
-  await updateBoardingBooking(prisma, created.booking.id, { status: BookingStatus.CANCELED });
+  await updateBoardingBooking(
+    prisma,
+    created.booking.id,
+    { status: BookingStatus.CANCELED },
+    { userId: actor.id, ipAddress: '127.0.0.1' }
+  );
   const afterCancel = await prisma.bookingCapacity.findMany({
     where: { date: stayDateFilter },
     orderBy: { date: 'asc' },
@@ -168,6 +180,13 @@ test('cancellation releases capacity once and terminal state cannot be reopened'
     afterCancel.map((entry) => entry.current_bookings),
     beforeCancel.map((entry) => entry.current_bookings - 1)
   );
+  const audit = await prisma.activityLog.findFirstOrThrow({
+    where: { booking_id: created.booking.id, user_id: actor.id },
+  });
+  assert.equal(audit.action, 'UPDATE');
+  assert.equal(audit.ip_address, '127.0.0.1');
+  assert.match(audit.metadata || '', /"nextStatus":"CANCELED"/);
+  assert.doesNotMatch(audit.metadata || '', /Milo|081234567894/);
 
   await updateBoardingBooking(prisma, created.booking.id, { status: BookingStatus.CANCELED });
   assert.deepEqual(
@@ -206,6 +225,13 @@ test('inactive package and invalid dates are rejected before persistence', async
 });
 
 test('service booking enforces the database daily limit and reuses customers', async () => {
+  const actor = await prisma.user.create({
+    data: {
+      email: `service-booking-audit-${randomUUID()}@example.com`,
+      name: 'Service Booking Audit Admin',
+      password: 'test-only',
+    },
+  });
   const service = await prisma.service.create({
     data: {
       name: `Grooming ${randomUUID()}`,
@@ -257,8 +283,22 @@ test('service booking enforces the database daily limit and reuses customers', a
     booking_time: '11:00',
   }, randomUUID());
   assert.equal(replacement.booking.status, BookingStatus.PENDING);
-  await updateServiceBooking(prisma, replacement.booking.id, { status: BookingStatus.CONFIRMED });
+  await updateServiceBooking(
+    prisma,
+    replacement.booking.id,
+    { status: BookingStatus.CONFIRMED },
+    { userId: actor.id, ipAddress: '127.0.0.1' }
+  );
   await updateServiceBooking(prisma, replacement.booking.id, { status: BookingStatus.COMPLETED });
+  const audit = await prisma.activityLog.findFirstOrThrow({
+    where: {
+      entity_type: 'ServiceBooking',
+      entity_id: replacement.booking.id,
+      user_id: actor.id,
+    },
+  });
+  assert.equal(audit.ip_address, '127.0.0.1');
+  assert.match(audit.metadata || '', /"nextStatus":"CONFIRMED"/);
   await assert.rejects(
     updateServiceBooking(prisma, replacement.booking.id, { status: BookingStatus.CANCELED }),
     (error: unknown) => error instanceof ServiceBookingError && error.code === 'INVALID_STATUS_TRANSITION'

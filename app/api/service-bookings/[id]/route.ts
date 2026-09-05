@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { authorizeAdmin } from '@/lib/authorization';
+import { getRequestIp } from '@/lib/audit';
 import prisma from '@/lib/prisma';
 import { serviceBookingUpdateSchema } from '@/lib/validations/booking';
 import {
@@ -19,7 +20,10 @@ export async function PATCH(
 
     const { id } = await params;
     const input = serviceBookingUpdateSchema.parse(await request.json());
-    const booking = await updateServiceBooking(prisma, id, input);
+    const booking = await updateServiceBooking(prisma, id, input, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
+    });
     return NextResponse.json({
       success: true,
       data: booking,

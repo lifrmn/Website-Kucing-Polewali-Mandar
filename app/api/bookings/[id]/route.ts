@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
+import { getRequestIp } from '@/lib/audit';
 import { boardingBookingUpdateSchema } from '@/lib/validations/booking';
 import {
   BoardingBookingError,
@@ -64,7 +65,10 @@ export async function PATCH(
 
     const { id } = await params;
     const input = boardingBookingUpdateSchema.parse(await request.json());
-    const updatedBooking = await updateBoardingBooking(prisma, id, input);
+    const updatedBooking = await updateBoardingBooking(prisma, id, input, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
+    });
 
     return NextResponse.json({
       success: true,
@@ -109,7 +113,10 @@ export async function DELETE(
 
     const { id } = await params;
     
-    await updateBoardingBooking(prisma, id, { status: BookingStatus.CANCELED });
+    await updateBoardingBooking(prisma, id, { status: BookingStatus.CANCELED }, {
+      userId: authorization.session.user.id,
+      ipAddress: getRequestIp(request),
+    });
 
     return NextResponse.json({
       success: true,

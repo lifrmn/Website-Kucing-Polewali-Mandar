@@ -38,7 +38,7 @@ export default function AdminPackagesPage() {
       if (data.success) {
         setPackages(data.data);
       }
-    } catch (error) {
+    } catch {
       toast.error('Gagal memuat paket');
     } finally {
       setLoading(false);
@@ -73,7 +73,7 @@ export default function AdminPackagesPage() {
       } else {
         toast.error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast.error('Gagal menyimpan paket');
     } finally {
       setLoading(false);
@@ -106,7 +106,7 @@ export default function AdminPackagesPage() {
       } else {
         toast.error(data.error);
       }
-    } catch (error) {
+    } catch {
       toast.error('Gagal menghapus paket');
     }
   };

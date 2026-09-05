@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 
+import { createActivityLog, type AuditContext } from '@/lib/audit';
 import type {
   BoardingBookingInput,
   BoardingBookingUpdateInput,
@@ -167,7 +168,8 @@ export async function createBoardingBooking(
 export function updateBoardingBooking(
   database: PrismaClient,
   bookingId: string,
-  input: BoardingBookingUpdateInput
+  input: BoardingBookingUpdateInput,
+  auditContext?: AuditContext
 ) {
   return database.$transaction(async (tx) => {
     const current = await tx.penitipanBooking.findUnique({ where: { id: bookingId } });
@@ -204,10 +206,28 @@ export function updateBoardingBooking(
     if (input.status === BookingStatus.CHECKED_IN) data.checked_in_at = current.checked_in_at ?? now;
     if (input.status === BookingStatus.CHECKED_OUT) data.checked_out_at = current.checked_out_at ?? now;
 
-    return tx.penitipanBooking.update({
+    const updated = await tx.penitipanBooking.update({
       where: { id: bookingId },
       data,
       include: { customer: true, package: true },
     });
+
+    if (auditContext) {
+      await createActivityLog(tx, {
+        ...auditContext,
+        entityType: 'PenitipanBooking',
+        entityId: bookingId,
+        bookingId,
+        action: 'UPDATE',
+        description: 'Booking penitipan diperbarui',
+        metadata: {
+          previousStatus: currentStatus,
+          nextStatus: updated.status,
+          adminNotesChanged: input.admin_notes !== undefined,
+        },
+      });
+    }
+
+    return updated;
   }, { isolationLevel: 'Serializable', timeout: 10_000 });
 }

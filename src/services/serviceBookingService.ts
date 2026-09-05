@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
+import { createActivityLog, type AuditContext } from '@/lib/audit';
 import type {
   ServiceBookingInput,
   ServiceBookingUpdateInput,
@@ -117,22 +118,38 @@ const serviceTransitions: Partial<Record<BookingStatus, BookingStatus[]>> = {
 export async function updateServiceBooking(
   database: PrismaClient,
   bookingId: string,
-  input: ServiceBookingUpdateInput
+  input: ServiceBookingUpdateInput,
+  auditContext?: AuditContext
 ) {
-  const booking = await database.serviceBooking.findUnique({ where: { id: bookingId } });
-  if (!booking) throw new ServiceBookingError('BOOKING_NOT_FOUND');
+  return database.$transaction(async (tx) => {
+    const booking = await tx.serviceBooking.findUnique({ where: { id: bookingId } });
+    if (!booking) throw new ServiceBookingError('BOOKING_NOT_FOUND');
 
-  const currentStatus = booking.status as BookingStatus;
-  if (
-    input.status !== currentStatus &&
-    !serviceTransitions[currentStatus]?.includes(input.status)
-  ) {
-    throw new ServiceBookingError('INVALID_STATUS_TRANSITION');
-  }
+    const currentStatus = booking.status as BookingStatus;
+    if (
+      input.status !== currentStatus &&
+      !serviceTransitions[currentStatus]?.includes(input.status)
+    ) {
+      throw new ServiceBookingError('INVALID_STATUS_TRANSITION');
+    }
 
-  return database.serviceBooking.update({
-    where: { id: bookingId },
-    data: { status: input.status },
-    include: { customer: true, service: true },
-  });
+    const updated = await tx.serviceBooking.update({
+      where: { id: bookingId },
+      data: { status: input.status },
+      include: { customer: true, service: true },
+    });
+
+    if (auditContext) {
+      await createActivityLog(tx, {
+        ...auditContext,
+        entityType: 'ServiceBooking',
+        entityId: bookingId,
+        action: 'UPDATE',
+        description: 'Booking layanan diperbarui',
+        metadata: { previousStatus: currentStatus, nextStatus: updated.status },
+      });
+    }
+
+    return updated;
+  }, { isolationLevel: 'Serializable', timeout: 10_000 });
 }

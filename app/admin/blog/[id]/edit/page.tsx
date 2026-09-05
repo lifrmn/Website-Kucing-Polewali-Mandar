@@ -86,7 +86,7 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
       } else {
         setError(response.error || 'Failed to update post');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred');
     } finally {
       setLoading(false);

@@ -107,7 +107,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       } else {
         alert(data.error || 'Failed to update status');
       }
-    } catch (error) {
+    } catch {
       alert('An error occurred');
     } finally {
       setUpdating(false);
@@ -132,7 +132,7 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
       } else {
         alert(data.error || 'Failed to save notes');
       }
-    } catch (error) {
+    } catch {
       alert('An error occurred');
     } finally {
       setUpdating(false);

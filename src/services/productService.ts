@@ -40,7 +40,7 @@ export const productService = {
       }
       
       return { success: true, data: result.data };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Gagal mengambil detail produk' };
     }
   },
@@ -57,7 +57,7 @@ export const productService = {
       // Limit the results
       const products = (result.data.data || []).slice(0, limit);
       return { success: true, data: products };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Gagal mengambil produk unggulan' };
     }
   },
@@ -81,7 +81,7 @@ export const productService = {
       ).slice(0, 20);
       
       return { success: true, data: filtered };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Gagal mencari produk' };
     }
   },
@@ -96,7 +96,7 @@ export const productService = {
       }
       
       return { success: true, data: result.data.data || [] };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Gagal mengambil produk berdasarkan kategori' };
     }
   },
@@ -111,7 +111,7 @@ export const productService = {
       }
       
       return { success: true, data: result.data.stock };
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Gagal memeriksa stok' };
     }
   },
