@@ -119,7 +119,7 @@ export default function HomePage() {
             {[
               { name: 'Grooming Lengkap',       image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=500&auto=format&fit=crop', link: '/layanan' },
               { name: 'Mandi & Blow',            image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=500&auto=format&fit=crop', link: '/layanan' },
-              { name: 'Penitipan Premium',       image: 'https://images.unsplash.com/photo-1573865526739-10c1dd7db5d8?w=500&auto=format&fit=crop', link: '/booking' },
+              { name: 'Penitipan Premium',       image: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=500&auto=format&fit=crop', link: '/booking' },
               { name: 'Konsultasi Kesehatan',    image: 'https://images.unsplash.com/photo-1570824104453-508955ab713e?w=500&auto=format&fit=crop', link: '/layanan' },
               { name: 'Makanan Premium',         image: 'https://images.unsplash.com/photo-1589883661923-6476cb0ae9f2?w=500&auto=format&fit=crop', link: '/produk' },
               { name: 'Aksesori Kucing',         image: 'https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=500&auto=format&fit=crop', link: '/produk' },

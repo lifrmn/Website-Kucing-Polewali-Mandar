@@ -58,7 +58,10 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
         {/* Right: Notifications + User */}
         <div className="flex items-center gap-2 overflow-visible">
           {/* Notifications */}
-          <button className="relative flex items-center justify-center h-10 w-10 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors overflow-visible">
+          <button
+            className="relative flex items-center justify-center h-10 w-10 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors overflow-visible"
+            aria-label="Notifikasi"
+          >
             <AppIcon icon={Bell} size="md" />
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-surface"></span>
           </button>
