@@ -38,6 +38,23 @@ test('site settings return complete defaults when database keys are absent', asy
   assert.deepEqual(await settingsService.getSiteSettings(), defaultSiteSettings);
 });
 
+test('site settings return complete defaults when DATABASE_URL is missing', () => {
+  const script = `
+    import settingsServiceModule from './src/services/settingsService.ts';
+    const settings = await settingsServiceModule.settingsService.getSiteSettings();
+    process.stdout.write('SETTINGS_RESULT=' + JSON.stringify(settings));
+  `;
+  const environment = { ...process.env, DATABASE_URL: '', NODE_ENV: 'production' };
+
+  const output = execFileSync(process.execPath, ['--import', 'tsx', '--eval', script], {
+    env: environment,
+    stdio: 'pipe',
+  }).toString();
+  const resultMarker = 'SETTINGS_RESULT=';
+
+  assert.deepEqual(JSON.parse(output.slice(output.lastIndexOf(resultMarker) + resultMarker.length)), defaultSiteSettings);
+});
+
 test('site settings atomically persist every fixed key and read back unchanged', async () => {
   const actor = await prisma.user.create({
     data: {

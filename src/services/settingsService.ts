@@ -42,17 +42,22 @@ class SettingsService {
   }
 
   async getSiteSettings(): Promise<SiteSettings> {
-    const settings = await prisma.settings.findMany({
-      where: { key: { in: Object.values(siteSettingKeys) } },
-      select: { key: true, value: true },
-    });
-    const valuesByKey = new Map(settings.map((setting) => [setting.key, setting.value]));
-    return Object.fromEntries(
-      Object.entries(siteSettingKeys).map(([field, key]) => [
-        field,
-        valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings],
-      ])
-    ) as SiteSettings;
+    try {
+      const settings = await prisma.settings.findMany({
+        where: { key: { in: Object.values(siteSettingKeys) } },
+        select: { key: true, value: true },
+      });
+      const valuesByKey = new Map(settings.map((setting) => [setting.key, setting.value]));
+      return Object.fromEntries(
+        Object.entries(siteSettingKeys).map(([field, key]) => [
+          field,
+          valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings],
+        ])
+      ) as SiteSettings;
+    } catch (error) {
+      console.error('Failed to fetch site settings:', error);
+      return { ...defaultSiteSettings };
+    }
   }
 
   async updateSiteSettings(input: SiteSettings, audit?: AuditContext): Promise<void> {
