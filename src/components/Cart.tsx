@@ -1,6 +1,6 @@
 'use client'
 
-import { X, ShoppingCart, Trash2 } from 'lucide-react';
+import { CircleAlert, Minus, Package, Plus, ShoppingBag, ShoppingCart, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCartStore } from '@/store/cartStore';
 import type { CartItem } from '@/types';
@@ -33,84 +33,82 @@ export default function Cart() {
 
   return (
     <>
-      {/* Overlay with animation */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-all duration-300 animate-fadeInUp"
+        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]"
         onClick={closeCart}
-      ></div>
+        aria-hidden="true"
+      />
 
-      {/* Cart Sidebar */}
-      <div className="fixed top-0 right-0 h-full w-full max-w-md bg-gradient-to-br from-white via-gray-50 to-primary-50 shadow-2xl z-[60] flex flex-col animate-slideInLeft">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b-2 border-primary-100 bg-white/80 backdrop-blur-sm">
+      <aside className="fixed inset-y-0 right-0 z-[60] flex h-full w-full max-w-md flex-col bg-white shadow-2xl" role="dialog" aria-modal="true" aria-label="Keranjang belanja">
+        <div className="flex items-center justify-between border-b border-border bg-white p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-              <ShoppingCart className="w-6 h-6 text-white" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-button bg-primary">
+              <ShoppingCart className="h-5 w-5 text-secondary" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">Keranjang</h2>
-              <p className="text-xs text-gray-500">{items.length} item</p>
+              <h2 className="text-xl font-semibold text-text">Keranjang</h2>
+              <p className="text-xs text-muted">{items.length} item</p>
             </div>
           </div>
           <button
             onClick={closeCart}
-            className="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-300 hover:rotate-90 hover:scale-110"
+            className="flex h-11 w-11 items-center justify-center rounded-button text-muted transition-colors hover:bg-surface2 hover:text-text"
             aria-label="Tutup keranjang"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto bg-bg p-5 sm:p-6">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center animate-fadeInUp">
-              <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6 animate-float">
-                <ShoppingCart className="w-20 h-20 text-gray-400" />
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-surface2">
+                <ShoppingBag className="h-9 w-9 text-muted" />
               </div>
-              <p className="text-gray-700 text-xl font-bold mb-2">Keranjang Kosong</p>
-              <p className="text-gray-500 text-sm">
-                Yuk tambahkan produk favorit Anda!
-              </p>
+              <p className="mb-2 text-xl font-semibold text-text">Keranjang Anda masih kosong</p>
+              <p className="mb-6 max-w-xs text-sm text-muted">Temukan kebutuhan terbaik untuk kucing Anda di halaman produk.</p>
+              <button onClick={() => { closeCart(); router.push('/produk'); }} className="btn-primary">Lihat Produk</button>
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item: CartItem, index) => (
+              {items.map((item: CartItem) => (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="group bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-primary-200 animate-fadeInUp"
-                  style={{animationDelay: `${index * 50}ms`}}
+                  className="rounded-card border border-border bg-white p-4 shadow-sm"
                 >
                   <div className="flex gap-4">
-                    {/* Product Image */}
                     {item.image_url && (
-                      <div className="relative overflow-hidden rounded-xl">
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-button bg-surface2">
                         <img
                           src={item.image_url}
                           alt={item.name}
-                          className="w-20 h-20 object-cover transform group-hover:scale-110 transition-transform duration-300"
+                          className="h-full w-full object-cover"
                         />
                       </div>
                     )}
+                    {!item.image_url && (
+                      <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-button bg-surface2">
+                        <Package className="h-7 w-7 text-muted" />
+                      </div>
+                    )}
 
-                    {/* Product Details */}
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 mb-1 group-hover:text-primary-600 transition-colors">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="mb-1 line-clamp-2 font-semibold text-text">
                         {item.name}
                       </h3>
-                      <p className="text-primary-600 font-bold text-lg mb-2">
+                      <p className="mb-3 font-semibold text-dark-gold">
                         {formatPrice(item.price)}
                       </p>
 
-                      {/* Quantity Control */}
-                      <div className="flex items-center gap-2">
+                      <div className="inline-flex items-center rounded-button border border-border bg-white">
                         <button
                           onClick={() =>
                             updateQuantity(item.id, item.type, item.quantity - 1, item.variantId)
                           }
-                          className="w-9 h-9 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-300 rounded-lg hover:from-primary-500 hover:to-emerald-600 hover:text-white hover:border-primary-500 transition-all duration-300 font-bold hover:scale-110 active:scale-95"
+                          className="flex h-10 w-10 items-center justify-center rounded-l-button text-text hover:bg-surface2"
+                          aria-label={`Kurangi jumlah ${item.name}`}
                         >
-                          -
+                          <Minus className="h-4 w-4" />
                         </button>
                         <span className="w-12 text-center font-bold text-lg text-gray-800">
                           {item.quantity}
@@ -119,17 +117,17 @@ export default function Cart() {
                           onClick={() =>
                             updateQuantity(item.id, item.type, item.quantity + 1, item.variantId)
                           }
-                          className="w-9 h-9 flex items-center justify-center bg-gradient-to-br from-primary-500 to-emerald-600 text-white border-2 border-primary-500 rounded-lg hover:from-primary-600 hover:to-emerald-700 transition-all duration-300 font-bold hover:scale-110 active:scale-95"
+                          className="flex h-10 w-10 items-center justify-center rounded-r-button text-text hover:bg-surface2 disabled:cursor-not-allowed disabled:opacity-40"
                           disabled={item.stock ? item.quantity >= item.stock : false}
+                          aria-label={`Tambah jumlah ${item.name}`}
                         >
-                          +
+                          <Plus className="h-4 w-4" />
                         </button>
                       </div>
 
-                      {/* Stock Warning */}
                       {item.stock && item.quantity >= item.stock && (
-                        <p className="text-red-500 text-xs mt-1 font-semibold animate-pulse">
-                          ⚠️ Stok maksimal: {item.stock}
+                        <p className="mt-2 flex items-center gap-1 text-xs font-medium text-danger">
+                          <CircleAlert className="h-3.5 w-3.5" /> Stok maksimal: {item.stock}
                         </p>
                       )}
                     </div>
@@ -137,8 +135,9 @@ export default function Cart() {
                     {/* Remove Button */}
                     <button
                       onClick={() => removeItem(item.id, item.type, item.variantId)}
-                      className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-300 hover:scale-110 hover:rotate-12 active:scale-95"
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-button text-danger transition-colors hover:bg-red-50"
                       title="Hapus item"
+                      aria-label={`Hapus ${item.name} dari keranjang`}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -149,38 +148,30 @@ export default function Cart() {
           )}
         </div>
 
-        {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t-2 border-primary-100 p-6 space-y-4 bg-white/80 backdrop-blur-sm">
-            {/* Total */}
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-primary-50 to-emerald-50 rounded-xl">
-              <span className="text-lg font-bold text-gray-700">Total Belanja:</span>
-              <span className="text-3xl font-bold text-gradient-primary">{formatPrice(getTotal())}</span>
+          <div className="space-y-3 border-t border-border bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6">
+            <div className="flex items-center justify-between rounded-button bg-surface2 p-4">
+              <span className="font-medium text-text">Total Belanja</span>
+              <span className="text-xl font-bold text-dark-gold">{formatPrice(getTotal())}</span>
             </div>
 
-            {/* Checkout Button */}
             <button
               onClick={handleCheckout}
-              className="w-full bg-gradient-to-r from-primary-500 via-emerald-600 to-primary-600 hover:from-primary-600 hover:via-emerald-700 hover:to-primary-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 relative overflow-hidden group"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-primary px-5 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover"
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                <span>🛒</span>
-                <span>Lanjut ke Checkout</span>
-              </span>
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <ShoppingCart className="h-5 w-5" />
+              Lanjut ke Checkout
             </button>
 
-            {/* Continue Shopping */}
             <button
               onClick={closeCart}
-              className="w-full border-2 border-primary-300 text-primary-700 py-3 rounded-xl font-bold hover:bg-primary-50 transition-all duration-300 hover:scale-105 active:scale-95"
+              className="min-h-12 w-full rounded-button border border-border px-5 font-semibold text-text transition-colors hover:bg-surface2"
             >
-              🛍️ Lanjut Belanja
+              Lanjut Belanja
             </button>
           </div>
         )}
-      </div>
+      </aside>
     </>
   );
 }

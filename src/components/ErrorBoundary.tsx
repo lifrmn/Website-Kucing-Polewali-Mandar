@@ -1,7 +1,7 @@
 'use client'
 
 import { Component, ReactNode, ErrorInfo } from 'react'
-import { AlertTriangle, RotateCcw } from 'lucide-react'
+import { CircleAlert, Home, RotateCcw } from 'lucide-react'
 
 interface Props {
   children: ReactNode
@@ -34,32 +34,24 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8 text-center animate-fadeInUp">
-            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-orange-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse-custom">
-              <AlertTriangle className="w-12 h-12 text-red-500" />
+        <div className="flex min-h-screen items-center justify-center bg-bg p-4">
+          <div className="w-full max-w-md rounded-card border border-border bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#FEE2E2]">
+              <CircleAlert className="h-10 w-10 text-danger" />
             </div>
             
             <h2 className="text-2xl font-bold text-gray-800 mb-3">
-              Oops! Terjadi Kesalahan
+              Halaman belum dapat dimuat
             </h2>
             
             <p className="text-gray-600 mb-6 leading-relaxed">
               Maaf, terjadi kesalahan saat memuat halaman ini. Silakan coba lagi atau hubungi kami jika masalah berlanjut.
             </p>
             
-            {this.state.error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-left">
-                <p className="text-xs text-red-600 font-mono break-all">
-                  {this.state.error.message}
-                </p>
-              </div>
-            )}
-            
             <div className="flex gap-3 justify-center">
               <button
                 onClick={this.handleReset}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-500 to-emerald-600 hover:from-primary-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all duration-300 hover:scale-105"
+                className="flex min-h-12 items-center gap-2 rounded-button bg-primary px-6 py-3 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
               >
                 <RotateCcw className="w-5 h-5" />
                 <span>Muat Ulang</span>
@@ -67,9 +59,9 @@ export default class ErrorBoundary extends Component<Props, State> {
               
               <a
                 href="/"
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 hover:border-primary-500 hover:text-primary-600 font-bold rounded-xl transition-all duration-300 hover:scale-105"
+                className="flex min-h-12 items-center gap-2 rounded-button border border-border px-6 py-3 font-semibold text-text transition-colors hover:bg-surface2"
               >
-                Ke Beranda
+                <Home className="h-5 w-5" /> Ke Beranda
               </a>
             </div>
           </div>

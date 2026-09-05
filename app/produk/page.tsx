@@ -133,15 +133,20 @@ export default function ProductsPage() {
                 placeholder="Cari produk..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 md:pl-10 pr-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors text-sm md:text-base"
+                className="w-full min-h-12 pl-10 pr-10 py-2.5 border border-border rounded-button bg-white focus:ring-2 focus:ring-primary focus:border-primary-hover transition-colors text-sm md:text-base"
               />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery('')} className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-muted hover:bg-surface2 hover:text-text" aria-label="Hapus pencarian">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3 w-full sm:w-auto">
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 title={categoryFilter === 'all' ? 'Semua Kategori' : categories.find(c => c === categoryFilter) || ''}
-                className="flex-1 sm:flex-initial sm:min-w-[240px] px-3 md:px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 bg-white text-sm md:text-base truncate"
+                className="flex-1 sm:flex-initial sm:min-w-[200px] min-h-12 px-4 py-2.5 border border-border rounded-button focus:ring-2 focus:ring-primary bg-white text-sm md:text-base truncate"
               >
                 <option value="all">Semua Kategori</option>
                 {categories.filter(c => c !== 'all').map(category => (
@@ -152,7 +157,7 @@ export default function ProductsPage() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 title={sortBy === 'name' ? 'Nama (A-Z)' : sortBy === 'price-asc' ? 'Harga: Terendah' : 'Harga: Tertinggi'}
-                className="flex-1 sm:flex-initial sm:min-w-[220px] px-3 md:px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 bg-white text-sm md:text-base truncate"
+                className="flex-1 sm:flex-initial sm:min-w-[200px] min-h-12 px-4 py-2.5 border border-border rounded-button focus:ring-2 focus:ring-primary bg-white text-sm md:text-base truncate"
               >
                 <option value="name">Nama (A-Z)</option>
                 <option value="price-asc">Harga: Terendah</option>
@@ -175,7 +180,7 @@ export default function ProductsPage() {
                 <AppIcon icon={Package} size="2xl" className="text-slate-400" />
               </div>
               <p className="text-xl font-semibold text-slate-800 mb-2">Belum ada produk tersedia</p>
-              <p className="text-slate-500">Pastikan database sudah disetup dengan benar</p>
+              <p className="mx-auto max-w-md text-muted">Produk belum tersedia saat ini. Silakan cek kembali atau hubungi kami melalui WhatsApp.</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-20">
@@ -186,7 +191,7 @@ export default function ProductsPage() {
               <p className="text-slate-500 mb-6">Coba ubah kata kunci atau filter</p>
               <button
                 onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setSortBy('name'); }}
-                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors"
+                className="min-h-11 rounded-button bg-primary px-6 py-2.5 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
               >
                 Reset Filter
               </button>
@@ -203,10 +208,7 @@ export default function ProductsPage() {
                 return (
                 <div
                   key={product.id}
-                  className="group bg-white transition-all duration-300 hover:-translate-y-2"
-                  style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
+                  className="group overflow-hidden rounded-card border border-border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card"
                 >
                   {/* Image */}
                   <Link href={`/produk/${product.slug}`} className="relative block h-44 md:h-48 overflow-hidden bg-slate-100">
@@ -222,7 +224,7 @@ export default function ProductsPage() {
                     {/* Stock Badge */}
                     <div className="absolute top-3 right-3">
                       {displayStock > 0 ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-semibold rounded-full" style={{ backgroundColor: '#4ade80' }}>
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#DCFCE7] px-3 py-1.5 text-xs font-semibold text-[#166534]">
                           <AppIcon icon={Check} size="xs" />
                           <span className="leading-none">Tersedia</span>
                         </span>
@@ -238,7 +240,7 @@ export default function ProductsPage() {
                   {/* Content */}
                   <div className="p-4 md:p-5">
                     <Link href={`/produk/${product.slug}`} className="block mb-2 md:mb-3">
-                      <h3 className="font-bold text-sm md:text-base line-clamp-2 min-h-[2.5rem] hover:text-emerald-700 transition-colors" style={{ color: '#383838' }}>
+                      <h3 className="font-semibold text-sm md:text-base line-clamp-2 min-h-[2.5rem] text-text hover:text-dark-gold transition-colors">
                         {product.name}
                       </h3>
                     </Link>
@@ -251,7 +253,7 @@ export default function ProductsPage() {
                           [product.id]: event.target.value,
                         }))}
                         aria-label={`Pilih varian ${product.name}`}
-                        className="w-full mb-3 px-3 py-2 border border-slate-200 rounded-lg bg-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full mb-3 min-h-11 px-3 py-2 border border-border rounded-button bg-white text-sm focus:ring-2 focus:ring-primary focus:border-primary-hover"
                       >
                         {product.variants.map((variant) => (
                           <option key={variant.id} value={variant.id} disabled={variant.stock <= 0}>
@@ -262,7 +264,7 @@ export default function ProductsPage() {
                     )}
 
                     <div className="flex items-center justify-between mb-3 md:mb-4">
-                      <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
+                      <span className="text-lg md:text-xl font-bold text-dark-gold">
                         {formatCurrency(displayPrice)}
                       </span>
                       <span className="text-xs md:text-sm" style={{ color: '#707070' }}>

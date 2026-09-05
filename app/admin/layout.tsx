@@ -14,7 +14,7 @@ export default function AdminLayout({
 
   return (
     <SessionProvider>
-      <div className="flex min-h-screen bg-slate-50">
+      <div className="flex min-h-screen bg-bg">
         {/* Sidebar */}
         <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
@@ -24,7 +24,7 @@ export default function AdminLayout({
           <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
           
           {/* Page Content */}
-          <div className="p-6 max-w-[1400px] overflow-visible">
+          <div className="mx-auto max-w-[1400px] overflow-visible p-4 sm:p-6">
             {children}
           </div>
         </main>

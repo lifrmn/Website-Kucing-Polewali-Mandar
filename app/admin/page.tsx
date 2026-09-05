@@ -135,8 +135,8 @@ export default function AdminDashboard() {
         {/* Products */}
         <div className="bg-surface rounded-lg border border-border p-5 hover:shadow-md transition-shadow">
           <div className="flex items-start justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
-              <Package className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 rounded-lg bg-surface2 flex items-center justify-center">
+              <Package className="w-5 h-5 text-secondary" />
             </div>
           </div>
           <p className="text-xs text-muted mb-1">Produk Aktif</p>

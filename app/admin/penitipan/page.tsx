@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { Check, LoaderCircle, Pencil, Plus, Trash2 } from 'lucide-react';
 
 interface Package {
   id: string;
@@ -132,7 +133,7 @@ export default function AdminPackagesPage() {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <LoaderCircle className="mx-auto h-10 w-10 animate-spin text-primary-dark" />
           <p className="mt-4 text-gray-600">Memuat data...</p>
         </div>
       </div>
@@ -140,14 +141,15 @@ export default function AdminPackagesPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="py-2">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-bold">Kelola Paket Penitipan</h1>
         <button
           onClick={openCreateModal}
-          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+          className="inline-flex min-h-11 items-center gap-2 rounded-button bg-primary px-5 py-2 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
         >
-          + Tambah Paket
+          <Plus className="h-4 w-4" />
+          Tambah Paket
         </button>
       </div>
 
@@ -155,7 +157,7 @@ export default function AdminPackagesPage() {
         {packages.map((pkg) => (
           <div
             key={pkg.id}
-            className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
+            className="rounded-card border border-border bg-white p-6 shadow-sm"
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-bold">{pkg.name}</h3>
@@ -173,7 +175,7 @@ export default function AdminPackagesPage() {
             <p className="text-gray-600 mb-4">{pkg.description}</p>
 
             <div className="mb-4">
-              <p className="text-2xl font-bold text-indigo-600">
+              <p className="text-2xl font-bold text-secondary">
                 Rp {pkg.price_per_night.toLocaleString('id-ID')}
                 <span className="text-sm text-gray-500">/malam</span>
               </p>
@@ -187,7 +189,10 @@ export default function AdminPackagesPage() {
                   ? pkg.features
                   : pkg.features.split(',').map((f) => f.trim())
                 ).map((feature, idx) => (
-                  <li key={idx}>✓ {feature}</li>
+                  <li key={idx} className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary-dark" />
+                    <span>{feature}</span>
+                  </li>
                 ))}
               </ul>
             </div>
@@ -195,14 +200,16 @@ export default function AdminPackagesPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleEdit(pkg)}
-                className="flex-1 bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-button border border-border bg-white py-2 font-medium text-text hover:bg-surface2"
               >
+                <Pencil className="h-4 w-4" />
                 Edit
               </button>
               <button
                 onClick={() => handleDelete(pkg.id)}
-                className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-button bg-danger py-2 font-medium text-white hover:bg-danger/90"
               >
+                <Trash2 className="h-4 w-4" />
                 Hapus
               </button>
             </div>
@@ -212,7 +219,7 @@ export default function AdminPackagesPage() {
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-card border border-border bg-white p-6 shadow-xl">
             <h2 className="text-2xl font-bold mb-4">
               {editingPackage ? 'Edit Paket' : 'Tambah Paket Baru'}
             </h2>
@@ -224,7 +231,7 @@ export default function AdminPackagesPage() {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="input-premium"
                   required
                 />
               </div>
@@ -236,7 +243,7 @@ export default function AdminPackagesPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="input-premium"
                   rows={3}
                 />
               </div>
@@ -251,7 +258,7 @@ export default function AdminPackagesPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, price_per_night: e.target.value })
                   }
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="input-premium"
                   required
                 />
               </div>
@@ -263,7 +270,7 @@ export default function AdminPackagesPage() {
                 <textarea
                   value={formData.features}
                   onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="input-premium"
                   rows={3}
                   placeholder="Makanan premium, Kandang pribadi, Grooming dasar"
                 />
@@ -277,7 +284,7 @@ export default function AdminPackagesPage() {
                   type="number"
                   value={formData.max_cats}
                   onChange={(e) => setFormData({ ...formData, max_cats: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                  className="input-premium"
                   min="1"
                   required
                 />
@@ -311,7 +318,7 @@ export default function AdminPackagesPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-300"
+                  className="flex-1 rounded-button bg-primary py-2 font-semibold text-[#2A2A1A] hover:bg-primary-hover disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   {loading ? 'Menyimpan...' : 'Simpan'}
                 </button>

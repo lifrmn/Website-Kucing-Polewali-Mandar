@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingBag, Bed, Scissors } from 'lucide-react'
+import { ArrowRight, Bed, Clock3, HeartHandshake, Scissors, ShieldCheck, ShoppingBag } from 'lucide-react'
 
 const PALETTE = {
   bg: '#FAF8F5',
   hero: '#3b3a2e',
   primary: '#E6D18B',
-  stats: '#F0E6DC',
+  stats: '#F3EFE8',
   text: '#383838',
   muted: '#707070',
 }
@@ -20,66 +20,53 @@ export default function HomePage() {
           HERO SECTION — 100vh, split layout, wave bottom
           ==================================================== */}
       <section
-        className="relative overflow-hidden"
-        style={{ backgroundColor: PALETTE.hero, minHeight: '100vh' }}
+        className="relative min-h-[760px] overflow-hidden md:min-h-screen"
+        style={{ backgroundColor: PALETTE.hero }}
       >
         {/* Right: cat photo */}
-        <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden md:block">
+        <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1000&auto=format&fit=crop&q=80"
             alt="Kucing"
             className="w-full h-full object-cover"
-            style={{ objectPosition: 'center top' }}
+            style={{ objectPosition: 'center 34%' }}
           />
           <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(to right, ${PALETTE.hero} 0%, rgba(59,58,46,0.6) 35%, transparent 60%)` }}
-          />
-        </div>
-
-        {/* Mobile background */}
-        <div className="absolute inset-0 md:hidden">
-          <img
-            src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=900&auto=format&fit=crop&q=80"
-            alt="Kucing"
-            className="w-full h-full object-cover"
-            style={{ opacity: 0.25 }}
+            style={{ background: `linear-gradient(90deg, rgba(47,46,37,0.96) 0%, rgba(59,58,46,0.82) 42%, rgba(59,58,46,0.28) 78%, rgba(59,58,46,0.12) 100%)` }}
           />
         </div>
 
         {/* Hero text — left side */}
         <div
-          className="relative z-10 max-w-6xl mx-auto px-6 sm:px-8 lg:px-12 flex items-center"
-          style={{ minHeight: '100vh' }}
+          className="relative z-10 mx-auto flex min-h-[610px] max-w-6xl items-center px-6 sm:px-8 md:min-h-screen lg:px-12"
         >
-          <div className="max-w-lg pt-24 pb-36 md:pb-28">
+          <div className="max-w-xl pb-12 pt-24 md:pb-28">
             <p className="text-sm font-semibold uppercase tracking-widest mb-4" style={{ color: PALETTE.primary }}>
               Cikal Pet Care — Polewali Mandar
             </p>
             <h1
-              className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-6"
+              className="text-[clamp(2.25rem,6vw,3.75rem)] font-bold text-white leading-[1.1] mb-6"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              Temukan<br />perawatan<br />kucing terbaik
+              Perawatan Terbaik untuk Kucing Kesayangan Anda
             </h1>
             <p className="text-base md:text-lg leading-relaxed mb-3" style={{ color: 'rgba(255,255,255,0.75)' }}>
-              Di sini terdapat berbagai layanan profesional yang menunggu kucing kesayangan Anda.
+              Grooming, penitipan, dan kebutuhan kucing dalam satu tempat yang aman, bersih, dan ditangani dengan penuh perhatian.
             </p>
-            <p className="text-base leading-relaxed mb-10" style={{ color: 'rgba(255,255,255,0.6)' }}>
-              Mereka membutuhkan keluarga yang menyayangi dan tempat yang nyaman.
-            </p>
-            <Link
-              href="/booking"
-              className="inline-flex items-center gap-3 px-8 py-4 font-bold rounded-full text-base transition-all duration-300 hover:opacity-90 hover:shadow-xl"
-              style={{ backgroundColor: PALETTE.primary, color: '#2a2a1a', boxShadow: '0 4px 20px rgba(214,184,90,0.4)' }}
-            >
-              Booking Sekarang
-            </Link>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/booking" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary px-7 font-semibold text-[#2A2A1A] hover:bg-primary-hover">
+                Booking Sekarang <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/layanan" className="inline-flex min-h-12 items-center justify-center rounded-button border border-white/40 bg-white/10 px-7 font-semibold text-white hover:bg-white/15">
+                Lihat Layanan
+              </Link>
+            </div>
           </div>
         </div>
 
         {/* Feature cards — floating above wave */}
-        <div className="absolute bottom-10 left-0 right-0 z-20 px-6 sm:px-8">
+        <div className="relative z-20 px-6 pb-10 sm:px-8 md:absolute md:bottom-8 md:left-0 md:right-0 md:pb-0">
           <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { icon: Scissors, bold: 'Grooming', text: 'profesional', link: '/layanan' },
@@ -89,14 +76,11 @@ export default function HomePage() {
               <Link
                 key={i}
                 href={card.link}
-                className="group bg-white rounded-[20px] p-6 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2"
+                className="group bg-white rounded-card p-5 flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1"
                 style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
               >
-                <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110"
-                  style={{ backgroundColor: '#FDE8E8' }}
-                >
-                  <card.icon size={26} style={{ color: '#B66D6D' }} />
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/35">
+                  <card.icon size={26} className="text-secondary" />
                 </div>
                 <p className="font-semibold text-[#383838] text-sm">
                   <span className="font-bold">{card.bold}</span> {card.text}
@@ -124,7 +108,7 @@ export default function HomePage() {
               className="text-3xl md:text-4xl font-bold mb-4"
               style={{ color: PALETTE.text, fontFamily: "'Poppins', sans-serif" }}
             >
-              Layanan yang Menunggu Anda?
+              Layanan Terbaik untuk Kucing Anda
             </h2>
             <p style={{ color: PALETTE.muted }} className="text-base max-w-md mx-auto">
               Klik pada layanan untuk mengetahui lebih lanjut dan melakukan booking.
@@ -134,16 +118,16 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
             {[
               { name: 'Grooming Lengkap',       image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=500&auto=format&fit=crop', link: '/layanan' },
-              { name: 'Mandi & Blow',            image: 'https://images.unsplash.com/photo-1583512603806-077998240c7a?w=500&auto=format&fit=crop', link: '/layanan' },
+              { name: 'Mandi & Blow',            image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=500&auto=format&fit=crop', link: '/layanan' },
               { name: 'Penitipan Premium',       image: 'https://images.unsplash.com/photo-1573865526739-10c1dd7db5d8?w=500&auto=format&fit=crop', link: '/booking' },
-              { name: 'Konsultasi Kesehatan',    image: 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=500&auto=format&fit=crop', link: '/layanan' },
+              { name: 'Konsultasi Kesehatan',    image: 'https://images.unsplash.com/photo-1570824104453-508955ab713e?w=500&auto=format&fit=crop', link: '/layanan' },
               { name: 'Makanan Premium',         image: 'https://images.unsplash.com/photo-1589883661923-6476cb0ae9f2?w=500&auto=format&fit=crop', link: '/produk' },
               { name: 'Aksesori Kucing',         image: 'https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=500&auto=format&fit=crop', link: '/produk' },
             ].map((item, idx) => (
               <Link
                 key={idx}
                 href={item.link}
-                className="group bg-white rounded-[20px] overflow-hidden transition-all duration-300 hover:-translate-y-2"
+                className="group bg-white rounded-card overflow-hidden border border-border transition-all duration-300 hover:-translate-y-1"
                 style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
@@ -175,9 +159,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ====================================================
-          STATISTICS SECTION — wavy, light pink bg
-          ==================================================== */}
+        {/* Service principles replace unverified marketing metrics. */}
       <section className="relative py-28" style={{ backgroundColor: PALETTE.stats }}>
         {/* Wave top */}
         <div className="absolute top-0 left-0 right-0 overflow-hidden leading-none">
@@ -191,34 +173,22 @@ export default function HomePage() {
             className="text-3xl md:text-4xl font-bold mb-3"
             style={{ color: PALETTE.text, fontFamily: "'Poppins', sans-serif" }}
           >
-            Statistik Kami
+            Kenapa Memilih Cikal Pet Care
           </h2>
           <p className="text-base mb-16" style={{ color: PALETTE.muted }}>
-            Kepercayaan pelanggan adalah kebanggaan kami
+            Perawatan yang dirancang agar kucing nyaman dan pemilik merasa tenang.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop', value: '500+', label: 'pelanggan',       bg: '#7c6b5d' },
-              { image: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&auto=format&fit=crop', value: '1000+', label: 'kucing terlayani', bg: '#E6D18B' },
-              { image: 'https://images.unsplash.com/photo-1601758123927-196f50a06d64?w=300&auto=format&fit=crop', value: '3',     label: 'jenis layanan',   bg: '#a0714c' },
-              { image: 'https://images.unsplash.com/photo-1570824104453-508955ab713e?w=300&auto=format&fit=crop', value: '5.0',   label: 'rating bintang',  bg: '#B66D6D' },
-            ].map((stat, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-4">
-                <div
-                  className="rounded-full overflow-hidden flex-shrink-0"
-                  style={{
-                    width: 110,
-                    height: 110,
-                    backgroundColor: stat.bg,
-                    border: '4px solid white',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                  }}
-                >
-                  <img src={stat.image} alt={stat.label} className="w-full h-full object-cover" />
-                </div>
-                <p className="text-3xl font-bold" style={{ color: PALETTE.text }}>{stat.value}</p>
-                <p className="text-sm" style={{ color: PALETTE.muted }}>{stat.label}</p>
+              { icon: ShieldCheck, title: 'Aman dan Bersih', description: 'Proses perawatan mengutamakan kebersihan dan kenyamanan kucing.' },
+              { icon: HeartHandshake, title: 'Ditangani dengan Peduli', description: 'Setiap kucing mendapat perhatian sesuai kebutuhan dan kondisinya.' },
+              { icon: Clock3, title: 'Mudah Dijadwalkan', description: 'Pilih layanan dan waktu kunjungan melalui alur booking yang jelas.' },
+            ].map((item) => (
+              <div key={item.title} className="rounded-card border border-border bg-white p-7 text-left shadow-sm">
+                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-button bg-primary/35"><item.icon className="h-6 w-6 text-secondary" /></div>
+                <p className="mb-2 text-xl font-semibold text-text">{item.title}</p>
+                <p className="text-sm leading-relaxed text-muted">{item.description}</p>
               </div>
             ))}
           </div>
@@ -227,7 +197,7 @@ export default function HomePage() {
         {/* Wave bottom — transition into footer */}
         <div className="absolute bottom-0 left-0 right-0 overflow-hidden leading-none">
           <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '60px' }}>
-            <path d="M0,40 C240,0 480,80 720,40 C960,0 1200,80 1440,40 L1440,80 L0,80 Z" fill="#707070" />
+            <path d="M0,40 C240,0 480,80 720,40 C960,0 1200,80 1440,40 L1440,80 L0,80 Z" fill="#2F2E25" />
           </svg>
         </div>
       </section>

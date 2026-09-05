@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Inter, Poppins } from 'next/font/google'
 import { ReactNode } from 'react'
 import PublicLayoutWrapper from '@/components/PublicLayoutWrapper'
 import AuthProvider from '@/components/AuthProvider'
@@ -6,11 +7,27 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './globals.css'
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-poppins',
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.AUTH_URL || 'http://localhost:3000'),
-  title: 'Cikal Pet Care Polman | Sistem Informasi Manajemen Layanan Perawatan Kucing',
-  description: 'Sistem Informasi Manajemen Layanan Perawatan Kucing Berbasis Web — Cikal Pet Care Polewali Mandar. Menyediakan layanan grooming, konsultasi kesehatan, penitipan kucing, pemesanan produk, dan laporan manajemen lengkap.',
-  keywords: 'sistem informasi pet care, manajemen layanan kucing, pet care polman, klinik kucing polman, grooming kucing, penitipan kucing, dokter hewan polman, polewali mandar, skripsi pet care',
+  title: {
+    default: 'Cikal Pet Care Polewali Mandar | Grooming, Penitipan & Produk Kucing',
+    template: '%s | Cikal Pet Care Polewali Mandar',
+  },
+  description: 'Perawatan kucing profesional di Polewali Mandar, mulai dari grooming dan penitipan hingga produk pilihan untuk kebutuhan kucing Anda.',
+  keywords: 'pet care Polewali Mandar, grooming kucing, penitipan kucing, produk kucing, Cikal Pet Care',
   icons: {
     icon: '/favicon.svg',
   },
@@ -22,7 +39,7 @@ export default function RootLayout({
   children: ReactNode
 }) {
   return (
-    <html lang="id" style={{ fontFamily: "'Poppins', 'Inter', sans-serif" }}>
+    <html lang="id" className={`${inter.variable} ${poppins.variable}`}>
       <body>
         <AuthProvider>
           <PublicLayoutWrapper>

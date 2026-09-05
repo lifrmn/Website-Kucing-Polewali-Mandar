@@ -62,13 +62,13 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
       
       <aside
         className={cn(
-          'bg-surface border-r border-border min-h-screen fixed left-0 top-0 z-50 transition-all duration-300',
+          'bg-[#2F2E25] border-r border-white/10 min-h-screen fixed left-0 top-0 z-50 transition-all duration-300 text-white',
           collapsed ? 'w-20' : 'w-[260px]',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
         {/* Header dengan logo dan collapse button */}
-        <div className="h-16 px-4 border-b border-border flex items-center justify-between">
+        <div className="h-16 px-4 border-b border-white/10 flex items-center justify-between">
           {!collapsed && (
             <Link 
               href="/admin" 
@@ -82,8 +82,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                 className="shadow-sm"
               />
               <div className="leading-none">
-                <h2 className="text-sm font-bold text-text leading-tight">Cikal Pet Care</h2>
-                <p className="text-xs text-muted mt-0.5">Admin Panel</p>
+                <h2 className="text-sm font-bold text-white leading-tight">Cikal Pet Care</h2>
+                <p className="text-xs text-white/60 mt-0.5">Panel Admin</p>
               </div>
             </Link>
           )}
@@ -106,8 +106,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           {/* Collapse button - desktop only */}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface2 text-muted hover:text-text transition-colors"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
           >
             <AppIcon icon={ChevronLeft} size="sm" className={cn('transition-transform', collapsed && 'rotate-180')} />
           </button>
@@ -115,8 +115,8 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           {/* Close button - mobile only */}
           <button
             onClick={onClose}
-            className="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface2 text-muted hover:text-text transition-colors"
-            aria-label="Close sidebar"
+            className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="Tutup sidebar"
           >
             <AppIcon icon={X} size="md" />
           </button>
@@ -137,13 +137,13 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                   'relative flex items-center gap-3 px-3 h-11 rounded-lg transition-all duration-200 group',
                   collapsed ? 'justify-center' : '',
                   active
-                    ? 'bg-surface2 text-primary font-medium'
-                    : 'text-text hover:bg-surface2/50 hover:text-primary'
+                    ? 'bg-primary text-[#2A2A1A] font-semibold'
+                    : 'text-white/75 hover:bg-white/10 hover:text-white'
                 )}
                 title={collapsed ? item.label : undefined}
               >
                 {active && !collapsed && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white/60 rounded-r" />
                 )}
                 <AppIcon icon={Icon} size="md" />
                 {!collapsed && <span className="text-sm leading-none">{item.label}</span>}
@@ -153,12 +153,12 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         </nav>
 
         {/* Bottom Action */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-border">
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-white/10">
           <Link
             href="/"
             onClick={onClose}
             className={cn(
-              'flex items-center gap-3 px-3 h-11 rounded-lg text-muted hover:bg-surface2 hover:text-text transition-all duration-200',
+              'flex items-center gap-3 px-3 h-11 rounded-lg text-white/65 hover:bg-white/10 hover:text-white transition-all duration-200',
               collapsed ? 'justify-center' : ''
             )}
             title={collapsed ? 'Ke Website' : undefined}

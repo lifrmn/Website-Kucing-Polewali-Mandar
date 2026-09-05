@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { MapPin, Phone, Clock, Mail } from 'lucide-react'
+import { Clock, Mail, MapPin } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
-import { formatPhone } from '@/lib/utils'
+import { toWhatsAppNumber } from '@/lib/whatsapp'
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
@@ -17,31 +18,26 @@ export default function ContactPage() {
       .catch(() => undefined)
   }, [])
 
-  const whatsappNumber = formatPhone(settings.whatsapp).replace(/\D/g, '')
   const contactItems = [
     {
       icon: MapPin,
       title: 'Alamat',
       content: settings.address,
-      emoji: '📍'
     },
     {
-      icon: Phone,
-      title: 'Telepon/WhatsApp',
+      icon: FaWhatsapp,
+      title: 'WhatsApp',
       content: settings.whatsapp,
-      emoji: '📱'
     },
     {
       icon: Mail,
       title: 'Email',
       content: settings.email,
-      emoji: '✉️'
     },
     {
       icon: Clock,
       title: 'Jam Operasional',
-      content: `${settings.openDays}: ${settings.openHours}`,
-      emoji: '⏰'
+      content: `${settings.openDays} · ${settings.openHours}`,
     }
   ];
 
@@ -76,12 +72,12 @@ export default function ContactPage() {
               return (
                 <div 
                   key={index}
-                  className="bg-white rounded-[20px] shadow-md hover:shadow-xl transition-all duration-300 p-6 border-2 hover:scale-105" 
+                  className="bg-white rounded-card shadow-sm hover:shadow-md transition-all duration-300 p-6 border hover:-translate-y-1" 
                   style={{ borderColor: '#E8E3DA' }}
                 >
                   <div className="flex gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-[15px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
-                      <Icon className="text-white" size={24} />
+                    <div className="w-14 h-14 rounded-button flex items-center justify-center flex-shrink-0 bg-primary">
+                      <Icon className={item.title === 'WhatsApp' ? 'text-[#128C4A]' : 'text-secondary'} size={24} />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold" style={{ color: '#383838' }}>{item.title}</h3>
@@ -95,18 +91,19 @@ export default function ContactPage() {
 
           {/* WhatsApp CTA */}
           <div className="flex flex-col justify-center">
-            <div className="bg-white rounded-[20px] shadow-md p-8 text-center border-2" style={{ borderColor: '#E6D18B' }}>
-              <div className="text-6xl mb-4">💬</div>
-              <h3 className="text-2xl font-bold mb-3" style={{ color: '#383838' }}>Chat Langsung</h3>
-              <p className="mb-6" style={{ color: '#707070' }}>Hubungi kami via WhatsApp untuk respons super cepat dan friendly!</p>
+            <div className="bg-white rounded-card shadow-md p-8 text-center border border-primary-hover">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#DCFCE7]">
+                <FaWhatsapp className="h-8 w-8 text-[#128C4A]" aria-hidden="true" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3 text-text">Chat WhatsApp</h3>
+              <p className="mb-6 text-muted">Hubungi tim Cikal Pet Care untuk informasi layanan, booking, dan produk.</p>
               <a
-                href={`https://wa.me/${whatsappNumber}`}
+                href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-8 py-4 rounded-xl font-bold text-white hover:opacity-90 transition-opacity w-full" 
-                style={{ backgroundColor: '#E6D18B' }}
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]" 
               >
-                Hubungi WhatsApp Sekarang
+                <FaWhatsapp className="h-5 w-5" aria-hidden="true" /> Chat via WhatsApp
               </a>
             </div>
           </div>

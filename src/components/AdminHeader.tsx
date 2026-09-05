@@ -69,7 +69,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2.5 h-9 pl-2 pr-3 rounded-lg hover:bg-surface2 transition-colors"
             >
-              <div className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+              <div className="w-7 h-7 rounded-full bg-primary text-[#2A2A1A] flex items-center justify-center text-sm font-semibold">
                 {session?.user?.name?.[0]?.toUpperCase() || 'A'}
               </div>
               <span className="hidden sm:block text-sm font-medium text-text">

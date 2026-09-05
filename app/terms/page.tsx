@@ -8,28 +8,21 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
-      {/* Hero Header */}
-      <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
+      <section className="pb-10 pt-28 md:pt-32" style={{ backgroundColor: '#3b3a2e' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Syarat & Ketentuan
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
             Ketentuan penggunaan layanan Cikal Pet Care
           </p>
         </div>
-        {/* Wave bottom */}
-        <div className="overflow-hidden mt-10" style={{ lineHeight: 0 }}>
-          <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style={{ display: 'block', width: '100%', height: '50px' }}>
-            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#FAF8F5" />
-          </svg>
-        </div>
       </section>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-6 sm:px-8 py-14 md:py-20">
-        <div className="bg-white rounded-[20px] shadow-md p-8 md:p-12 space-y-8" style={{ borderColor: '#E8E3DA', borderWidth: '2px' }}>
+      <div className="max-w-[800px] mx-auto px-6 sm:px-8 py-12 md:py-16">
+        <div className="bg-white rounded-card shadow-sm p-6 md:p-10 space-y-8 border border-border">
           <section>
             <h2 className="text-2xl font-bold mb-4" style={{ color: '#383838' }}>1. Penerimaan Syarat</h2>
             <p className="leading-relaxed" style={{ color: '#707070' }}>
@@ -44,7 +37,7 @@ export default function TermsPage() {
               Cikal Pet Care menyediakan layanan:
             </p>
             <ul className="list-disc list-inside space-y-2" style={{ color: '#707070' }}>
-              <li>Grooming (mandi, potong kuku, styling) untuk kucing dan anjing</li>
+              <li>Grooming (mandi, potong kuku, dan perawatan bulu) untuk kucing</li>
               <li>Konsultasi kesehatan dan vaksinasi</li>
               <li>Pet hotel (penitipan hewan)</li>
               <li>Penjualan produk perawatan hewan (makanan, aksesoris, obat-obatan)</li>

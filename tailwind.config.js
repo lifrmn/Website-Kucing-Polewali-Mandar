@@ -30,11 +30,17 @@ export default {
           hover: 'var(--color-primary-hover)',
           pressed: 'var(--color-primary-pressed)',
         },
+        secondary: {
+          DEFAULT: 'var(--color-secondary)',
+          hover: 'var(--color-secondary-hover)',
+        },
+        'dark-gold': 'var(--color-dark-gold)',
         
         // Accent & Status
         accent: 'var(--color-accent)',
         danger: 'var(--color-danger)',
         success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
       },
 
       // ============================================

@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Save, MessageCircle, Mail, MapPin, Instagram, Facebook, Music2, Youtube, Settings as SettingsIcon } from 'lucide-react'
+import { Save, Mail, MapPin, Settings as SettingsIcon } from 'lucide-react'
+import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp, FaYoutube } from 'react-icons/fa6'
 import { toast } from 'react-toastify'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
 
@@ -64,10 +65,10 @@ export default function AdminSettingsPage() {
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Site Information */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-              <SettingsIcon className="w-7 h-7 text-white" />
+            <div className="rounded-button bg-primary p-3">
+              <SettingsIcon className="w-7 h-7 text-secondary" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">Informasi Website</h2>
@@ -82,7 +83,7 @@ export default function AdminSettingsPage() {
                 type="text"
                 value={settings.siteName}
                 onChange={(e) => handleChange('siteName', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-premium"
               />
             </div>
             <div>
@@ -91,17 +92,17 @@ export default function AdminSettingsPage() {
                 value={settings.siteDescription}
                 onChange={(e) => handleChange('siteDescription', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-premium"
               />
             </div>
           </div>
         </div>
 
         {/* Contact Information */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl">
-              <MessageCircle className="w-7 h-7 text-white" />
+            <div className="rounded-button bg-primary p-3">
+              <FaWhatsapp className="w-7 h-7 text-[#128C4A]" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">Informasi Kontak</h2>
@@ -112,14 +113,14 @@ export default function AdminSettingsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                <MessageCircle className="inline mr-2 w-5 h-5 text-green-600" />
+                <FaWhatsapp className="inline mr-2 w-5 h-5 text-[#128C4A]" />
                 WhatsApp
               </label>
               <input
                 type="text"
                 value={settings.whatsapp}
                 onChange={(e) => handleChange('whatsapp', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input-premium"
                 placeholder="+62 812-3456-7890"
               />
             </div>
@@ -132,7 +133,7 @@ export default function AdminSettingsPage() {
                 type="email"
                 value={settings.email}
                 onChange={(e) => handleChange('email', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-premium"
                 placeholder="info@cikalpetcare.com"
               />
             </div>
@@ -147,17 +148,17 @@ export default function AdminSettingsPage() {
               value={settings.address}
               onChange={(e) => handleChange('address', e.target.value)}
               rows={2}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+              className="input-premium"
               placeholder="Jl. Jend. Sudirman No. 123, Polewali"
             />
           </div>
         </div>
 
         {/* Social Media */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-gradient-to-br from-pink-500 to-orange-500 rounded-xl">
-              <Instagram className="w-6 h-6 text-white" />
+            <div className="rounded-button bg-primary p-3">
+              <FaInstagram className="w-6 h-6 text-[#E1306C]" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-gray-800">Social Media</h2>
@@ -168,53 +169,53 @@ export default function AdminSettingsPage() {
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                <Instagram className="inline mr-2 w-5 h-5 text-pink-600" />
+                <FaInstagram className="inline mr-2 w-5 h-5 text-[#E1306C]" />
                 Instagram Username
               </label>
               <input
                 type="text"
                 value={settings.instagram}
                 onChange={(e) => handleChange('instagram', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500"
+                className="input-premium"
                 placeholder="https://instagram.com/cikalpetcare"
               />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                <Facebook className="inline mr-2 w-5 h-5 text-blue-600" />
+                <FaFacebookF className="inline mr-2 w-5 h-5 text-[#1877F2]" />
                 Facebook Page
               </label>
               <input
                 type="text"
                 value={settings.facebook}
                 onChange={(e) => handleChange('facebook', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input-premium"
                 placeholder="https://facebook.com/cikalpetcare"
               />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                <Music2 className="inline mr-2 w-5 h-5 text-gray-800" />
+                <FaTiktok className="inline mr-2 w-5 h-5 text-gray-800" />
                 TikTok
               </label>
               <input
                 type="url"
                 value={settings.tiktok}
                 onChange={(e) => handleChange('tiktok', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                className="input-premium"
                 placeholder="https://tiktok.com/@cikalpetcare"
               />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
-                <Youtube className="inline mr-2 w-5 h-5 text-red-600" />
+                <FaYoutube className="inline mr-2 w-5 h-5 text-[#FF0000]" />
                 YouTube
               </label>
               <input
                 type="url"
                 value={settings.youtube}
                 onChange={(e) => handleChange('youtube', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="input-premium"
                 placeholder="https://youtube.com/@cikalpetcare"
               />
             </div>
@@ -222,7 +223,7 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Business Hours */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-800">Jam Operasional</h2>
             <p className="text-sm text-gray-600">Atur jam buka toko/layanan</p>
@@ -235,7 +236,7 @@ export default function AdminSettingsPage() {
                 type="text"
                 value={settings.openDays}
                 onChange={(e) => handleChange('openDays', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="input-premium"
                 placeholder="Senin - Sabtu"
               />
             </div>
@@ -245,7 +246,7 @@ export default function AdminSettingsPage() {
                 type="text"
                 value={settings.openHours}
                 onChange={(e) => handleChange('openHours', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                className="input-premium"
                 placeholder="09:00 - 17:00 WIB"
               />
             </div>
@@ -253,7 +254,7 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Payment Settings */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-800">Pengaturan Pembayaran</h2>
             <p className="text-sm text-gray-600">Atur informasi rekening bank dan QRIS</p>
@@ -267,7 +268,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={settings.bankName}
                   onChange={(e) => handleChange('bankName', e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="input-premium"
                   placeholder="Bank BRI"
                 />
               </div>
@@ -277,7 +278,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={settings.bankAccount}
                   onChange={(e) => handleChange('bankAccount', e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="input-premium"
                   placeholder="1234567890"
                 />
               </div>
@@ -287,7 +288,7 @@ export default function AdminSettingsPage() {
                   type="text"
                   value={settings.bankAccountName}
                   onChange={(e) => handleChange('bankAccountName', e.target.value)}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="input-premium"
                   placeholder="Cikal Pet Care"
                 />
               </div>
@@ -298,7 +299,7 @@ export default function AdminSettingsPage() {
                 type="url"
                 value={settings.qrisImageUrl}
                 onChange={(e) => handleChange('qrisImageUrl', e.target.value)}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="input-premium"
                 placeholder="https://example.com/qris.jpg"
               />
             </div>
@@ -306,11 +307,11 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="bg-white rounded-xl p-6 shadow-lg">
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
           <button
             type="submit"
             disabled={saving}
-            className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+            className="flex min-h-12 w-full items-center justify-center gap-3 rounded-button bg-primary px-6 py-3 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover disabled:opacity-50"
           >
             <Save className="w-5 h-5" />
             {saving ? 'Menyimpan...' : 'Simpan Semua Pengaturan'}

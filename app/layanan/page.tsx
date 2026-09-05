@@ -156,7 +156,7 @@ export default function ServicesPage() {
       <LoadingSpinner
         message="Memuat layanan..."
         submessage="Menyiapkan data layanan"
-        variant="green"
+        variant="primary"
       />
     )
   }
@@ -195,16 +195,20 @@ export default function ServicesPage() {
                 placeholder="Cari layanan..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 md:pl-10 pr-4 py-2.5 md:py-3 border rounded-full focus:ring-2 focus:border-transparent transition-colors text-sm md:text-base"
-              style={{ borderColor: '#E8E3DA', outlineColor: '#E6D18B' }}
+                className="w-full min-h-12 pl-10 pr-10 py-2.5 border border-border rounded-button bg-white focus:ring-2 focus:ring-primary focus:border-primary-hover transition-colors text-sm md:text-base"
               />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery('')} className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-muted hover:bg-surface2 hover:text-text" aria-label="Hapus pencarian">
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3 w-full sm:w-auto">
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
                 title={typeFilter === 'all' ? 'Semua Tipe' : serviceTypes.find(t => t === typeFilter) || ''}
-                className="flex-1 sm:flex-initial sm:min-w-[220px] px-3 md:px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white text-sm md:text-base truncate"
+                className="flex-1 sm:flex-initial sm:min-w-[200px] min-h-12 px-4 py-2.5 border border-border rounded-button focus:ring-2 focus:ring-primary bg-white text-sm md:text-base truncate"
               >
                 <option value="all">Semua Tipe</option>
                 {serviceTypes.filter(t => t !== 'all').map(type => (
@@ -215,7 +219,7 @@ export default function ServicesPage() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 title={sortBy === 'name' ? 'Nama (A-Z)' : sortBy === 'price-asc' ? 'Harga: Terendah' : 'Harga: Tertinggi'}
-                className="flex-1 sm:flex-initial sm:min-w-[220px] px-3 md:px-4 py-2.5 md:py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white text-sm md:text-base truncate"
+                className="flex-1 sm:flex-initial sm:min-w-[200px] min-h-12 px-4 py-2.5 border border-border rounded-button focus:ring-2 focus:ring-primary bg-white text-sm md:text-base truncate"
               >
                 <option value="name">Nama (A-Z)</option>
                 <option value="price-asc">Harga: Terendah</option>
@@ -238,7 +242,7 @@ export default function ServicesPage() {
                 <AppIcon icon={Sparkles} size="2xl" className="text-slate-400" />
               </div>
               <p className="text-xl font-semibold text-slate-800 mb-2">Belum ada layanan tersedia</p>
-              <p className="text-slate-500">Pastikan database sudah disetup dengan benar</p>
+              <p className="mx-auto max-w-md text-muted">Layanan belum tersedia saat ini. Silakan cek kembali atau hubungi kami melalui WhatsApp.</p>
             </div>
           ) : filteredServices.length === 0 ? (
             <div className="text-center py-20">
@@ -249,7 +253,7 @@ export default function ServicesPage() {
               <p className="text-slate-500 mb-6">Coba ubah kata kunci atau filter</p>
               <button
                 onClick={() => { setSearchQuery(''); setTypeFilter('all'); setSortBy('name'); }}
-                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+                className="min-h-11 rounded-button bg-primary px-6 py-2.5 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
               >
                 Reset Filter
               </button>
@@ -259,10 +263,7 @@ export default function ServicesPage() {
               {filteredServices.map((service) => (
                 <div
                   key={service.id}
-                  className="group bg-white transition-all duration-300 hover:-translate-y-2"
-                  style={{ borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
-                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
-                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
+                  className="group overflow-hidden rounded-card border border-border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card"
                 >
                   {/* Image */}
                   <div className="relative h-44 md:h-48 overflow-hidden">
@@ -301,7 +302,7 @@ export default function ServicesPage() {
 
                     <div className="pt-3 md:pt-4 border-t border-slate-100">
                       <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg md:text-xl font-bold" style={{ color: '#E6D18B' }}>
+                      <span className="text-lg md:text-xl font-bold text-dark-gold">
                         {formatCurrency(service.price)}
                       </span>
                       </div>

@@ -1,4 +1,5 @@
 import { InputHTMLAttributes, forwardRef } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -51,9 +52,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         
         {error && (
           <span className="text-caption text-danger flex items-center gap-1">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <AlertCircle className="h-4 w-4" aria-hidden="true" />
             {error}
           </span>
         )}

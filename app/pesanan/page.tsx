@@ -17,6 +17,17 @@ const statusLabels: Record<string, string> = {
   REFUNDED: 'Dana dikembalikan',
 }
 
+const statusStyles: Record<string, string> = {
+  PENDING: 'bg-[#FEF3C7] text-[#92400E]',
+  WAITING_VERIFICATION: 'bg-[#FEF3C7] text-[#92400E]',
+  PAID: 'bg-[#DCFCE7] text-[#166534]',
+  PROCESSING: 'bg-blue-50 text-blue-700',
+  SHIPPED: 'bg-blue-50 text-blue-700',
+  COMPLETED: 'bg-[#DCFCE7] text-[#166534]',
+  CANCELED: 'bg-[#FEE2E2] text-[#B91C1C]',
+  REFUNDED: 'bg-[#FEF3C7] text-[#92400E]',
+}
+
 export default function OrdersPage() {
   const [orderNumber, setOrderNumber] = useState('')
   const [phone, setPhone] = useState('')
@@ -77,8 +88,7 @@ export default function OrdersPage() {
                 value={orderNumber}
                 onChange={(event) => setOrderNumber(event.target.value)}
                 placeholder="INV-..."
-                className="w-full h-12 px-4 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                style={{ borderColor: '#E8E3DA' }}
+                className="input-premium"
               />
             </div>
             <div>
@@ -89,8 +99,7 @@ export default function OrdersPage() {
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 placeholder="08xxxxxxxxxx"
-                className="w-full h-12 px-4 border-2 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-                style={{ borderColor: '#E8E3DA' }}
+                className="input-premium"
               />
             </div>
           </div>
@@ -113,7 +122,7 @@ export default function OrdersPage() {
                 <p className="text-sm" style={{ color: '#707070' }}>Nomor Pesanan</p>
                 <h2 className="text-xl font-bold" style={{ color: '#383838' }}>{order.order_number}</h2>
               </div>
-              <span className="self-start px-3 py-1.5 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
+              <span className={`self-start rounded-full px-3 py-1.5 text-sm font-semibold ${statusStyles[order.status] || 'bg-surface2 text-text'}`}>
                 {statusLabels[order.status] || order.status}
               </span>
             </div>
@@ -137,9 +146,9 @@ export default function OrdersPage() {
             </div>
 
             {order.tracking_number && (
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
-                <Truck className="w-5 h-5 text-emerald-700 mt-0.5" />
-                <div><p className="text-sm text-emerald-700">Nomor Resi</p><p className="font-mono font-bold text-emerald-900">{order.tracking_number}</p></div>
+              <div className="flex items-start gap-3 rounded-xl border border-border bg-surface2 p-4">
+                <Truck className="mt-0.5 h-5 w-5 text-dark-gold" />
+                <div><p className="text-sm text-muted">Nomor Resi</p><p className="font-mono font-bold text-text">{order.tracking_number}</p></div>
               </div>
             )}
           </section>

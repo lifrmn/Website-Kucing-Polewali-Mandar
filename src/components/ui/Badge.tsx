@@ -20,7 +20,7 @@ const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
     const baseStyles = 'inline-flex items-center gap-1 rounded-badge font-semibold';
     
     const variants = {
-      primary: 'bg-primary text-white',
+      primary: 'bg-primary text-secondary',
       accent: 'bg-accent text-white',
       success: 'bg-success text-white',
       danger: 'bg-danger text-white',

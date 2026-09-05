@@ -40,22 +40,15 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-float" style={{ backgroundColor: '#E6D18B' }}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-float" style={{ backgroundColor: '#3b3a2e', animationDelay: '2s' }}></div>
-      </div>
-
-      {/* Login Card */}
+    <main className="min-h-screen flex items-center justify-center bg-bg p-4 pt-24">
       <div className="relative z-10 w-full max-w-md">
-        <div className="bg-white rounded-[20px] shadow-xl p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+        <div className="rounded-card border border-border bg-white p-8 shadow-card">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 shadow-xl" style={{ backgroundColor: '#E6D18B' }}>
-              <PawPrint className="w-10 h-10 text-white" />
+              <PawPrint className="w-10 h-10 text-secondary" />
             </div>
-            <h1 className="text-3xl font-bold mb-2" style={{ color: '#383838', fontFamily: "'Poppins',sans-serif" }}>Admin Login</h1>
+            <h1 className="text-3xl font-bold mb-2 text-text">Masuk Admin</h1>
             <p style={{ color: '#707070' }}>Cikal Pet Care Polman</p>
           </div>
 
@@ -64,7 +57,7 @@ export default function LoginPage() {
             {/* Email Input */}
             <div>
               <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                Email Address
+                Alamat Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#707070' }} />
@@ -72,8 +65,7 @@ export default function LoginPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent transition-all"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium pl-12"
                   placeholder="admin@cikalpetcare.com"
                   required
                   disabled={loading}
@@ -84,7 +76,7 @@ export default function LoginPage() {
             {/* Password Input */}
             <div>
               <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                Password
+                Kata Sandi
               </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#707070' }} />
@@ -92,9 +84,8 @@ export default function LoginPage() {
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent transition-all"
-                  style={{ borderColor: '#E8E3DA' }}
-                  placeholder="Enter your password"
+                  className="input-premium pl-12"
+                  placeholder="Masukkan kata sandi"
                   required
                   disabled={loading}
                 />
@@ -105,18 +96,17 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 text-white rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-3 hover:opacity-90"
-              style={{ backgroundColor: '#E6D18B' }}
+              className="flex min-h-12 w-full items-center justify-center gap-3 rounded-button bg-primary px-6 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <>
                   <Loader2 className="animate-spin w-5 h-5" />
-                  <span>Logging in...</span>
+                  <span>Memproses...</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-5 h-5" />
-                  <span>Login to Dashboard</span>
+                  <span>Masuk ke Dashboard</span>
                 </>
               )}
             </button>
@@ -126,10 +116,9 @@ export default function LoginPage() {
           <div className="mt-6 text-center">
             <a
               href="/"
-              className="font-semibold transition-colors hover:opacity-70"
-              style={{ color: '#E6D18B' }}
+              className="font-semibold text-dark-gold transition-colors hover:text-secondary"
             >
-              ← Back to Homepage
+              Kembali ke Beranda
             </a>
           </div>
         </div>

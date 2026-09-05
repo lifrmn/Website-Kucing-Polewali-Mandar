@@ -1,19 +1,6 @@
-import { Instagram, Facebook, Youtube, LucideIcon } from 'lucide-react';
+import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube } from 'react-icons/fa6';
+import type { IconType } from 'react-icons';
 import { cn } from '@/lib/utils';
-
-// Custom TikTok icon
-const TikTokIcon = ({ className }: { className?: string }) => (
-  <svg 
-    className={cn('flex-shrink-0', className)} 
-    width="20" 
-    height="20" 
-    viewBox="0 0 24 24" 
-    fill="currentColor"
-    aria-hidden="true"
-  >
-    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-  </svg>
-);
 
 export type SocialPlatform = 'instagram' | 'facebook' | 'tiktok' | 'youtube';
 export type SocialVariant = 'solid' | 'soft';
@@ -31,7 +18,7 @@ interface SocialIconButtonProps {
 
 // Platform configurations with brand colors
 const platformConfig: Record<SocialPlatform, {
-  icon: LucideIcon | React.FC<{ className?: string }>;
+  icon: IconType;
   label: string;
   solid: {
     bg: string;
@@ -47,7 +34,7 @@ const platformConfig: Record<SocialPlatform, {
   };
 }> = {
   instagram: {
-    icon: Instagram,
+    icon: FaInstagram,
     label: 'Instagram',
     solid: {
       bg: 'bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500',
@@ -56,14 +43,14 @@ const platformConfig: Record<SocialPlatform, {
       ring: 'focus:ring-pink-500',
     },
     soft: {
-      bg: 'bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50',
-      hover: 'hover:from-purple-100 hover:via-pink-100 hover:to-orange-100',
-      icon: 'text-pink-600',
+      bg: 'bg-white/10',
+      hover: 'hover:bg-white/15',
+      icon: 'text-[#E1306C]',
       ring: 'focus:ring-pink-400',
     },
   },
   facebook: {
-    icon: Facebook,
+    icon: FaFacebookF,
     label: 'Facebook',
     solid: {
       bg: 'bg-[#1877F2]',
@@ -72,14 +59,14 @@ const platformConfig: Record<SocialPlatform, {
       ring: 'focus:ring-blue-500',
     },
     soft: {
-      bg: 'bg-blue-50',
-      hover: 'hover:bg-blue-100',
+      bg: 'bg-white/10',
+      hover: 'hover:bg-white/15',
       icon: 'text-[#1877F2]',
       ring: 'focus:ring-blue-400',
     },
   },
   tiktok: {
-    icon: TikTokIcon,
+    icon: FaTiktok,
     label: 'TikTok',
     solid: {
       bg: 'bg-black',
@@ -95,7 +82,7 @@ const platformConfig: Record<SocialPlatform, {
     },
   },
   youtube: {
-    icon: Youtube,
+    icon: FaYoutube,
     label: 'YouTube',
     solid: {
       bg: 'bg-[#FF0000]',
@@ -104,8 +91,8 @@ const platformConfig: Record<SocialPlatform, {
       ring: 'focus:ring-red-500',
     },
     soft: {
-      bg: 'bg-red-50',
-      hover: 'hover:bg-red-100',
+      bg: 'bg-white/10',
+      hover: 'hover:bg-white/15',
       icon: 'text-[#FF0000]',
       ring: 'focus:ring-red-400',
     },
@@ -155,11 +142,7 @@ export default function SocialIconButton({
         onMouseLeave={onMouseLeave}
         title={disabled ? 'Link belum diatur' : undefined}
       >
-        {'icon' in IconComponent ? (
-          <IconComponent className={cn(iconClasses, 'w-5 h-5')} />
-        ) : (
-          <IconComponent className={iconClasses} />
-        )}
+        <IconComponent className={cn(iconClasses, 'h-5 w-5')} aria-hidden="true" />
       </div>
     );
   }
@@ -174,11 +157,7 @@ export default function SocialIconButton({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {'icon' in IconComponent ? (
-        <IconComponent className={cn(iconClasses, 'w-5 h-5')} />
-      ) : (
-        <IconComponent className={iconClasses} />
-      )}
+      <IconComponent className={cn(iconClasses, 'h-5 w-5')} aria-hidden="true" />
     </a>
   );
 }

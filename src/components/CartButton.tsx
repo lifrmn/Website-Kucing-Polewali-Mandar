@@ -33,11 +33,11 @@ export default function CartButton({ variant = 'desktop', className }: CartButto
     <button
       onClick={toggleCart}
       className={cn(
-        'relative flex items-center justify-center bg-primary text-white',
+        'relative flex items-center justify-center bg-primary text-secondary',
         'transition-all duration-200',
-        'hover:bg-primary-hover hover:shadow-lg hover:scale-105',
+        'hover:bg-primary-hover hover:shadow-md',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-        'active:scale-95',
+        'active:translate-y-px',
         variant === 'desktop' 
           ? 'h-11 w-11 rounded-xl shadow-md' 
           : 'h-[40px] w-[40px] rounded-lg shadow-sm',
@@ -49,7 +49,7 @@ export default function CartButton({ variant = 'desktop', className }: CartButto
         icon={ShoppingCart} 
         size="md" 
         strokeWidth={2}
-        className="text-white"
+        className="text-secondary"
       />
       
       {itemCount > 0 && (

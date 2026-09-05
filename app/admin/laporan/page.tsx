@@ -125,7 +125,7 @@ export default function LaporanPage() {
               onClick={() => setPeriode(p)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 periode === p
-                  ? 'bg-primary text-white'
+                  ? 'bg-primary text-[#2A2A1A]'
                   : 'bg-surface border border-border text-muted hover:text-text'
               }`}
             >
@@ -152,8 +152,8 @@ export default function LaporanPage() {
           <p className="text-xl font-bold text-text">{summary.totalOrders}</p>
         </div>
         <div className="bg-surface rounded-lg border border-border p-5">
-          <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center mb-3">
-            <Package className="w-5 h-5 text-purple-600" />
+          <div className="w-10 h-10 rounded-lg bg-surface2 flex items-center justify-center mb-3">
+            <Package className="w-5 h-5 text-secondary" />
           </div>
           <p className="text-xs text-muted mb-1">Pesanan Selesai</p>
           <p className="text-xl font-bold text-text">{summary.completedOrders}</p>

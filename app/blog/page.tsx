@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { blogService } from '@/services/blogService'
-import { Loader2, Calendar, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ArrowRight, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface BlogPost {
   id: string
@@ -46,14 +47,7 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#FAF8F5' }}>
-        <div className="text-center">
-          <div className="relative inline-block">
-            <Loader2 className="animate-spin w-16 h-16 mx-auto mb-4" style={{ color: '#E6D18B' }} />
-          </div>
-          <p className="text-lg font-medium" style={{ color: '#383838' }}>Memuat artikel menarik untuk Anda...</p>
-        </div>
-      </div>
+      <LoadingSpinner message="Memuat artikel..." submessage="Menyiapkan tips perawatan kucing untuk Anda" size="md" />
     )
   }
 
@@ -84,7 +78,7 @@ export default function BlogPage() {
           <div className="text-center py-20">
             <div className="max-w-md mx-auto rounded-[20px] p-12 shadow-md" style={{ backgroundColor: 'white' }}>
               <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FAF8F5' }}>
-                <span className="text-4xl">📝</span>
+                <FileText className="h-9 w-9 text-dark-gold" />
               </div>
               <p className="text-lg font-semibold mb-3" style={{ color: '#383838' }}>Belum ada artikel tersedia</p>
               <p className="text-sm" style={{ color: '#707070' }}>Artikel menarik akan segera hadir!</p>
@@ -95,14 +89,14 @@ export default function BlogPage() {
             {posts.map((post) => (
               <article
                 key={post.id}
-                className="group bg-white rounded-[20px] overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-2 hover:scale-105" style={{ borderColor: '#E8E3DA' }}
+                className="group overflow-hidden rounded-card border border-border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-card"
               >
                 {post.featured_image ? (
                   <div className="relative overflow-hidden h-48">
                     <img
                       src={post.featured_image}
                       alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(event) => {
                         event.currentTarget.onerror = null
                         event.currentTarget.src = '/placeholder-product.svg'
@@ -110,13 +104,13 @@ export default function BlogPage() {
                     />
                   </div>
                 ) : (
-                  <div className="h-48 flex items-center justify-center" style={{ backgroundColor: '#E6D18B' }}>
-                    <span className="text-5xl">📖</span>
+                  <div className="h-48 flex items-center justify-center bg-primary/40">
+                    <FileText className="h-10 w-10 text-secondary" />
                   </div>
                 )}
 
                 <div className="p-5">
-                  <div className="flex items-center gap-2 text-xs mb-3 font-semibold" style={{ color: '#E6D18B' }}>
+                  <div className="flex items-center gap-2 text-xs mb-3 font-semibold text-dark-gold">
                     <Calendar className="w-4 h-4" />
                     <time>{post.published_at ? formatDate(post.published_at) : 'Belum dipublikasi'}</time>
                   </div>
@@ -133,7 +127,7 @@ export default function BlogPage() {
 
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="inline-flex items-center gap-2 font-semibold text-sm hover:opacity-80 transition-opacity" style={{ color: '#E6D18B' }}
+                    className="inline-flex items-center gap-2 font-semibold text-sm text-dark-gold hover:text-secondary transition-colors"
                   >
                     <span>Baca Selengkapnya</span>
                     <ArrowRight className="w-4 h-4" />

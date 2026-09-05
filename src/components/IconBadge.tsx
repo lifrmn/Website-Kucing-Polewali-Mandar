@@ -26,7 +26,7 @@ export interface IconBadgeProps extends HTMLAttributes<HTMLDivElement> {
  * 
  * Variants:
  * - default: bg-surface2 text-text
- * - primary: bg-primary text-white
+ * - primary: bg-primary text-secondary
  * - success: bg-green-50 text-green-600
  * - danger: bg-red-50 text-red-600
  * - warning: bg-amber-50 text-amber-600
@@ -77,7 +77,7 @@ const IconBadge = forwardRef<HTMLDivElement, IconBadgeProps>(
     // Variant styles
     const variants = {
       default: 'bg-surface2 text-text',
-      primary: 'bg-primary text-white shadow-md',
+      primary: 'bg-primary text-secondary shadow-md',
       success: 'bg-green-50 text-green-600',
       danger: 'bg-red-50 text-red-600',
       warning: 'bg-amber-50 text-amber-600',

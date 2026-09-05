@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { ChevronDown } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import { toWhatsAppNumber } from '@/lib/whatsapp'
 import { settingsService } from '@/services/settingsService'
 
@@ -18,7 +19,7 @@ function getFaqs(paymentDescription: string) {
         a: 'Kami menyediakan layanan grooming (mandi, potong kuku, styling), konsultasi kesehatan, vaksinasi, penitipan hewan (pet hotel), dan penjualan produk perawatan hewan berkualitas.'
       },
       {
-        q: 'Berapa lama waktu grooming untuk kucing/anjing?',
+        q: 'Berapa lama waktu grooming untuk kucing?',
         a: 'Untuk grooming dasar (mandi + potong kuku) membutuhkan waktu sekitar 1-2 jam tergantung ukuran dan kondisi hewan. Grooming lengkap dengan styling bisa memakan waktu 2-3 jam.'
       },
       {
@@ -120,10 +121,9 @@ export default async function FAQPage() {
             href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-8 py-3 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: '#E6D18B' }}
+            className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]"
           >
-            💬 Hubungi via WhatsApp
+            <FaWhatsapp className="h-5 w-5" aria-hidden="true" /> Hubungi via WhatsApp
           </a>
         </div>
       </div>

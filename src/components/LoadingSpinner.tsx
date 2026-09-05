@@ -13,64 +13,37 @@ export default function LoadingSpinner({
   variant = 'primary',
   size = 'lg',
 }: LoadingSpinnerProps) {
-  const variants = {
-    default: {
-      gradient: 'from-gray-400 to-gray-500',
-      gradientBg: 'from-gray-50 to-white',
-      spinnerColor: 'text-gray-600',
-    },
-    primary: {
-      gradient: 'from-primary-400 to-emerald-400',
-      gradientBg: 'from-primary-50 via-white to-emerald-50',
-      spinnerColor: 'text-primary-600',
-    },
-    purple: {
-      gradient: 'from-purple-400 to-pink-400',
-      gradientBg: 'from-purple-50 via-white to-pink-50',
-      spinnerColor: 'text-purple-600',
-    },
-    green: {
-      gradient: 'from-green-400 to-emerald-400',
-      gradientBg: 'from-green-50 via-white to-emerald-50',
-      spinnerColor: 'text-green-600',
-    },
-  };
-
   const sizes = {
     sm: {
       spinner: 'w-12 h-12',
       message: 'text-base',
       submessage: 'text-xs',
-      blur: 'w-20 h-20',
     },
     md: {
       spinner: 'w-16 h-16',
       message: 'text-lg',
       submessage: 'text-sm',
-      blur: 'w-28 h-28',
     },
     lg: {
       spinner: 'w-20 h-20',
       message: 'text-xl',
       submessage: 'text-sm',
-      blur: 'w-32 h-32',
     },
   };
 
-  const variantStyle = variants[variant];
   const sizeStyle = sizes[size];
 
   return (
-    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${variantStyle.gradientBg}`}>
+    <div className="flex min-h-[55vh] items-center justify-center bg-bg" data-legacy-variant={variant}>
       <div className="text-center px-4">
         <div className="relative inline-block mb-6">
-          <div className={`absolute inset-0 bg-gradient-to-r ${variantStyle.gradient} blur-xl opacity-50 animate-pulse-custom ${sizeStyle.blur}`}></div>
-          <Loader2 className={`animate-spin ${sizeStyle.spinner} ${variantStyle.spinnerColor} mx-auto relative`} />
+          <div className="absolute inset-1 rounded-full bg-primary/20 blur-lg" />
+          <Loader2 className={`animate-spin ${sizeStyle.spinner} text-dark-gold mx-auto relative`} />
         </div>
         <div className="space-y-2">
-          <p className={`${sizeStyle.message} text-gray-800 font-bold`}>{message}</p>
+          <p className={`${sizeStyle.message} font-semibold text-text`}>{message}</p>
           {submessage && (
-            <p className={`${sizeStyle.submessage} text-gray-500`}>{submessage}</p>
+            <p className={`${sizeStyle.submessage} text-muted`}>{submessage}</p>
           )}
         </div>
         {/* Loading skeleton */}

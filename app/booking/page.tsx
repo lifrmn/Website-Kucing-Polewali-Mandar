@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
 import type { PenitipanPackage } from '@/types'
-import { CalendarPlus, Check, Crown, Star, PawPrint, Zap, Home, MessageCircle, X } from 'lucide-react'
+import { CalendarPlus, Check, Crown, Star, PawPrint, Zap, Home, X } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
 import { useSiteSettings } from '@/components/SiteSettingsContext'
@@ -97,7 +98,7 @@ export default function BookingPage() {
       <LoadingSpinner
         message="Memuat paket penitipan..."
         submessage="Menyiapkan penginapan terbaik untuk kucing Anda"
-        variant="purple"
+        variant="primary"
       />
     )
   }
@@ -139,11 +140,10 @@ export default function BookingPage() {
                 href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:opacity-90"
-                style={{ backgroundColor: '#E6D18B' }}
+                className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-[#0E743D]"
               >
-                <AppIcon icon={MessageCircle} size="sm" />
-                <span className="leading-none">Hubungi WhatsApp</span>
+                <FaWhatsapp className="h-5 w-5" aria-hidden="true" />
+                <span className="leading-none">Booking via WhatsApp</span>
               </a>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function BookingPage() {
               return (
                 <div
                   key={pkg.id}
-                  className="bg-white rounded-[20px] overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border-2 hover:scale-105"
+                  className="bg-white rounded-card overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border hover:-translate-y-1"
                   style={{ borderColor: '#E8E3DA' }}
                 >
                   {/* Package Image Banner */}
@@ -201,7 +201,7 @@ export default function BookingPage() {
                     
                     {/* Tier Badge on Image */}
                     <div className="absolute top-3 right-3">
-                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-[15px] text-white shadow-md border-2 border-white/50" style={{ backgroundColor: tierStyle.badgeColor }}>
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-button text-secondary shadow-md border border-white/50" style={{ backgroundColor: tierStyle.badgeColor }}>
                         <AppIcon icon={tierStyle.icon} size="sm" />
                       </div>
                     </div>
@@ -209,7 +209,7 @@ export default function BookingPage() {
 
                   {/* Popular Badge */}
                   {tierStyle.popular && (
-                    <div className="text-center py-2" style={{ backgroundColor: '#E6D18B', color: 'white' }}>
+                    <div className="bg-primary py-2 text-center text-secondary">
                       <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider">
                         <AppIcon icon={Zap} size="xs" />
                         <span className="leading-none">TERPOPULER</span>
@@ -224,7 +224,7 @@ export default function BookingPage() {
                     </h3>
                     
                     <div className="mb-6">
-                      <span className="text-3xl font-bold" style={{ color: '#E6D18B' }}>
+                      <span className="text-3xl font-bold text-dark-gold">
                         {formatCurrency(pkg.price_per_night)}
                       </span>
                       <p className="text-sm mt-2" style={{ color: '#707070' }}>per malam</p>
@@ -238,7 +238,7 @@ export default function BookingPage() {
                             className="flex items-start gap-2.5 text-sm"
                           >
                             <div className="mt-0.5 rounded-full p-1 flex-shrink-0" style={{ backgroundColor: tierStyle.badgeColor }}>
-                              <AppIcon icon={Check} size="xs" className="text-white" />
+                              <AppIcon icon={Check} size="xs" className="text-secondary" />
                             </div>
                             <span style={{ color: '#383838' }} className="leading-none">{feature}</span>
                           </li>
@@ -249,8 +249,7 @@ export default function BookingPage() {
                     <button
                       type="button"
                       onClick={() => openBooking(pkg)}
-                      className="w-full py-3 px-5 text-white font-bold rounded-xl transition-opacity duration-300 inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:opacity-90"
-                      style={{ backgroundColor: '#E6D18B' }}
+                      className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-primary px-5 py-3 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover"
                     >
                       <AppIcon icon={CalendarPlus} size="sm" />
                       <span className="leading-none">Booking Sekarang</span>

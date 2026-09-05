@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
       });
 
       if (result?.error) {
-        setError(result.error);
+        setError('Email atau kata sandi salah.');
       } else if (result?.ok) {
         router.push('/admin');
         router.refresh();
@@ -46,23 +46,11 @@ export default function AdminLoginPage() {
         {/* Logo & Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-card mb-4">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
+            <Lock className="h-8 w-8 text-secondary" />
           </div>
           
           <h1 className="text-h1-mobile md:text-h1-desktop font-bold text-text mb-2">
-            Admin Login
+            Masuk Admin
           </h1>
           <p className="text-body text-muted">
             Cikal Pet Care Polman
@@ -72,7 +60,7 @@ export default function AdminLoginPage() {
         {/* Login Card */}
         <Card>
           <CardHeader>
-            <CardTitle>Sign In to Dashboard</CardTitle>
+            <CardTitle>Masuk ke Dashboard</CardTitle>
           </CardHeader>
           
           <CardContent>
@@ -83,7 +71,7 @@ export default function AdminLoginPage() {
                   <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <p className="text-small font-semibold text-danger mb-1">
-                      Login Failed
+                      Login gagal
                     </p>
                     <p className="text-small text-danger/80">{error}</p>
                   </div>
@@ -103,7 +91,7 @@ export default function AdminLoginPage() {
 
               {/* Password Input */}
               <Input
-                label="Password"
+                label="Kata Sandi"
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
@@ -120,7 +108,7 @@ export default function AdminLoginPage() {
                 isLoading={isLoading}
                 className="mt-6"
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Memproses...' : 'Masuk'}
               </Button>
 
             </form>
@@ -129,7 +117,7 @@ export default function AdminLoginPage() {
 
         {/* Footer */}
         <p className="text-center text-caption text-muted mt-6">
-          © 2026 Cikal Pet Care Polman. All rights reserved.
+          © 2026 Cikal Pet Care Polewali Mandar
         </p>
       </div>
     </div>

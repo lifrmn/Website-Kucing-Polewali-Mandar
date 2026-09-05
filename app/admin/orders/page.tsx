@@ -50,7 +50,7 @@ const paymentColors: Record<string, { bg: string; text: string }> = {
   PENDING: { bg: 'bg-amber-50', text: 'text-amber-700' },
   PAID: { bg: 'bg-green-50', text: 'text-green-700' },
   FAILED: { bg: 'bg-red-50', text: 'text-red-700' },
-  REFUNDED: { bg: 'bg-purple-50', text: 'text-purple-700' },
+  REFUNDED: { bg: 'bg-surface2', text: 'text-secondary' },
 };
 
 export default function AdminOrdersPage() {

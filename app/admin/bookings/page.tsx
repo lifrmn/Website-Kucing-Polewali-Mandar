@@ -220,7 +220,7 @@ export default function AdminBookingsPage() {
                 onClick={() => setStatusFilter('all')}
                 className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
                   statusFilter === 'all'
-                    ? 'bg-primary text-white'
+                    ? 'bg-primary text-[#2A2A1A]'
                     : 'bg-surface2 text-text hover:bg-border'
                 }`}
               >
@@ -232,7 +232,7 @@ export default function AdminBookingsPage() {
                   onClick={() => setStatusFilter(status)}
                   className={`px-4 py-2 rounded-button text-small font-semibold transition-colors whitespace-nowrap ${
                     statusFilter === status
-                      ? 'bg-primary text-white'
+                      ? 'bg-primary text-[#2A2A1A]'
                       : 'bg-surface2 text-text hover:bg-border'
                   }`}
                 >

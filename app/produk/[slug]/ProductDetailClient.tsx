@@ -75,7 +75,7 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
   return (
     <main className="min-h-screen pt-28 pb-20" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
       <div className="max-w-5xl mx-auto px-6 sm:px-8">
-        <Link href="/produk" className="inline-flex items-center gap-2 mb-8 text-sm font-semibold text-emerald-800 hover:text-emerald-950">
+        <Link href="/produk" className="mb-8 inline-flex min-h-11 items-center gap-2 rounded-button px-3 text-sm font-semibold text-dark-gold hover:bg-surface2 hover:text-secondary">
           <AppIcon icon={ArrowLeft} size="sm" />
           Kembali ke Produk
         </Link>
@@ -95,15 +95,15 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
           </div>
 
           <section className="pt-1 lg:pt-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700 mb-3">{product.category}</p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-dark-gold">{product.category}</p>
             <h1 className="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">{product.name}</h1>
             <p className="text-2xl font-bold mb-5" style={{ color: '#9A7B16' }}>{formatCurrency(price)}</p>
 
             <div className="flex items-center gap-2 text-sm mb-7">
               {stock > 0 ? (
                 <>
-                  <AppIcon icon={Check} size="sm" className="text-emerald-600" />
-                  <span className="font-semibold text-emerald-800">Tersedia</span>
+                  <AppIcon icon={Check} size="sm" className="text-[#166534]" />
+                  <span className="font-semibold text-[#166534]">Tersedia</span>
                   <span className="text-stone-500">{stock} stok</span>
                 </>
               ) : (
@@ -130,8 +130,8 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
                       disabled={variant.stock < 1}
                       className={`px-4 py-3 rounded-lg border text-sm font-semibold transition-colors ${
                         selectedVariantId === variant.id
-                          ? 'border-emerald-700 bg-emerald-50 text-emerald-900'
-                          : 'border-stone-300 bg-white text-stone-700 hover:border-emerald-500'
+                          ? 'border-primary-hover bg-primary/25 text-secondary'
+                          : 'border-stone-300 bg-white text-stone-700 hover:border-primary-hover'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                     >
                       {variant.name}

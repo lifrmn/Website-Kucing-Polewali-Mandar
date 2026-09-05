@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
 import { orderService } from '@/services/orderService'
 import { toast } from 'react-toastify'
-import { Loader2, ShoppingCart } from 'lucide-react'
+import { Loader2, ShoppingBag, ShoppingCart } from 'lucide-react'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -142,7 +142,7 @@ export default function CheckoutPage() {
         <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20 text-center">
           <div className="max-w-md mx-auto bg-white rounded-[20px] p-12 shadow-md border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: '#FAF8F5' }}>
-              <ShoppingCart className="w-12 h-12" style={{ color: '#E6D18B' }} />
+              <ShoppingCart className="w-12 h-12 text-dark-gold" />
             </div>
             <h2 className="text-3xl font-bold mb-4" style={{ color: '#383838' }}>Keranjang Kosong</h2>
             <p className="mb-8" style={{ color: '#707070' }}>
@@ -150,10 +150,9 @@ export default function CheckoutPage() {
             </p>
             <button
               onClick={() => router.push('/produk')}
-              className="px-8 py-4 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90"
-              style={{ backgroundColor: '#E6D18B' }}
+              className="inline-flex min-h-12 items-center gap-2 rounded-button bg-primary px-8 py-3 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover"
             >
-              🛍️ Belanja Sekarang
+              <ShoppingBag className="h-5 w-5" /> Lihat Produk
             </button>
           </div>
         </div>
@@ -186,12 +185,12 @@ export default function CheckoutPage() {
       <div className="max-w-5xl mx-auto px-6 sm:px-8 py-14 md:py-20">
         <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-[20px] shadow-md p-8 space-y-6 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <form onSubmit={handleSubmit} className="space-y-6 rounded-card border border-border bg-white p-5 shadow-sm sm:p-8">
               <h2 className="text-2xl font-bold mb-6" style={{ color: '#383838' }}>Informasi Pembeli</h2>
 
               <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                  Nama Lengkap <span style={{ color: '#E6D18B' }}>*</span>
+                  Nama Lengkap <span className="text-danger" aria-hidden="true">*</span>
                 </label>
                 <input
                   type="text"
@@ -199,8 +198,7 @@ export default function CheckoutPage() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                   placeholder="Masukkan nama lengkap"
                 />
               </div>
@@ -214,15 +212,14 @@ export default function CheckoutPage() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                   placeholder="email@example.com"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                  Nomor Telepon <span style={{ color: '#E6D18B' }}>*</span>
+                  Nomor Telepon <span className="text-danger" aria-hidden="true">*</span>
                 </label>
                 <input
                   type="tel"
@@ -230,23 +227,21 @@ export default function CheckoutPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                   placeholder="08xxxxxxxxxx"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                  Alamat <span style={{ color: '#E6D18B' }}>*</span>
+                  Alamat <span className="text-danger" aria-hidden="true">*</span>
                 </label>
                 <textarea
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                   placeholder="Masukkan alamat lengkap"
                   rows={3}
                 />
@@ -260,8 +255,7 @@ export default function CheckoutPage() {
                   name="payment_method"
                   value={formData.payment_method}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                 >
                   <option value="qris">QRIS (Semua E-Wallet)</option>
                   <option value="transfer">Transfer Bank</option>
@@ -276,8 +270,7 @@ export default function CheckoutPage() {
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:border-transparent focus:shadow-lg transition-all duration-300"
-                  style={{ borderColor: '#E8E3DA' }}
+                  className="input-premium"
                   placeholder="Catatan untuk pesanan (opsional)"
                   rows={2}
                 />
@@ -286,8 +279,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 px-6 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ backgroundColor: '#E6D18B' }}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-primary px-6 py-3 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-50"
               >
                 {loading && <Loader2 className="animate-spin w-5 h-5" />}
                 {loading ? 'Memproses...' : 'Selesaikan Pesanan'}
@@ -296,19 +288,22 @@ export default function CheckoutPage() {
           </div>
 
           <div>
-            <div className="bg-white rounded-[20px] shadow-md p-6 sticky top-28 border-2" style={{ borderColor: '#E8E3DA' }}>
+            <div className="sticky top-28 rounded-card border border-border bg-white p-6 shadow-sm">
               <h3 className="text-xl font-bold mb-4" style={{ color: '#383838' }}>Ringkasan Pesanan</h3>
               <div className="space-y-3 mb-4" style={{ borderBottom: '2px solid #E8E3DA', paddingBottom: '1rem' }}>
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-sm" style={{ color: '#707070' }}>
-                    <span>{item.name}</span>
-                    <span>{formatCurrency(item.price * (item.quantity || 1))}</span>
+                  <div key={idx} className="flex items-start gap-3 text-sm text-muted">
+                    <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-surface2">
+                      {item.image_url ? <img src={item.image_url} alt="" className="h-full w-full object-cover" /> : <ShoppingBag className="m-3 h-6 w-6 text-muted" />}
+                    </div>
+                    <div className="min-w-0 flex-1"><p className="line-clamp-2 text-text">{item.name}</p><p className="text-xs">Jumlah: {item.quantity || 1}</p></div>
+                    <span className="whitespace-nowrap font-medium text-text">{formatCurrency(item.price * (item.quantity || 1))}</span>
                   </div>
                 ))}
               </div>
               <div className="flex justify-between items-center" style={{ color: '#383838' }}>
                 <span className="font-bold">Total</span>
-                <span className="text-2xl font-bold" style={{ color: '#E6D18B' }}>{formatCurrency(getTotal())}</span>
+                <span className="text-2xl font-bold text-dark-gold">{formatCurrency(getTotal())}</span>
               </div>
             </div>
           </div>

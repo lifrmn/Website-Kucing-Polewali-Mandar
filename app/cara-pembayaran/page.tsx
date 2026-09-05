@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Copy, Check, QrCode, Building2, Loader2, Search, Upload } from 'lucide-react';
+import { Building2, Check, CircleCheck, Copy, Lightbulb, Loader2, QrCode, Search, Upload } from 'lucide-react';
 import { CustomerOrderSummary, orderService } from '@/services/orderService';
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings';
 
@@ -109,7 +109,7 @@ export default function PaymentInstructionsPage() {
                 value={orderNumber}
                 onChange={(event) => setOrderNumber(event.target.value)}
                 placeholder="Nomor pesanan (INV-...)"
-                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-primary focus:outline-none"
                 style={{ borderColor: '#E8E3DA' }}
               />
               <input
@@ -118,7 +118,7 @@ export default function PaymentInstructionsPage() {
                 value={phone}
                 onChange={(event) => setPhone(event.target.value)}
                 placeholder="Nomor telepon checkout"
-                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-primary focus:outline-none"
                 style={{ borderColor: '#E8E3DA' }}
               />
             </div>
@@ -127,19 +127,19 @@ export default function PaymentInstructionsPage() {
               Tampilkan Total Pesanan
             </button>
             {order && (
-              <div className="mt-5 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex flex-wrap items-center justify-between gap-3">
-                <div><p className="text-sm text-emerald-700">{order.order_number}</p><p className="font-semibold text-emerald-900">{order.payment_status.replace(/_/g, ' ')}</p></div>
-                <p className="text-xl font-bold text-emerald-900">{formatCurrency(order.total_amount)}</p>
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface2 p-4">
+                <div><p className="text-sm text-muted">{order.order_number}</p><p className="font-semibold text-text">{order.payment_status.replace(/_/g, ' ')}</p></div>
+                <p className="text-xl font-bold text-dark-gold">{formatCurrency(order.total_amount)}</p>
               </div>
             )}
-            {feedback && <p className={`mt-4 text-sm ${feedback.type === 'error' ? 'text-red-600' : 'text-emerald-700'}`}>{feedback.message}</p>}
+            {feedback && <p className={`mt-4 rounded-button px-4 py-3 text-sm ${feedback.type === 'error' ? 'bg-[#FEE2E2] text-[#B91C1C]' : 'bg-[#DCFCE7] text-[#166534]'}`}>{feedback.message}</p>}
           </form>
 
           {/* QRIS Payment */}
           <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
-                <QrCode className="w-6 h-6 text-white" />
+                <QrCode className="w-6 h-6 text-secondary" />
               </div>
               <div>
                 <h3 className="text-xl font-bold" style={{ color: '#383838' }}>QRIS (Semua E-Wallet & Mobile Banking)</h3>
@@ -168,7 +168,7 @@ export default function PaymentInstructionsPage() {
           <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
-                <Building2 className="w-6 h-6 text-white" />
+                <Building2 className="w-6 h-6 text-secondary" />
               </div>
               <div>
                 <h3 className="text-xl font-bold" style={{ color: '#383838' }}>Transfer Bank</h3>
@@ -193,8 +193,7 @@ export default function PaymentInstructionsPage() {
                     </div>
                     <button
                       onClick={() => copyToClipboard(account.accountNumber, account.code)}
-                      className="w-full mt-3 py-2 px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity text-white"
-                      style={{ backgroundColor: '#E6D18B' }}
+                      className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-button bg-primary px-4 py-2 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
                     >
                       {copied === account.code ? (
                         <>
@@ -219,7 +218,7 @@ export default function PaymentInstructionsPage() {
             <form onSubmit={uploadProof} className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
               <div className="flex items-start gap-4 mb-5">
                 <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
-                  <Upload className="w-6 h-6 text-white" />
+                  <Upload className="w-6 h-6 text-secondary" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold" style={{ color: '#383838' }}>Bukti Pembayaran</h3>
@@ -241,13 +240,12 @@ export default function PaymentInstructionsPage() {
             </form>
           )}
 
-          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
-            <h3 className="text-xl font-bold mb-4" style={{ color: '#383838' }}>💡 Tips Pembayaran</h3>
-            <ul className="space-y-2 text-sm" style={{ color: '#707070' }}>
-              <li>✓ Pastikan nominal pembayaran sesuai dengan total pesanan</li>
-              <li>✓ Simpan bukti pembayaran untuk konfirmasi</li>
-              <li>✓ Hubungi kami jika ada kesalahan dalam pembayaran</li>
-              <li>✓ Pesanan akan diproses setelah pembayaran dikonfirmasi</li>
+          <div className="rounded-card border border-border bg-white p-5 shadow-sm sm:p-8">
+            <h3 className="mb-4 flex items-center gap-2 text-xl font-bold text-text"><Lightbulb className="h-5 w-5 text-dark-gold" /> Tips Pembayaran</h3>
+            <ul className="space-y-3 text-sm text-muted">
+              {['Pastikan nominal pembayaran sesuai dengan total pesanan', 'Simpan bukti pembayaran untuk konfirmasi', 'Hubungi kami jika ada kesalahan dalam pembayaran', 'Pesanan akan diproses setelah pembayaran dikonfirmasi'].map((tip) => (
+                <li key={tip} className="flex items-start gap-2"><CircleCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#166534]" /> {tip}</li>
+              ))}
             </ul>
           </div>
         </div>

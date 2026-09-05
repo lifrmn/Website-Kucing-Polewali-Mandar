@@ -191,8 +191,8 @@ export default function FileUpload({
             onClick={handleClick}
             className="p-6 text-center cursor-pointer hover:bg-gray-50 transition-colors"
           >
-            <div className="w-14 h-14 mx-auto mb-3 rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 flex items-center justify-center">
-              <Upload className="w-6 h-6 text-indigo-500" />
+            <div className="w-14 h-14 mx-auto mb-3 rounded-xl bg-primary/30 flex items-center justify-center">
+              <Upload className="w-6 h-6 text-dark-gold" />
             </div>
             <p className="text-sm font-medium text-slate-700 mb-1">
               Klik untuk upload atau drag & drop
@@ -206,9 +206,9 @@ export default function FileUpload({
 
       {/* Upload Progress/Status */}
       {uploading && (
-        <div className="flex items-center space-x-2 text-sm text-blue-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-          <span>Uploading...</span>
+        <div className="flex items-center space-x-2 text-sm text-dark-gold">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+          <span>Mengunggah...</span>
         </div>
       )}
     </div>
