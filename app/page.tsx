@@ -1,7 +1,11 @@
-'use client'
-
 import Link from 'next/link'
-import { ArrowRight, Bed, Clock3, HeartHandshake, Scissors, ShieldCheck, ShoppingBag } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowRight, Bed, CalendarCheck, Clock3, HeartHandshake, MapPin, Scissors, ShieldCheck, ShoppingBag, Star } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
+import { getWhatsAppUrl } from '@/lib/whatsapp'
+import { getSiteUrl } from '@/lib/site-url'
+import prisma from '@/lib/prisma'
+import { settingsService } from '@/services/settingsService'
 
 const PALETTE = {
   bg: '#FAF8F5',
@@ -12,9 +16,36 @@ const PALETTE = {
   muted: '#707070',
 }
 
-export default function HomePage() {
+const formatCurrency = (amount: number) => new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  minimumFractionDigits: 0,
+}).format(amount)
+
+export default async function HomePage() {
+  const [settings, services, packages, testimonials, gallery, team] = await Promise.all([
+    settingsService.getSiteSettings(),
+    prisma.service.findMany({ where: { is_active: true }, orderBy: [{ featured: 'desc' }, { created_at: 'desc' }], take: 6 }),
+    prisma.penitipanPackage.findMany({ where: { is_active: true }, orderBy: [{ featured: 'desc' }, { created_at: 'desc' }], take: 3 }),
+    prisma.testimonial.findMany({ where: { is_approved: true }, orderBy: [{ is_featured: 'desc' }, { created_at: 'desc' }], take: 6 }),
+    prisma.galleryItem.findMany({ where: { is_published: true }, orderBy: [{ sort_order: 'asc' }, { created_at: 'desc' }], take: 8 }),
+    prisma.teamMember.findMany({ where: { is_published: true }, orderBy: [{ sort_order: 'asc' }, { created_at: 'desc' }], take: 6 }),
+  ])
+  const sameAs = [settings.instagram, settings.facebook, settings.tiktok, settings.youtube].filter(Boolean)
+  const localBusinessJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: settings.siteName,
+    url: getSiteUrl(),
+    telephone: settings.whatsapp || undefined,
+    email: settings.email || undefined,
+    address: settings.address || undefined,
+    sameAs: sameAs.length > 0 ? sameAs : undefined,
+  }
+
   return (
     <div style={{ backgroundColor: PALETTE.bg, fontFamily: "'Poppins', 'Inter', sans-serif" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd).replace(/</g, '\\u003c') }} />
 
       {/* ====================================================
           HERO SECTION
@@ -25,10 +56,13 @@ export default function HomePage() {
       >
         {/* Right: cat photo */}
         <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1000&auto=format&fit=crop&q=80"
-            alt="Kucing"
-            className="w-full h-full object-cover"
+          <Image
+            src="/placeholder-product.svg"
+            alt="Placeholder foto Cikal Pet Care"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
             style={{ objectPosition: 'center 34%' }}
           />
           <div
@@ -47,10 +81,10 @@ export default function HomePage() {
               className="text-[clamp(2.25rem,6vw,3.75rem)] font-bold text-white leading-[1.1] mb-6"
               style={{ fontFamily: "'Poppins', sans-serif" }}
             >
-              Perawatan Terbaik untuk Kucing Kesayangan Anda
+              Cikal Pet Care Polewali Mandar
             </h1>
             <p className="text-base md:text-lg leading-relaxed mb-3" style={{ color: 'rgba(255,255,255,0.75)' }}>
-              Grooming, penitipan, dan kebutuhan kucing dalam satu tempat yang aman, bersih, dan ditangani dengan penuh perhatian.
+              Grooming &amp; Penitipan Kucing dengan Perawatan Penuh Kasih
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -60,9 +94,7 @@ export default function HomePage() {
               >
                 Booking Sekarang <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/layanan" className="inline-flex min-h-12 items-center justify-center rounded-button border border-white/40 bg-white/10 px-7 font-semibold text-white hover:bg-white/15">
-                Lihat Layanan
-              </Link>
+              <a href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk kucing saya.')} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-white/40 bg-white/10 px-7 font-semibold text-white hover:bg-white/15"><FaWhatsapp className="h-5 w-5" aria-hidden="true" />Chat WhatsApp</a>
             </div>
           </div>
         </div>
@@ -112,37 +144,32 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-            {[
-              { name: 'Grooming Lengkap',       image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?w=500&auto=format&fit=crop', link: '/layanan' },
-              { name: 'Mandi & Blow',            image: 'https://images.unsplash.com/photo-1519052537078-e6302a4968d4?w=500&auto=format&fit=crop', link: '/layanan' },
-              { name: 'Penitipan Premium',       image: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=500&auto=format&fit=crop', link: '/booking' },
-              { name: 'Konsultasi Kesehatan',    image: 'https://images.unsplash.com/photo-1570824104453-508955ab713e?w=500&auto=format&fit=crop', link: '/layanan' },
-              { name: 'Makanan Premium',         image: 'https://images.unsplash.com/photo-1589883661923-6476cb0ae9f2?w=500&auto=format&fit=crop', link: '/produk' },
-              { name: 'Aksesori Kucing',         image: 'https://images.unsplash.com/photo-1568640347023-a616a30bc3bd?w=500&auto=format&fit=crop', link: '/produk' },
-            ].map((item, idx) => (
+          {services.length === 0 ? <p className="rounded-card border border-border bg-white p-8 text-center text-muted">Layanan belum tersedia saat ini.</p> : <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
+            {services.map((item) => (
               <Link
-                key={idx}
-                href={item.link}
+                key={item.id}
+                href="/layanan"
                 className="group bg-white rounded-card overflow-hidden border border-border transition-all duration-300 hover:-translate-y-1"
                 style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
-                onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 12px 32px rgba(0,0,0,0.12)')}
-                onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.07)')}
               >
-                <div className="overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
+                  <Image
+                    src={item.image_url || '/placeholder-product.svg'}
+                    alt={`Placeholder foto ${item.name}`}
+                    fill
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     style={{ borderRadius: '20px 20px 0 0' }}
                   />
+                  {!item.image_url && <span className="absolute bottom-2 left-2 rounded bg-white/90 px-2 py-1 text-[10px] font-semibold text-muted">Foto segera tersedia</span>}
                 </div>
-                <div className="p-4 text-center">
+                <div className="p-4">
                   <p className="font-semibold text-sm" style={{ color: PALETTE.text }}>{item.name}</p>
+                  <p className="mt-2 font-bold text-dark-gold">Mulai {formatCurrency(item.price)}</p>
                 </div>
               </Link>
             ))}
-          </div>
+          </div>}
 
           <div className="text-center mt-12">
             <Link
@@ -155,6 +182,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {packages.length > 0 && <section className="bg-white py-20 md:py-24"><div className="mx-auto max-w-5xl px-6 sm:px-8"><div className="mb-10 text-center"><h2 className="text-3xl font-bold text-text md:text-4xl">Paket Penitipan</h2><p className="mt-3 text-muted">Harga dan fasilitas langsung dari pilihan paket yang tersedia.</p></div><div className="grid gap-5 md:grid-cols-3">{packages.map((pkg) => { let features: string[] = []; try { const parsed = JSON.parse(pkg.features); features = Array.isArray(parsed) ? parsed : [] } catch { features = pkg.features.split(',').map((item) => item.trim()).filter(Boolean) } return <article key={pkg.id} className="rounded-card border border-border bg-bg p-6"><h3 className="text-xl font-bold text-text">{pkg.name}</h3><p className="mt-3 text-2xl font-bold text-dark-gold">{formatCurrency(pkg.price_per_night)} <span className="text-sm font-normal text-muted">/ malam</span></p>{features.length > 0 && <ul className="mt-5 space-y-2 text-sm text-muted">{features.slice(0, 5).map((feature) => <li key={feature}>✓ {feature}</li>)}</ul>}<p className="mt-4 text-xs text-muted">Maksimal {pkg.max_cats} kucing</p><Link href="/booking" className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-button bg-primary px-5 font-semibold text-[#2A2A1A]">Booking</Link></article> })}</div></div></section>}
 
         {/* Service principles replace unverified marketing metrics. */}
       <section className="relative py-28" style={{ backgroundColor: PALETTE.stats }}>
@@ -198,6 +227,16 @@ export default function HomePage() {
           </svg>
         </div>
       </section>
+
+      <section className="bg-bg py-20"><div className="mx-auto max-w-5xl px-6 sm:px-8"><div className="mb-10 text-center"><h2 className="text-3xl font-bold text-text">Cara Booking</h2></div><ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">{['Pilih layanan', 'Pilih tanggal', 'Isi data kucing', 'Konfirmasi', 'Pembayaran'].map((step, index) => <li key={step} className="rounded-card border border-border bg-white p-5"><span className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary font-bold text-secondary">{index + 1}</span><p className="font-semibold text-text">{step}</p></li>)}</ol></div></section>
+
+      {gallery.length > 0 && <section className="bg-white py-20"><div className="mx-auto max-w-5xl px-6 sm:px-8"><h2 className="mb-10 text-center text-3xl font-bold text-text">Galeri Perawatan</h2><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{gallery.map((item) => <figure key={item.id} className="overflow-hidden rounded-card border border-border bg-bg">{item.kind === 'BEFORE_AFTER' ? <div className="grid grid-cols-2">{[{ label: 'Sebelum', url: item.before_image_url }, { label: 'Sesudah', url: item.after_image_url }].map((image) => image.url && <div key={image.label} className="relative"><img src={image.url} alt={`${image.label} ${item.title}`} className="aspect-square w-full object-cover" /><span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs font-semibold text-white">{image.label}</span></div>)}</div> : item.image_url ? <img src={item.image_url} alt={item.title} className="aspect-[4/3] w-full object-cover" /> : null}<figcaption className="p-4"><p className="font-bold text-text">{item.title}</p>{item.description && <p className="mt-1 text-sm text-muted">{item.description}</p>}</figcaption></figure>)}</div></div></section>}
+
+      {team.length > 0 && <section className="bg-bg py-20"><div className="mx-auto max-w-5xl px-6 sm:px-8"><h2 className="mb-10 text-center text-3xl font-bold text-text">Tim Cikal Pet Care</h2><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{team.map((member) => <article key={member.id} className="overflow-hidden rounded-card border border-border bg-white">{member.image_url && <img src={member.image_url} alt={member.name} className="aspect-[4/3] w-full object-cover" />}<div className="p-5"><h3 className="text-lg font-bold text-text">{member.name}</h3><p className="text-sm font-semibold text-dark-gold">{member.role}</p>{member.bio && <p className="mt-3 text-sm leading-relaxed text-muted">{member.bio}</p>}</div></article>)}</div></div></section>}
+
+      {testimonials.length > 0 && <section className="bg-white py-20"><div className="mx-auto max-w-5xl px-6 sm:px-8"><h2 className="mb-10 text-center text-3xl font-bold text-text">Cerita Pelanggan</h2><div className="grid gap-5 md:grid-cols-3">{testimonials.map((testimonial) => <blockquote key={testimonial.id} className="rounded-card border border-border bg-bg p-6"><div className="mb-4 flex gap-1 text-[#A16207]" aria-label={`${testimonial.rating} dari 5 bintang`}>{Array.from({ length: testimonial.rating }, (_, index) => <Star key={index} className="h-4 w-4 fill-current" />)}</div><p className="leading-relaxed text-text">“{testimonial.message}”</p><footer className="mt-4 text-sm font-semibold text-muted">{testimonial.customer_name}</footer></blockquote>)}</div></div></section>}
+
+      <section className="bg-[#2F2E25] py-20 text-white"><div className="mx-auto grid max-w-5xl gap-8 px-6 sm:px-8 md:grid-cols-2 md:items-center"><div><div className="mb-4 flex items-center gap-2 text-primary"><MapPin className="h-5 w-5" /><span className="font-semibold">Polewali Mandar</span></div><h2 className="text-3xl font-bold">Kucing Kesayangan Anda Layak Mendapatkan Perawatan Terbaik.</h2><p className="mt-4 text-white/70">{settings.address}</p><p className="mt-2 text-white/70">{settings.openDays} · {settings.openHours}</p></div><div className="flex flex-col gap-3 sm:flex-row md:justify-end"><Link href="/booking" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button bg-primary px-6 font-semibold text-[#2A2A1A]"><CalendarCheck className="h-5 w-5" />Booking Sekarang</Link><a href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin membuat booking untuk kucing saya.')} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-button border border-white/30 px-6 font-semibold text-white"><FaWhatsapp className="h-5 w-5" />Chat WhatsApp</a>{settings.googleMapsUrl && <a href={settings.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-button border border-white/30 px-6 font-semibold text-white">Petunjuk Arah</a>}</div></div></section>
 
     </div>
   )

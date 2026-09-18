@@ -5,6 +5,7 @@ import { authorizeAdmin } from '@/lib/authorization';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/client-ip';
 import { boardingBookingSchema } from '@/lib/validations/booking';
+import { parsePagination } from '@/lib/validations/pagination';
 import {
   BoardingBookingError,
   createBoardingBooking,
@@ -46,23 +47,40 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const pagination = parsePagination(searchParams);
+
     // Otherwise get all bookings
-    const bookings = await prisma.penitipanBooking.findMany({
-      include: {
-        customer: true,
-        package: true,
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
+    const [bookings, total] = await prisma.$transaction([
+      prisma.penitipanBooking.findMany({
+        include: {
+          customer: true,
+          package: true,
+        },
+        orderBy: { created_at: 'desc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+      }),
+      prisma.penitipanBooking.count(),
+    ]);
 
     return NextResponse.json({
       success: true,
       data: bookings,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit),
+      },
     });
   } catch (error: unknown) {
     console.error('GET bookings error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Parameter pagination tidak valid' },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -115,6 +133,9 @@ export async function POST(request: NextRequest) {
         check_out_date: booking.check_out_date,
         total_nights: booking.total_nights,
         total_price: booking.total_price,
+        payment_method: booking.payment_method,
+        payment_status: booking.payment_status,
+        deposit_amount: booking.deposit_amount,
         status: booking.status,
       },
       message: replayed ? 'Booking sudah dibuat sebelumnya' : 'Booking berhasil dibuat',
@@ -134,6 +155,8 @@ export async function POST(request: NextRequest) {
       INVALID_DATE_RANGE: 'Tanggal check-out harus setelah check-in, maksimal 30 malam',
       PAST_CHECK_IN: 'Tanggal check-in tidak boleh di masa lalu',
       CAPACITY_FULL: 'Kapasitas penitipan penuh pada salah satu tanggal yang dipilih',
+      TOO_MANY_CATS: 'Jumlah kucing melebihi batas paket yang dipilih',
+      PAYMENT_METHOD_UNAVAILABLE: 'Metode pembayaran tidak tersedia atau belum dikonfigurasi',
     };
     if (error instanceof BoardingBookingError) {
       return NextResponse.json(

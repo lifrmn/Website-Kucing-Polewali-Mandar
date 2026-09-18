@@ -10,6 +10,7 @@ export type AdminPermission =
   | 'bookings:manage'
   | 'blog:manage'
   | 'settings:manage'
+  | 'content:manage'
   | 'uploads:manage';
 
 export const allAdminPermissions: readonly AdminPermission[] = [
@@ -22,18 +23,14 @@ export const allAdminPermissions: readonly AdminPermission[] = [
   'bookings:manage',
   'blog:manage',
   'settings:manage',
+  'content:manage',
   'uploads:manage',
 ];
 
 const rolePermissions: Record<UserRole, ReadonlySet<AdminPermission>> = {
   [UserRole.SUPER_ADMIN]: new Set(allAdminPermissions),
   [UserRole.ADMIN]: new Set(allAdminPermissions),
-  [UserRole.STAFF]: new Set([
-    'orders:read',
-    'orders:manage',
-    'bookings:read',
-    'bookings:manage',
-  ]),
+  [UserRole.STAFF]: new Set(),
 };
 
 export function getAdminAuthorizationStatus(

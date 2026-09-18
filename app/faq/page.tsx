@@ -1,12 +1,13 @@
 import { Metadata } from 'next'
 import { ChevronDown } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
-import { toWhatsAppNumber } from '@/lib/whatsapp'
+import { getWhatsAppUrl } from '@/lib/whatsapp'
 import { settingsService } from '@/services/settingsService'
 
 export const metadata: Metadata = {
   title: 'FAQ - Pertanyaan yang Sering Diajukan | Cikal Pet Care Polman',
   description: 'Temukan jawaban untuk pertanyaan umum tentang layanan perawatan hewan peliharaan di Cikal Pet Care Polman',
+  alternates: { canonical: '/faq' },
 }
 
 function getFaqs(paymentDescription: string) {
@@ -16,15 +17,15 @@ function getFaqs(paymentDescription: string) {
     questions: [
       {
         q: 'Apa saja layanan yang tersedia di Cikal Pet Care?',
-        a: 'Kami menyediakan layanan grooming (mandi, potong kuku, styling), konsultasi kesehatan, vaksinasi, penitipan hewan (pet hotel), dan penjualan produk perawatan hewan berkualitas.'
+        a: 'Daftar layanan yang sedang aktif, harga, dan durasinya ditampilkan pada halaman Layanan. Paket penitipan yang dapat dipesan tersedia pada halaman Booking.'
       },
       {
         q: 'Berapa lama waktu grooming untuk kucing?',
-        a: 'Untuk grooming dasar (mandi + potong kuku) membutuhkan waktu sekitar 1-2 jam tergantung ukuran dan kondisi hewan. Grooming lengkap dengan styling bisa memakan waktu 2-3 jam.'
+        a: 'Durasi mengikuti jenis layanan dan kondisi kucing. Perkiraan durasi untuk setiap layanan aktif ditampilkan pada halaman Layanan.'
       },
       {
         q: 'Apakah harus booking terlebih dahulu?',
-        a: 'Sangat disarankan untuk booking terlebih dahulu agar kami bisa menyiapkan tim dan peralatan dengan optimal. Namun kami juga menerima walk-in customer jika slot masih tersedia.'
+        a: 'Booking disarankan agar Anda mendapat slot yang tersedia. Untuk grooming, sistem hanya menerima jam yang masih tersedia pada tanggal pilihan.'
       },
     ]
   },
@@ -37,7 +38,7 @@ function getFaqs(paymentDescription: string) {
       },
       {
         q: 'Apakah harus bayar DP dulu?',
-        a: 'Untuk layanan grooming dan konsultasi tidak perlu DP. Namun untuk layanan pet hotel dan booking khusus (hari libur/weekend), kami meminta DP 30% sebagai konfirmasi booking.'
+        a: 'Ketentuan pembayaran mengikuti instruksi yang tampil setelah pemesanan atau konfirmasi resmi dari Cikal Pet Care. Jangan mengirim pembayaran ke rekening yang tidak tercantum pada halaman Cara Pembayaran.'
       },
     ]
   },
@@ -46,11 +47,11 @@ function getFaqs(paymentDescription: string) {
     questions: [
       {
         q: 'Apakah semua produk dijamin original?',
-        a: 'Ya, semua produk yang kami jual dijamin 100% original dari distributor resmi. Kami tidak menjual produk KW atau tiruan.'
+        a: 'Detail merek, varian, harga, dan stok yang tersedia ditampilkan pada halaman produk. Hubungi kami sebelum membeli jika Anda perlu memastikan distributor atau informasi kemasan tertentu.'
       },
       {
         q: 'Apakah ada garansi untuk produk yang dibeli?',
-        a: 'Untuk produk elektronik (seperti tempat makan otomatis, sisir elektrik) ada garansi toko 7 hari. Untuk produk makanan/snack, kami menjamin produk sesuai expired date yang tertera.'
+        a: 'Ketentuan pengembalian atau garansi bergantung pada jenis dan kondisi produk. Konfirmasikan ketentuannya sebelum checkout melalui kontak resmi kami.'
       },
     ]
   },
@@ -67,8 +68,18 @@ export default async function FAQPage() {
     ? `Kami menerima pembayaran melalui ${paymentMethods.join(' dan ')}. Detail pembayaran yang berlaku ditampilkan pada halaman Cara Pembayaran.`
     : 'Metode pembayaran yang tersedia akan diinformasikan pada halaman Cara Pembayaran atau melalui WhatsApp.'
   const faqs = getFaqs(paymentDescription)
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.flatMap((section) => section.questions.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    }))),
+  }
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, '\\u003c') }} />
       {/* Hero Header */}
       <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
@@ -118,7 +129,7 @@ export default async function FAQPage() {
           <h3 className="text-2xl font-bold mb-3" style={{ color: '#383838' }}>Masih Ada Pertanyaan?</h3>
           <p className="mb-6" style={{ color: '#707070' }}>Hubungi kami langsung untuk bantuan lebih lanjut</p>
           <a
-            href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
+            href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk kucing saya.')}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]"

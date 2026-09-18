@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Clock, Mail, MapPin } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
-import { toWhatsAppNumber } from '@/lib/whatsapp'
+import { getWhatsAppUrl } from '@/lib/whatsapp'
 
 export default function ContactPage() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSiteSettings)
@@ -98,7 +98,7 @@ export default function ContactPage() {
               <h3 className="text-2xl font-bold mb-3 text-text">Chat WhatsApp</h3>
               <p className="mb-6 text-muted">Hubungi tim Cikal Pet Care untuk informasi layanan, booking, dan produk.</p>
               <a
-                href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
+                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk kucing saya.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]" 
@@ -112,18 +112,7 @@ export default function ContactPage() {
         {/* Map Section */}
         <div className="mt-14">
           <h2 className="text-2xl font-bold mb-6" style={{ color: '#383838' }}>Lokasi Kami</h2>
-          <div className="rounded-[20px] overflow-hidden shadow-md border-2" style={{ borderColor: '#E8E3DA' }}>
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127094.72!2d119.3388!3d-3.3244!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2d945e91f8f91f89%3A0x5e91f8f91f89!2sPolewali%20Mandar%2C%20Sulawesi%20Barat!5e0!3m2!1sid!2sid!4v1234567890"
-              width="100%"
-              height="400"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full"
-            ></iframe>
-          </div>
+          <div className="rounded-card border border-border bg-white p-6 shadow-sm"><p className="text-text">{settings.address}</p>{settings.googleMapsUrl ? <a href={settings.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex min-h-11 items-center rounded-button bg-primary px-5 font-semibold text-[#2A2A1A]">Buka Google Maps</a> : <p className="mt-3 text-sm text-muted">Tautan lokasi sedang disiapkan.</p>}</div>
         </div>
       </div>
     </main>

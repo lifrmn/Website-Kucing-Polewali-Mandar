@@ -17,6 +17,7 @@
     "db:seed": "dotenvx run -- tsx prisma/seed.ts",
     "db:migrate": "dotenvx run -- prisma migrate deploy",
     "db:backup": "dotenvx run -- node scripts/backup-database.js",
+    "db:verify": "dotenvx run -- node scripts/reconcile-migration-history.js -- --verify",
     "env:encrypt": "dotenvx encrypt -f .env",
     "env:decrypt": "dotenvx decrypt -f .env"
   },

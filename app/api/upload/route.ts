@@ -12,7 +12,7 @@ const UPLOAD_FOLDER = 'cikal-pet-care';
 
 export async function POST(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('uploads:manage');
+    const authorization = await authorizeAdmin('uploads:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const uploadLimit = consumeRateLimit(
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Upload gagal: ' + (error instanceof Error ? error.message : String(error)),
+        message: 'Upload gagal karena kesalahan server',
       },
       { status: 500 }
     );
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint to remove image from Cloudinary
 export async function DELETE(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('uploads:manage');
+    const authorization = await authorizeAdmin('uploads:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { searchParams } = new URL(request.url);
@@ -109,7 +109,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Gagal menghapus gambar: ' + (error instanceof Error ? error.message : String(error)),
+        message: 'Gagal menghapus gambar karena kesalahan server',
       },
       { status: 500 }
     );

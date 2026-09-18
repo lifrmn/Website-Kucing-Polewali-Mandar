@@ -5,7 +5,7 @@ import { MapPin, Clock, Mail, PawPrint } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 import SocialMediaBar, { type SocialMediaLinks } from './SocialMediaBar';
 import { useSiteSettings } from './SiteSettingsContext';
-import { toWhatsAppNumber } from '@/lib/whatsapp';
+import { getWhatsAppUrl } from '@/lib/whatsapp';
 
 export default function Footer() {
   const settings = useSiteSettings();
@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="space-y-3 text-white/70 text-sm">
               <li className="flex items-center gap-3">
                 <FaWhatsapp className="flex-shrink-0 text-[#25D366]" aria-hidden="true" />
-                <a href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{settings.whatsapp}</a>
+                <a href={getWhatsAppUrl(settings.whatsapp)} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">{settings.whatsapp}</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={16} className="flex-shrink-0 text-white/50" />

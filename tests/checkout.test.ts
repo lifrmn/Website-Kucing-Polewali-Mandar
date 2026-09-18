@@ -25,10 +25,19 @@ const databasePath = join(tmpdir(), `cikal-checkout-${randomUUID()}.db`);
 const databaseUrl = `file:${databasePath.replace(/\\/g, '/')}`;
 const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
 
-before(() => {
+before(async () => {
   execFileSync(process.execPath, [resolve('node_modules/prisma/build/index.js'), 'migrate', 'deploy'], {
     env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: 'pipe',
+  });
+  await prisma.settings.createMany({
+    data: [
+      { key: 'payment_bank_transfer_active', value: 'true', type: 'boolean' },
+      { key: 'payment_bank_name', value: 'Bank Test' },
+      { key: 'payment_bank_account', value: '1234567890' },
+      { key: 'payment_bank_account_name', value: 'Cikal Test' },
+      { key: 'payment_cod_active', value: 'true', type: 'boolean' },
+    ],
   });
 });
 
@@ -180,6 +189,21 @@ test('insufficient stock rolls back all stock and customer changes', async () =>
   assert.equal(await prisma.order.count({ where: { customer: { phone: '081298765432' } } }), 0);
 });
 
+test('concurrent checkouts cannot oversell the final stock unit', async () => {
+  const product = await createProduct(30_000, 1);
+  const input = checkoutInput(product.id, 1);
+
+  const results = await Promise.allSettled([
+    createCheckout(prisma, input, randomUUID()),
+    createCheckout(prisma, input, randomUUID()),
+  ]);
+
+  assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+  assert.equal(results.filter((result) => result.status === 'rejected').length, 1);
+  assert.equal((await prisma.product.findUniqueOrThrow({ where: { id: product.id } })).stock, 0);
+  assert.equal(await prisma.orderItem.count({ where: { product_id: product.id } }), 1);
+});
+
 test('order updates persist fields and cancellation restores stock exactly once', async () => {
   const product = await createProduct(40_000, 5);
   const checkout = await createCheckout(prisma, checkoutInput(product.id, 2), randomUUID());
@@ -248,4 +272,17 @@ test('customer lookup requires matching phone and does not return customer PII',
     customer_phone: '081200000000',
   }));
   assert.equal(denied, null);
+});
+
+test('checkout rejects a payment method that is not active', async () => {
+  const product = await createProduct(25_000, 2);
+  const input = checkoutSchema.parse({
+    ...checkoutInput(product.id, 1),
+    payment_method: 'qris',
+  });
+  await assert.rejects(
+    createCheckout(prisma, input, randomUUID()),
+    (error: unknown) => error instanceof CheckoutConflictError && error.code === 'PAYMENT_METHOD_UNAVAILABLE'
+  );
+  assert.equal((await prisma.product.findUniqueOrThrow({ where: { id: product.id } })).stock, 2);
 });

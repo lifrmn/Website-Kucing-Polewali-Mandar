@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
+import { isStrongAdminPassword } from '@/lib/validations/auth';
 import { UserRole } from '@/types/enums';
 
 /**
@@ -11,9 +12,9 @@ async function createInitialAdmin() {
     const email = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase();
     const password = process.env.INITIAL_ADMIN_PASSWORD;
 
-    if (!email || !password || password.length < 12) {
+    if (!email || !password || !isStrongAdminPassword(password)) {
       throw new Error(
-        'INITIAL_ADMIN_EMAIL dan INITIAL_ADMIN_PASSWORD (minimal 12 karakter) wajib diisi'
+        'INITIAL_ADMIN_EMAIL wajib diisi dan INITIAL_ADMIN_PASSWORD harus 12-256 karakter dengan huruf besar, huruf kecil, angka, dan simbol'
       );
     }
 

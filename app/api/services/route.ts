@@ -3,12 +3,14 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { createServiceSchema } from '@/lib/validations/service';
+import { parsePagination } from '@/lib/validations/pagination';
 
 // GET all services
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type');
+    const type = z.string().max(100).nullable().parse(searchParams.get('type'));
+    const pagination = parsePagination(searchParams);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { is_active: true };
@@ -17,17 +19,34 @@ export async function GET(request: NextRequest) {
       where.type = type;
     }
 
-    const services = await prisma.service.findMany({
-      where,
-      orderBy: { created_at: 'desc' },
-    });
+    const [services, total] = await prisma.$transaction([
+      prisma.service.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+      }),
+      prisma.service.count({ where }),
+    ]);
 
     return NextResponse.json({
       success: true,
       data: services,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit),
+      },
     });
   } catch (error: unknown) {
     console.error('GET services error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Parameter layanan tidak valid' },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -41,7 +60,7 @@ export async function GET(request: NextRequest) {
 // POST create service
 export async function POST(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('services:manage');
+    const authorization = await authorizeAdmin('services:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const input = createServiceSchema.parse(await request.json());

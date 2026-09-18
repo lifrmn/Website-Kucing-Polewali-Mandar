@@ -1,4 +1,23 @@
 /** @type {import('next').NextConfig} */
+const isProduction = process.env.NODE_ENV === 'production'
+const scriptSources = ["'self'", "'unsafe-inline'"]
+if (!isProduction) scriptSources.push("'unsafe-eval'")
+
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src ${scriptSources.join(' ')}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "media-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "frame-src 'none'",
+].join('; ')
+
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -7,11 +26,11 @@ const securityHeaders = [
   { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
   {
     key: 'Content-Security-Policy',
-    value: "base-uri 'self'; frame-ancestors 'none'; object-src 'none'; form-action 'self'",
+    value: contentSecurityPolicy,
   },
 ]
 
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
   securityHeaders.push({
     key: 'Strict-Transport-Security',
     value: 'max-age=31536000; includeSubDomains',

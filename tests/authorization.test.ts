@@ -13,27 +13,9 @@ test('anonymous admin requests are unauthorized', () => {
   }
 });
 
-test('staff cannot mutate catalog, blog, settings, or uploads', () => {
-  for (const permission of [
-    'products:manage',
-    'services:manage',
-    'packages:manage',
-    'blog:manage',
-    'settings:manage',
-    'uploads:manage',
-  ] as const) {
+test('staff cannot access admin APIs', () => {
+  for (const permission of allAdminPermissions) {
     assert.equal(getAdminAuthorizationStatus(UserRole.STAFF, permission), 403);
-  }
-});
-
-test('staff can manage only operational orders and bookings', () => {
-  for (const permission of [
-    'orders:read',
-    'orders:manage',
-    'bookings:read',
-    'bookings:manage',
-  ] as const) {
-    assert.equal(getAdminAuthorizationStatus(UserRole.STAFF, permission), 200);
   }
 });
 

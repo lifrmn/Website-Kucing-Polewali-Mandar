@@ -3,14 +3,22 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { createPackageSchema } from '@/lib/validations/package';
+import { parsePagination } from '@/lib/validations/pagination';
 
 // GET all penitipan packages
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const packages = await prisma.penitipanPackage.findMany({
-      where: { is_active: true },
-      orderBy: { price_per_night: 'asc' },
-    });
+    const pagination = parsePagination(new URL(request.url).searchParams);
+    const where = { is_active: true };
+    const [packages, total] = await prisma.$transaction([
+      prisma.penitipanPackage.findMany({
+        where,
+        orderBy: { price_per_night: 'asc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+      }),
+      prisma.penitipanPackage.count({ where }),
+    ]);
 
     // Parse features JSON string to array
     const packagesWithFeatures = packages.map((pkg) => ({
@@ -23,9 +31,21 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: packagesWithFeatures,
+      pagination: {
+        page: pagination.page,
+        limit: pagination.limit,
+        total,
+        totalPages: Math.ceil(total / pagination.limit),
+      },
     });
   } catch (error: unknown) {
     console.error('GET packages error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Parameter pagination tidak valid' },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -39,7 +59,7 @@ export async function GET(_request: NextRequest) {
 // POST create package (for admin)
 export async function POST(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('packages:manage');
+    const authorization = await authorizeAdmin('packages:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const input = createPackageSchema.parse(await request.json());

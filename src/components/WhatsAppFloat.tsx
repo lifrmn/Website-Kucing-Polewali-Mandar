@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { FaWhatsapp } from 'react-icons/fa';
 import { cn } from '@/lib/utils';
 import { useSiteSettings } from './SiteSettingsContext';
-import { toWhatsAppNumber } from '@/lib/whatsapp';
+import { getWhatsAppUrl } from '@/lib/whatsapp';
 
 export default function WhatsAppFloat() {
   const settings = useSiteSettings();
@@ -46,10 +46,10 @@ export default function WhatsAppFloat() {
 
   const handleClick = () => {
     setShowTooltip(false);
-    const message = encodeURIComponent(
-      'Halo Admin Cikal Pet Care Polman,\n\nSaya ingin bertanya tentang layanan Cikal Pet Care. Terima kasih.'
-    );
-    window.open(`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}?text=${message}`, '_blank');
+    window.open(getWhatsAppUrl(
+      settings.whatsapp,
+      'Halo Cikal Pet Care Polewali Mandar,\n\nSaya ingin bertanya tentang layanan Cikal Pet Care. Terima kasih.'
+    ), '_blank');
   };
 
   return (

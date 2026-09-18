@@ -15,6 +15,7 @@ export const siteSettingsSchema = z.object({
   whatsapp: optionalText(30),
   email: z.union([z.literal(''), z.string().trim().email().max(254)]),
   address: optionalText(500),
+  googleMapsUrl: optionalUrl,
   instagram: optionalUrl,
   facebook: optionalUrl,
   tiktok: optionalUrl,
@@ -24,7 +25,11 @@ export const siteSettingsSchema = z.object({
   bankName: optionalText(100),
   bankAccount: z.string().trim().regex(/^\d{5,30}$|^$/),
   bankAccountName: optionalText(120),
+  bankTransferActive: z.boolean(),
   qrisImageUrl: optionalUrl,
+  qrisActive: z.boolean(),
+  codActive: z.boolean(),
+  boardingDepositPercent: z.number().int().min(0).max(100),
 }).strict();
 
 const socialUrl = z.union([
@@ -55,6 +60,7 @@ export const defaultSiteSettings: SiteSettings = {
   whatsapp: '0852-5547-8706',
   email: 'info@cikalpetcare.com',
   address: 'Darma, Kec. Polewali, Kabupaten Polewali Mandar, Sulawesi Barat 91311',
+  googleMapsUrl: '',
   instagram: 'https://www.instagram.com/cikalpetcare',
   facebook: 'https://www.facebook.com/cikalpetcare',
   tiktok: 'https://www.tiktok.com/@cikalpetcare',
@@ -64,7 +70,11 @@ export const defaultSiteSettings: SiteSettings = {
   bankName: '',
   bankAccount: '',
   bankAccountName: '',
+  bankTransferActive: false,
   qrisImageUrl: '',
+  qrisActive: false,
+  codActive: false,
+  boardingDepositPercent: 30,
 };
 
 export const siteSettingKeys: Record<keyof SiteSettings, string> = {
@@ -73,6 +83,7 @@ export const siteSettingKeys: Record<keyof SiteSettings, string> = {
   whatsapp: 'contact_whatsapp',
   email: 'contact_email',
   address: 'contact_address',
+  googleMapsUrl: 'contact_google_maps_url',
   instagram: 'social_instagram',
   facebook: 'social_facebook',
   tiktok: 'social_tiktok',
@@ -82,5 +93,9 @@ export const siteSettingKeys: Record<keyof SiteSettings, string> = {
   bankName: 'payment_bank_name',
   bankAccount: 'payment_bank_account',
   bankAccountName: 'payment_bank_account_name',
+  bankTransferActive: 'payment_bank_transfer_active',
   qrisImageUrl: 'payment_qris_image_url',
+  qrisActive: 'payment_qris_active',
+  codActive: 'payment_cod_active',
+  boardingDepositPercent: 'payment_boarding_deposit_percent',
 };

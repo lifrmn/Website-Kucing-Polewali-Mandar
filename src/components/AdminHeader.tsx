@@ -88,7 +88,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                     {session?.user?.name || 'Admin'}
                   </p>
                   <p className="text-xs text-muted mt-0.5">
-                    {session?.user?.email || 'admin@cikalpetcare.com'}
+                    {session?.user?.email || 'Email tidak tersedia'}
                   </p>
                 </div>
                 

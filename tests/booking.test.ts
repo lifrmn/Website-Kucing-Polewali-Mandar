@@ -17,21 +17,31 @@ import {
   createBoardingBooking,
   updateBoardingBooking,
 } from '../src/services/boardingBookingService';
-import { BookingStatus } from '../src/types/enums';
+import { BookingStatus, PaymentMethod, PaymentStatus } from '../src/types/enums';
 import {
   createServiceBooking,
   ServiceBookingError,
   updateServiceBooking,
 } from '../src/services/serviceBookingService';
+import { findCustomerBooking } from '../src/services/customerBookingService';
 
 const databasePath = join(tmpdir(), `cikal-booking-${randomUUID()}.db`);
 const databaseUrl = `file:${databasePath.replace(/\\/g, '/')}`;
 const prisma = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
 
-before(() => {
+before(async () => {
   execFileSync(process.execPath, [resolve('node_modules/prisma/build/index.js'), 'migrate', 'deploy'], {
     env: { ...process.env, DATABASE_URL: databaseUrl },
     stdio: 'pipe',
+  });
+  await prisma.settings.createMany({
+    data: [
+      { key: 'payment_bank_transfer_active', value: 'true' },
+      { key: 'payment_bank_name', value: 'Bank Test' },
+      { key: 'payment_bank_account', value: '1234567890' },
+      { key: 'payment_bank_account_name', value: 'Cikal Test' },
+      { key: 'payment_boarding_deposit_percent', value: '30' },
+    ],
   });
 });
 
@@ -72,6 +82,12 @@ function bookingInput(packageId: string, phone = '081234567890') {
     cat_name: 'Milo',
     cat_age: '2 tahun',
     cat_gender: 'Jantan',
+    cat_health_condition: 'Sehat',
+    cat_count: 1,
+    vaccination_status: 'VACCINATED',
+    emergency_contact: '081234567899',
+    payment_method: PaymentMethod.BANK_TRANSFER,
+    boarding_terms_accepted: true,
     check_in_date: dateFromToday(5),
     check_out_date: dateFromToday(8),
   });
@@ -87,6 +103,8 @@ test('boarding uses server price, reserves every night, and replays idempotently
   assert.equal(first.booking.status, BookingStatus.PENDING);
   assert.equal(first.booking.total_nights, 3);
   assert.equal(first.booking.total_price, 240_000);
+  assert.equal(first.booking.deposit_amount, 72_000);
+  assert.equal(first.booking.payment_method, PaymentMethod.BANK_TRANSFER);
 
   const capacities = await prisma.bookingCapacity.findMany({ orderBy: { date: 'asc' } });
   assert.equal(capacities.length, 3);
@@ -100,6 +118,81 @@ test('boarding uses server price, reserves every night, and replays idempotently
     (await prisma.bookingCapacity.findMany({ orderBy: { date: 'asc' } }))
       .map((entry) => entry.current_bookings),
     [1, 1, 1]
+  );
+
+  const privateLookup = await findCustomerBooking(prisma, {
+    booking_number: first.booking.booking_number,
+    customer_phone: input.customer_phone,
+  });
+  assert.equal(privateLookup?.booking_number, first.booking.booking_number);
+  assert.equal('customer' in (privateLookup || {}), false);
+  assert.equal(await findCustomerBooking(prisma, {
+    booking_number: first.booking.booking_number,
+    customer_phone: '081200000000',
+  }), null);
+});
+
+test('boarding reserves capacity and calculates server price per cat', async () => {
+  const pkg = await createPackage(60_000);
+  await prisma.penitipanPackage.update({ where: { id: pkg.id }, data: { max_cats: 2 } });
+  const input = {
+    ...bookingInput(pkg.id, '081234567898'),
+    cat_count: 2,
+    check_in_date: dateFromToday(20),
+    check_out_date: dateFromToday(23),
+  };
+  const created = await createBoardingBooking(prisma, input, randomUUID());
+
+  assert.equal(created.booking.cat_count, 2);
+  assert.equal(created.booking.total_price, 360_000);
+  assert.ok(created.booking.boarding_terms_accepted_at);
+  assert.deepEqual(
+    (await prisma.bookingCapacity.findMany({
+      where: {
+        date: {
+          gte: new Date(`${dateFromToday(20)}T00:00:00.000Z`),
+          lt: new Date(`${dateFromToday(23)}T00:00:00.000Z`),
+        },
+      },
+      orderBy: { date: 'asc' },
+    })).map((entry) => entry.current_bookings),
+    [2, 2, 2]
+  );
+});
+
+test('admin payment verification records the verified timestamp', async () => {
+  const pkg = await createPackage();
+  const created = await createBoardingBooking(
+    prisma,
+    bookingInput(pkg.id, '081234567887'),
+    randomUUID()
+  );
+  const updated = await updateBoardingBooking(prisma, created.booking.id, {
+    payment_status: PaymentStatus.PAID,
+  });
+  assert.equal(updated.payment_status, PaymentStatus.PAID);
+  assert.ok(updated.payment_verified_at);
+});
+
+test('boarding rejects cat count above the selected package limit', async () => {
+  const pkg = await createPackage();
+  await assert.rejects(
+    createBoardingBooking(prisma, {
+      ...bookingInput(pkg.id, '081234567889'),
+      cat_count: 2,
+    }, randomUUID()),
+    (error: unknown) => error instanceof BoardingBookingError && error.code === 'TOO_MANY_CATS'
+  );
+});
+
+test('boarding rejects payment methods that are not actively configured', async () => {
+  const pkg = await createPackage();
+  await assert.rejects(
+    createBoardingBooking(prisma, {
+      ...bookingInput(pkg.id, '081234567888'),
+      payment_method: PaymentMethod.QRIS,
+    }, randomUUID()),
+    (error: unknown) => error instanceof BoardingBookingError && error.code === 'PAYMENT_METHOD_UNAVAILABLE'
   );
 });
 
@@ -241,6 +334,12 @@ test('service booking enforces the database daily limit and reuses customers', a
       max_bookings_per_day: 1,
     },
   });
+  await prisma.groomingSlot.createMany({
+    data: [
+      { time: '10:00', max_bookings: 1 },
+      { time: '11:00', max_bookings: 1 },
+    ],
+  });
   const input = serviceBookingSchema.parse({
     service_id: service.id,
     customer_name: 'Customer Booking',
@@ -302,6 +401,42 @@ test('service booking enforces the database daily limit and reuses customers', a
   await assert.rejects(
     updateServiceBooking(prisma, replacement.booking.id, { status: BookingStatus.CANCELED }),
     (error: unknown) => error instanceof ServiceBookingError && error.code === 'INVALID_STATUS_TRANSITION'
+  );
+});
+
+test('grooming rejects an unmanaged or full time slot', async () => {
+  const service = await prisma.service.create({
+    data: {
+      name: `Slot Grooming ${randomUUID()}`,
+      slug: `slot-grooming-${randomUUID()}`,
+      type: 'grooming',
+      price: 100_000,
+      max_bookings_per_day: 5,
+    },
+  });
+  await prisma.groomingSlot.upsert({
+    where: { time: '14:30' },
+    update: { is_active: true, max_bookings: 1 },
+    create: { time: '14:30', max_bookings: 1 },
+  });
+  const input = serviceBookingSchema.parse({
+    service_id: service.id,
+    customer_name: 'Slot Customer',
+    customer_phone: '081234567879',
+    booking_date: dateFromToday(18),
+    booking_time: '14:30',
+    pet_name: 'Mimi',
+    pet_type: 'Kucing',
+  });
+
+  await createServiceBooking(prisma, input, randomUUID());
+  await assert.rejects(
+    createServiceBooking(prisma, { ...input, customer_phone: '081234567878' }, randomUUID()),
+    (error: unknown) => error instanceof ServiceBookingError && error.code === 'SLOT_UNAVAILABLE'
+  );
+  await assert.rejects(
+    createServiceBooking(prisma, { ...input, customer_phone: '081234567877', booking_time: '16:45' }, randomUUID()),
+    (error: unknown) => error instanceof ServiceBookingError && error.code === 'SLOT_UNAVAILABLE'
   );
 });
 

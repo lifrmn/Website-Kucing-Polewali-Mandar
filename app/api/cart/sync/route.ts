@@ -2,16 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import prisma from '@/lib/prisma';
+import { cartSyncSchema } from '@/lib/validations/cart';
 import { reconcileCart } from '@/services/cartService';
-
-const cartSyncSchema = z.object({
-  items: z.array(z.object({
-    id: z.string().uuid(),
-    type: z.enum(['product', 'service']),
-    variantId: z.string().uuid().optional(),
-    quantity: z.number().int().min(1).max(100),
-  }).strict()).min(1).max(50),
-}).strict();
 
 /**
  * Cart Sync API

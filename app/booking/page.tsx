@@ -1,18 +1,18 @@
 'use client'
 
-import { FormEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, useRef, useState } from 'react'
 import type { PenitipanPackage } from '@/types'
 import { CalendarPlus, Check, Crown, Star, PawPrint, Zap, Home, X } from 'lucide-react'
 import { FaWhatsapp } from 'react-icons/fa'
-import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
 import { useSiteSettings } from '@/components/SiteSettingsContext'
-import { toWhatsAppNumber } from '@/lib/whatsapp'
+import { getWhatsAppUrl } from '@/lib/whatsapp'
+import { useBookingInitialData } from './BookingInitialData'
 
 export default function BookingPage() {
   const settings = useSiteSettings()
-  const [packages, setPackages] = useState<PenitipanPackage[]>([])
-  const [loading, setLoading] = useState(true)
+  const initialPackages = useBookingInitialData()
+  const [packages] = useState<PenitipanPackage[]>(initialPackages)
   const [selectedPackage, setSelectedPackage] = useState<PenitipanPackage | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState('')
@@ -20,26 +20,11 @@ export default function BookingPage() {
     booking_number: string
     total_nights: number
     total_price: number
+    payment_method: string
+    payment_status: string
+    deposit_amount: number
   } | null>(null)
   const idempotencyKey = useRef('')
-
-  useEffect(() => {
-    loadPackages()
-  }, [])
-
-  const loadPackages = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/packages')
-      const data = await response.json()
-      if (data.success && data.data) {
-        setPackages(data.data)
-      }
-    } catch (error) {
-      console.error('Error loading packages:', error)
-    }
-    setLoading(false)
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -78,7 +63,12 @@ export default function BookingPage() {
           'Content-Type': 'application/json',
           'Idempotency-Key': idempotencyKey.current,
         },
-        body: JSON.stringify({ ...payload, package_id: selectedPackage.id }),
+        body: JSON.stringify({
+          ...payload,
+          package_id: selectedPackage.id,
+          cat_count: Number(payload.cat_count),
+          boarding_terms_accepted: payload.boarding_terms_accepted === 'on',
+        }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) {
@@ -86,6 +76,7 @@ export default function BookingPage() {
         return
       }
       setBookingResult(data.data)
+      sessionStorage.setItem(`booking-phone:${data.data.booking_number}`, String(payload.customer_phone).replace(/\s+/g, ''))
     } catch {
       setBookingError('Koneksi bermasalah. Silakan coba lagi dengan data yang sama.')
     } finally {
@@ -93,15 +84,13 @@ export default function BookingPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <LoadingSpinner
-        message="Memuat paket penitipan..."
-        submessage="Menyiapkan penginapan terbaik untuk kucing Anda"
-        variant="primary"
-      />
-    )
-  }
+  const paymentMethods = [
+    settings.bankTransferActive && settings.bankName && settings.bankAccount && settings.bankAccountName
+      ? { value: 'BANK_TRANSFER', label: 'Transfer Bank' }
+      : null,
+    settings.qrisActive && settings.qrisImageUrl ? { value: 'QRIS', label: 'QRIS' } : null,
+    settings.codActive ? { value: 'COD', label: 'Bayar di Lokasi' } : null,
+  ].filter((method): method is { value: string; label: string } => method !== null)
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
@@ -137,7 +126,7 @@ export default function BookingPage() {
                 Silakan hubungi kami untuk informasi lebih lanjut
               </p>
               <a 
-                href={`https://wa.me/${toWhatsAppNumber(settings.whatsapp)}`}
+                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai penitipan kucing.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-[#0E743D]"
@@ -284,7 +273,16 @@ export default function BookingPage() {
                 <p className="text-sm mb-5" style={{ color: '#707070' }}>Simpan nomor booking untuk konfirmasi dengan tim kami.</p>
                 <p className="font-mono text-xl font-bold mb-2" style={{ color: '#B66D6D' }}>{bookingResult.booking_number}</p>
                 <p className="text-sm" style={{ color: '#707070' }}>{bookingResult.total_nights} malam · {formatCurrency(bookingResult.total_price)}</p>
-                <button type="button" onClick={() => setSelectedPackage(null)} className="mt-7 px-6 py-3 rounded-xl font-semibold" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>Selesai</button>
+                <div className="mx-auto mt-5 max-w-md rounded-card border border-border bg-surface2 p-4 text-left">
+                  <p className="text-xs font-semibold uppercase text-muted">Pembayaran</p>
+                  <p className="mt-1 font-bold text-text">{bookingResult.payment_method === 'COD' ? 'Bayar di lokasi saat check-in' : `DP yang perlu dibayar: ${formatCurrency(bookingResult.deposit_amount)}`}</p>
+                  <p className="mt-1 text-sm text-muted">Metode: {bookingResult.payment_method.replace(/_/g, ' ')}</p>
+                </div>
+                <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+                  <a href={`/pesanan?booking=${encodeURIComponent(bookingResult.booking_number)}`} className="inline-flex min-h-11 items-center justify-center rounded-button border border-border px-5 font-semibold text-text hover:bg-surface2">Lacak Booking</a>
+                  {bookingResult.payment_method !== 'COD' && <a href="/cara-pembayaran" className="inline-flex min-h-11 items-center justify-center rounded-button border border-border px-5 font-semibold text-text hover:bg-surface2">Lihat Cara Bayar</a>}
+                  <button type="button" onClick={() => setSelectedPackage(null)} className="px-6 py-3 rounded-xl font-semibold" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>Selesai</button>
+                </div>
               </div>
             ) : (
               <form onSubmit={submitBooking} className="p-5 md:p-7">
@@ -295,17 +293,36 @@ export default function BookingPage() {
                   <label className="text-sm font-medium">Tanggal check-in<input name="check_in_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Tanggal check-out<input name="check_out_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Nama kucing<input name="cat_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jumlah kucing<input name="cat_count" type="number" required min={1} max={selectedPackage.max_cats} defaultValue={1} className="mt-1 w-full rounded-lg border px-3 py-2.5" /><span className="mt-1 block text-xs text-muted">Maksimal {selectedPackage.max_cats} kucing untuk paket ini</span></label>
                   <label className="text-sm font-medium">Usia kucing<input name="cat_age" maxLength={50} placeholder="Contoh: 2 tahun" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Jenis kelamin<select name="cat_gender" className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih</option><option value="Jantan">Jantan</option><option value="Betina">Betina</option></select></label>
                   <label className="text-sm font-medium">Ras (opsional)<input name="cat_breed" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium md:col-span-2">Kondisi kesehatan<textarea name="cat_health_condition" maxLength={1000} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium">Status vaksin<select name="vaccination_status" required className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih status</option><option value="VACCINATED">Lengkap</option><option value="PARTIAL">Belum lengkap</option><option value="NOT_VACCINATED">Belum vaksin</option><option value="UNKNOWN">Tidak diketahui</option></select></label>
+                  <label className="text-sm font-medium md:col-span-2">Kondisi kesehatan<textarea name="cat_health_condition" required minLength={2} maxLength={1000} rows={2} placeholder="Tuliskan kondisi kesehatan saat ini" className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Obat rutin (opsional)<textarea name="routine_medication" maxLength={500} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium">Alergi (opsional)<input name="allergies" maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Makanan khusus (opsional)<input name="special_food" maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium md:col-span-2">Permintaan khusus<textarea name="special_requests" maxLength={1000} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
-                  <label className="text-sm font-medium md:col-span-2">Kontak darurat<input name="emergency_contact" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Kontak darurat<input name="emergency_contact" required inputMode="tel" placeholder="081234567890" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Metode pembayaran<select name="payment_method" required disabled={paymentMethods.length === 0} className="mt-1 w-full rounded-lg border px-3 py-2.5 disabled:bg-slate-100"><option value="">Pilih metode</option>{paymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}</select>{paymentMethods.length === 0 && <span className="mt-1 block text-xs text-red-600">Metode pembayaran belum tersedia. Hubungi kami sebelum booking.</span>}</label>
                 </div>
+                <section className="mt-6 rounded-card border border-border bg-surface2 p-4" aria-labelledby="boarding-terms-title">
+                  <h3 id="boarding-terms-title" className="font-bold text-text">Syarat Penitipan</h3>
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">
+                    <li>Kucing dalam keadaan sehat dan tidak memiliki penyakit menular.</li>
+                    <li>Status vaksin, obat rutin, alergi, dan makanan khusus telah diinformasikan.</li>
+                    <li>Kontak darurat dapat dihubungi selama masa penitipan.</li>
+                    <li>Pemilik menyetujui untuk dihubungi jika kucing membutuhkan penanganan kesehatan.</li>
+                  </ul>
+                  <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm font-medium text-text">
+                    <input name="boarding_terms_accepted" type="checkbox" required className="mt-0.5 h-5 w-5 rounded border-border accent-primary-hover" />
+                    <span>Saya telah membaca dan menyetujui syarat penitipan.</span>
+                  </label>
+                </section>
                 {bookingError && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{bookingError}</p>}
                 <div className="mt-6 flex justify-end gap-3">
                   <button type="button" onClick={() => setSelectedPackage(null)} className="px-5 py-2.5 rounded-xl border font-semibold">Batal</button>
-                  <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-xl font-semibold disabled:opacity-60" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>{submitting ? 'Memproses...' : 'Kirim Booking'}</button>
+                  <button type="submit" disabled={submitting || paymentMethods.length === 0} className="px-5 py-2.5 rounded-xl font-semibold disabled:opacity-60" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>{submitting ? 'Memproses...' : 'Kirim Booking'}</button>
                 </div>
               </form>
             )}

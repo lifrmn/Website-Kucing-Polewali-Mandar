@@ -66,7 +66,7 @@ export default function LoginPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="input-premium pl-12"
-                  placeholder="admin@cikalpetcare.com"
+                  placeholder="admin@example.com"
                   required
                   disabled={loading}
                 />

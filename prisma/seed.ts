@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import { isStrongAdminPassword } from '../src/lib/validations/auth'
 
 const prisma = new PrismaClient()
 
@@ -16,8 +17,8 @@ async function main() {
 
   const adminEmail = process.env.INITIAL_ADMIN_EMAIL?.trim().toLowerCase()
   const adminPassword = process.env.INITIAL_ADMIN_PASSWORD
-  if (!adminEmail || !adminPassword || adminPassword.length < 12) {
-    throw new Error('INITIAL_ADMIN_EMAIL dan INITIAL_ADMIN_PASSWORD minimal 12 karakter wajib diisi')
+  if (!adminEmail || !adminPassword || !isStrongAdminPassword(adminPassword)) {
+    throw new Error('INITIAL_ADMIN_EMAIL wajib diisi dan INITIAL_ADMIN_PASSWORD harus 12-256 karakter dengan huruf besar, huruf kecil, angka, dan simbol')
   }
 
   console.log('🗑️  Clearing existing data...')

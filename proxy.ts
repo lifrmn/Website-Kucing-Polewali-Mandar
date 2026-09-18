@@ -1,6 +1,5 @@
 import { auth } from '@/auth';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 export default auth((req) => {
   const isLoggedIn = !!req.auth;
@@ -11,7 +10,7 @@ export default auth((req) => {
   if (isOnAdminLogin) {
     // Redirect to dashboard if already logged in
     if (isLoggedIn) {
-      return NextResponse.redirect(new URL('/admin', req.url));
+      return NextResponse.redirect(new URL('/admin/dashboard', req.url));
     }
     return NextResponse.next();
   }

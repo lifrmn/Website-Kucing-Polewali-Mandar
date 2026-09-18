@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { UserRole } from '@/types/enums';
 import { consumeRateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/client-ip';
+import { loginSchema } from '@/lib/validations/auth';
 
 const INVALID_PASSWORD_HASH = bcrypt.hashSync('invalid-credential-sentinel', 10);
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
@@ -35,20 +36,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'admin@cikalpetcare.com' },
+        email: { label: 'Email', type: 'email', placeholder: 'admin@example.com' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials, request) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        const parsedCredentials = loginSchema.safeParse(credentials);
+        if (!parsedCredentials.success) return null;
 
-        const email = String(credentials.email).trim().toLowerCase();
+        const { email, password } = parsedCredentials.data;
         const clientIp = getClientIp(request);
         const ipRateLimitKey = `login:ip:${clientIp}`;
         const accountRateLimitKey = `login:account:${email}`;
         const ipLimit = consumeRateLimit(ipRateLimitKey, 20, LOGIN_WINDOW_MS);
-        const accountLimit = consumeRateLimit(accountRateLimitKey, 8, LOGIN_WINDOW_MS);
+        const accountLimit = consumeRateLimit(accountRateLimitKey, 5, LOGIN_WINDOW_MS);
 
         if (!ipLimit.allowed || !accountLimit.allowed) {
           throw new Error('Terlalu banyak percobaan login. Silakan coba lagi nanti.');
@@ -60,7 +60,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         const passwordMatch = await bcrypt.compare(
-          String(credentials.password),
+          password,
           user?.password ?? INVALID_PASSWORD_HASH
         );
 
@@ -123,7 +123,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 8 * 60 * 60,
   },
   
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,

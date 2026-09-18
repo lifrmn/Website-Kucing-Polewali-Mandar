@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
-    const authorization = await authorizeAdmin('settings:manage');
+    const authorization = await authorizeAdmin('settings:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const input = siteSettingsSchema.parse(await request.json());

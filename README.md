@@ -101,12 +101,14 @@ npx prisma generate
 # Run migrations
 npx prisma migrate dev
 
-# Seed database dengan sample data
+# Salin .env.example ke .env, lalu isi INITIAL_ADMIN_EMAIL dan
+# INITIAL_ADMIN_PASSWORD unik (12-256 karakter, huruf besar/kecil, angka, simbol).
+# Seed mereset database development, jadi set SEED_RESET_DATABASE="true" hanya saat siap.
 npm run db:seed
 ```
 
 ✅ Database siap dengan:
-- 1 Admin user (admin@cikalpetcare.com / admin123)
+- 1 Admin user dari environment variables
 - 10 Products (makanan, pasir, mainan)
 - 7 Services (grooming, vaksinasi, konsultasi)
 - 4 Penitipan packages
@@ -154,8 +156,7 @@ npm run dev
 ### 6. Login Admin
 
 - URL: http://localhost:3000/login
-- Email: `admin@cikalpetcare.com`
-- Password: `admin123`
+- Gunakan `INITIAL_ADMIN_EMAIL` dan `INITIAL_ADMIN_PASSWORD` yang dipilih saat seed.
 
 ---
 
@@ -337,11 +338,12 @@ Mengganti `DATABASE_URL` saja tidak mengubah SQLite menjadi PostgreSQL/MySQL. Mi
 1. Gunakan `AUTH_SECRET` acak minimal 32 karakter dan `AUTH_URL` domain HTTPS.
 2. Gunakan absolute `DATABASE_URL`, misalnya `file:/data/cikal.db`, pada persistent volume.
 3. Jalankan `npm run db:migrate` sebelum memulai versi aplikasi baru.
-4. Atur Cloudinary dan Resend, lalu verifikasi domain pengirim email.
-5. Jadwalkan `npm run db:backup`; simpan `BACKUP_DIR` pada volume terpisah atau off-host storage.
-6. Monitor `GET /api/health`; status `200` berarti aplikasi dapat membaca database dan `503` berarti tidak siap menerima traffic.
-7. Terminasi TLS di reverse proxy dan hanya teruskan traffic HTTPS ke domain publik.
-8. Konfigurasikan reverse proxy untuk menghapus lalu menulis ulang `X-Forwarded-For`; rate limiter tidak boleh menerima header tersebut langsung dari client.
+4. Jalankan `npm run db:verify` untuk memeriksa checksum migration, schema drift, integrity, dan foreign key.
+5. Atur Cloudinary dan Resend, lalu verifikasi domain pengirim email.
+6. Jadwalkan `npm run db:backup`; simpan `BACKUP_DIR` pada volume terpisah atau off-host storage.
+7. Monitor `GET /api/health`; status `200` berarti aplikasi dapat membaca database dan `503` berarti tidak siap menerima traffic.
+8. Terminasi TLS di reverse proxy dan hanya teruskan traffic HTTPS ke domain publik.
+9. Konfigurasikan reverse proxy untuk menghapus lalu menulis ulang `X-Forwarded-For`; rate limiter tidak boleh menerima header tersebut langsung dari client.
 
 Rate limiter bawaan bersifat per-process dan dibatasi 10.000 identity. Jalankan satu instance aplikasi untuk deployment SQLite ini. Deployment multi-instance harus mengganti store rate limit dengan Redis atau layanan shared rate limiting.
 
@@ -350,8 +352,8 @@ Rate limiter bawaan bersifat per-process dan dibatasi 10.000 identity. Jalankan 
 1. Hentikan traffic atau instance lama jika migration mengubah schema yang tidak kompatibel.
 2. Jalankan `npm run db:backup` dan salin snapshot tervalidasi ke object storage/off-host storage.
 3. Jalankan `npm run db:migrate` pada persistent database yang sama dengan aplikasi.
-4. Jalankan `npm run build`, lalu `npm start` dengan environment production.
-5. Arahkan traffic hanya setelah `GET /api/health` mengembalikan status `200`.
+4. Jalankan `npm run db:verify`, lalu `npm run build` dan `npm start` dengan environment production.
+5. Arahkan traffic hanya setelah verifikasi database lulus dan `GET /api/health` mengembalikan status `200`.
 
 ### Restore SQLite
 
@@ -381,6 +383,7 @@ npx prisma migrate dev  # Run migrations
 npm run db:seed        # Seed database
 npm run db:migrate     # Apply migration production
 npm run db:backup      # Online SQLite backup + retention
+npm run db:verify      # Verify migration ledger, schema, integrity, dan foreign key
 
 # Utilities
 npm run lint           # Run ESLint

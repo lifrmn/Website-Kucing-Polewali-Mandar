@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { Building2, Check, CircleCheck, Copy, Lightbulb, Loader2, QrCode, Search, Upload } from 'lucide-react';
+import { Building2, Check, CircleCheck, Copy, HandCoins, Lightbulb, Loader2, QrCode, Search, Upload } from 'lucide-react';
 import { CustomerOrderSummary, orderService } from '@/services/orderService';
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings';
 
@@ -70,7 +70,7 @@ export default function PaymentInstructionsPage() {
     setTimeout(() => setCopied(''), 2000);
   };
 
-  const bankAccounts = siteSettings.bankAccount ? [{
+  const bankAccounts = siteSettings.bankTransferActive && siteSettings.bankAccount && siteSettings.bankName && siteSettings.bankAccountName ? [{
     bank: siteSettings.bankName,
     accountNumber: siteSettings.bankAccount,
     accountName: siteSettings.bankAccountName,
@@ -136,7 +136,7 @@ export default function PaymentInstructionsPage() {
           </form>
 
           {/* QRIS Payment */}
-          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+          {siteSettings.qrisActive && siteSettings.qrisImageUrl && <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
                 <QrCode className="w-6 h-6 text-secondary" />
@@ -147,13 +147,9 @@ export default function PaymentInstructionsPage() {
               </div>
             </div>
             <div className="p-6 rounded-[15px] text-center border-2" style={{ backgroundColor: '#FAF8F5', borderColor: '#E8E3DA' }}>
-              {siteSettings.qrisImageUrl && (
-                <img src={siteSettings.qrisImageUrl} alt="QRIS Cikal Pet Care" className="mx-auto mb-5 max-h-72 max-w-full object-contain" />
-              )}
+              <img src={siteSettings.qrisImageUrl} alt="QRIS Cikal Pet Care" className="mx-auto mb-5 max-h-72 max-w-full object-contain" />
               <p style={{ color: '#707070' }} className="mb-4">
-                {siteSettings.qrisImageUrl
-                  ? 'Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda'
-                  : 'QRIS belum tersedia. Silakan gunakan transfer bank atau hubungi kami.'}
+                Scan QR code ini dengan aplikasi e-wallet atau mobile banking Anda
               </p>
               <ol className="list-decimal list-inside space-y-2 text-sm text-left" style={{ color: '#707070' }}>
                 <li>Buka aplikasi e-wallet atau mobile banking Anda (GoPay, OVO, DANA, ShopeePay, dll)</li>
@@ -162,10 +158,10 @@ export default function PaymentInstructionsPage() {
                 <li>Periksa nominal pembayaran dan tekan "Bayar"</li>
               </ol>
             </div>
-          </div>
+          </div>}
 
           {/* Bank Transfer */}
-          <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+          {siteSettings.bankTransferActive && <div className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <div className="flex items-start gap-4 mb-6">
               <div className="w-12 h-12 rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#E6D18B' }}>
                 <Building2 className="w-6 h-6 text-secondary" />
@@ -211,7 +207,13 @@ export default function PaymentInstructionsPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </div>}
+
+          {siteSettings.codActive && <div className="rounded-card border-2 border-border bg-white p-8 shadow-md"><div className="flex items-start gap-4"><div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-button bg-primary"><HandCoins className="h-6 w-6 text-secondary" /></div><div><h3 className="text-xl font-bold text-text">Bayar di Lokasi</h3><p className="mt-1 text-muted">Bayarkan nominal yang tercantum pada pesanan atau booking langsung kepada petugas Cikal Pet Care. Konfirmasikan nomor referensi Anda sebelum menyerahkan pembayaran.</p><p className="mt-3 text-sm font-semibold text-text">Metode ini tidak memerlukan upload bukti transfer.</p></div></div></div>}
+
+          {!siteSettings.qrisActive && !siteSettings.bankTransferActive && !siteSettings.codActive && (
+            <div className="rounded-card border border-border bg-white p-8 text-center shadow-sm"><h2 className="text-xl font-bold text-text">Metode pembayaran belum tersedia</h2><p className="mt-2 text-muted">Silakan hubungi Cikal Pet Care untuk konfirmasi pembayaran.</p></div>
+          )}
 
           {/* Tips */}
           {order && !['CANCELED', 'COMPLETED', 'REFUNDED'].includes(order.status) && (

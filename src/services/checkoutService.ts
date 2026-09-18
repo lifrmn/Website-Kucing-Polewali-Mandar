@@ -10,7 +10,8 @@ export type CheckoutConflictCode =
   | 'VARIANT_UNAVAILABLE'
   | 'SERVICE_UNAVAILABLE'
   | 'INSUFFICIENT_STOCK'
-  | 'INVALID_SERVICE_VARIANT';
+  | 'INVALID_SERVICE_VARIANT'
+  | 'PAYMENT_METHOD_UNAVAILABLE';
 
 export class CheckoutConflictError extends Error {
   constructor(public readonly code: CheckoutConflictCode) {
@@ -54,6 +55,35 @@ export async function createCheckout(
 
   try {
     const order = await database.$transaction(async (tx) => {
+      const paymentMethod = normalizePaymentMethod(body.payment_method);
+      const paymentSettings = await tx.settings.findMany({
+        where: {
+          key: {
+            in: [
+              'payment_bank_transfer_active',
+              'payment_bank_name',
+              'payment_bank_account',
+              'payment_bank_account_name',
+              'payment_qris_active',
+              'payment_qris_image_url',
+              'payment_cod_active',
+            ],
+          },
+        },
+        select: { key: true, value: true },
+      });
+      const paymentValues = new Map(paymentSettings.map((setting) => [setting.key, setting.value]));
+      const paymentAvailable = paymentMethod === 'BANK_TRANSFER'
+        ? paymentValues.get('payment_bank_transfer_active') === 'true'
+          && Boolean(paymentValues.get('payment_bank_name'))
+          && Boolean(paymentValues.get('payment_bank_account'))
+          && Boolean(paymentValues.get('payment_bank_account_name'))
+        : paymentMethod === 'QRIS'
+          ? paymentValues.get('payment_qris_active') === 'true'
+            && Boolean(paymentValues.get('payment_qris_image_url'))
+          : paymentValues.get('payment_cod_active') === 'true';
+      if (!paymentAvailable) throw new CheckoutConflictError('PAYMENT_METHOD_UNAVAILABLE');
+
       const resolvedItems: Array<{
         product_id: string | null;
         variant_id: string | null;
@@ -174,7 +204,7 @@ export async function createCheckout(
           subtotal,
           shipping_cost: shippingCost,
           total_amount: totalAmount,
-          payment_method: normalizePaymentMethod(body.payment_method),
+          payment_method: paymentMethod,
           payment_status: PaymentStatus.PENDING,
           status: OrderStatus.PENDING,
           shipping_address: body.customer_address,

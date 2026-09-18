@@ -6,6 +6,7 @@ import { authorizeAdmin } from '@/lib/authorization';
 import { consumeRateLimit } from '@/lib/rate-limit';
 import { getClientIp } from '@/lib/client-ip';
 import { checkoutSchema } from '@/lib/validations/order';
+import { parsePagination } from '@/lib/validations/pagination';
 import { z } from 'zod';
 
 // GET all orders
@@ -48,21 +49,26 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const pagination = parsePagination(searchParams);
+
     // Otherwise get all orders
-    const orders = await prisma.order.findMany({
-      include: {
-        customer: true,
-        orderItems: {
-          include: {
-            product: true,
-            service: true,
+    const [orders, total] = await prisma.$transaction([
+      prisma.order.findMany({
+        include: {
+          customer: true,
+          orderItems: {
+            include: {
+              product: true,
+              service: true,
+            },
           },
         },
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
-    });
+        orderBy: { created_at: 'desc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+      }),
+      prisma.order.count(),
+    ]);
 
     // Transform orders to include customer details at root level
     const transformedOrders = orders.map(order => ({
@@ -84,11 +90,20 @@ export async function GET(request: NextRequest) {
       success: true,
       data: {
         data: transformedOrders,
-        total: transformedOrders.length,
+        total,
+        page: pagination.page,
+        limit: pagination.limit,
+        totalPages: Math.ceil(total / pagination.limit),
       },
     });
   } catch (error: unknown) {
     console.error('GET orders error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Parameter pagination tidak valid' },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -164,6 +179,7 @@ export async function POST(request: NextRequest) {
       SERVICE_UNAVAILABLE: 'Layanan tidak tersedia',
       INSUFFICIENT_STOCK: 'Stok tidak mencukupi',
       INVALID_SERVICE_VARIANT: 'Varian tidak valid untuk layanan',
+      PAYMENT_METHOD_UNAVAILABLE: 'Metode pembayaran tidak tersedia',
     };
     if (error instanceof CheckoutConflictError) {
       return NextResponse.json(

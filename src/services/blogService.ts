@@ -93,7 +93,7 @@ export const blogService = {
 
   async getAllPosts() {
     try {
-      const response = await fetch('/api/blog?all=true');
+      const response = await fetch('/api/blog?all=true&limit=100');
       const result = await response.json();
 
       if (!result.success) {

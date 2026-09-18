@@ -14,11 +14,12 @@ export default function Navbar() {
 
   const navLinks = [
     { path: '/', label: 'Beranda' },
-    { path: '/produk', label: 'Produk' },
     { path: '/layanan', label: 'Layanan' },
-    { path: '/booking', label: 'Booking' },
+    { path: '/produk', label: 'Produk' },
+    { path: '/booking', label: 'Pet Hotel / Booking' },
     { path: '/pesanan', label: 'Pesanan' },
-    { path: '/blog', label: 'Tips Kesehatan' },
+    { path: '/blog', label: 'Tips Kucing' },
+    { path: '/tentang', label: 'Tentang Kami' },
     { path: '/kontak', label: 'Kontak' },
   ];
 

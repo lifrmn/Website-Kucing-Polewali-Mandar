@@ -42,6 +42,11 @@ coverage
 # Local database backups
 backups/
 
+# SQLite transient files
+*.db-journal
+*.db-shm
+*.db-wal
+
 # Misc
 .cache
 .parcel-cache

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { reconcileCart, type CartSyncInput } from '@/services/cartService';
+import { cartSyncSchema } from '@/lib/validations/cart';
+import { reconcileCart } from '@/services/cartService';
 
 /**
  * Cart Validation API
@@ -8,14 +10,7 @@ import { reconcileCart, type CartSyncInput } from '@/services/cartService';
  */
 export async function POST(request: NextRequest) {
   try {
-    const { items }: { items: CartSyncInput[] } = await request.json();
-    
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { valid: false, errors: ['Cart is empty'] },
-        { status: 400 }
-      );
-    }
+    const { items } = cartSyncSchema.parse(await request.json());
     
     const result = await reconcileCart(prisma, items);
     
@@ -24,7 +19,13 @@ export async function POST(request: NextRequest) {
       errors: [...result.errors, ...result.changes],
       warnings: result.changes,
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { valid: false, errors: ['Data keranjang tidak valid'] },
+        { status: 422 }
+      );
+    }
     console.error('Cart validation error:', error);
     return NextResponse.json(
       { valid: false, errors: ['Failed to validate cart'] },

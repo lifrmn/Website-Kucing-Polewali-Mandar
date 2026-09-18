@@ -1,38 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { productService } from '@/services/productService'
 import type { Product } from '@/types'
 import { Search, ShoppingCart, Check, X, Package } from 'lucide-react'
 import { useCartStore } from '@/store/cartStore'
 import { toast } from 'react-toastify'
-import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
 import Link from 'next/link'
+import { useProductInitialData } from './ProductInitialData'
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const initialProducts = useProductInitialData()
+  const [products] = useState<Product[]>(initialProducts)
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts)
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const { addItem, openCart } = useCartStore()
-
-  useEffect(() => {
-    loadProducts()
-  }, [])
-
-  const loadProducts = async () => {
-    setLoading(true)
-    const response = await productService.getProducts()
-    if (response.success && response.data) {
-      setProducts(response.data.data)
-      setFilteredProducts(response.data.data)
-    }
-    setLoading(false)
-  }
 
   useEffect(() => {
     let filtered = [...products]
@@ -87,16 +72,6 @@ export default function ProductsPage() {
     })
     toast.success(`${product.name} ditambahkan ke keranjang!`)
     openCart()
-  }
-
-  if (loading) {
-    return (
-      <LoadingSpinner
-        message="Memuat produk..."
-        submessage="Menyiapkan data produk"
-        variant="primary"
-      />
-    )
   }
 
   return (

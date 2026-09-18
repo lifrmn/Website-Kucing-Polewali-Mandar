@@ -51,7 +51,11 @@ class SettingsService {
       return Object.fromEntries(
         Object.entries(siteSettingKeys).map(([field, key]) => [
           field,
-          valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings],
+          typeof defaultSiteSettings[field as keyof SiteSettings] === 'boolean'
+            ? valuesByKey.get(key) === 'true'
+            : typeof defaultSiteSettings[field as keyof SiteSettings] === 'number'
+              ? Number(valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings])
+            : valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings],
         ])
       ) as SiteSettings;
     } catch (error) {
@@ -66,10 +70,10 @@ class SettingsService {
         where: { key },
         create: {
           key,
-          value: input[field as keyof SiteSettings],
-          type: 'string',
+          value: String(input[field as keyof SiteSettings]),
+          type: typeof input[field as keyof SiteSettings],
         },
-        update: { value: input[field as keyof SiteSettings] },
+        update: { value: String(input[field as keyof SiteSettings]) },
       })));
       if (audit) {
         await createActivityLog(tx, {

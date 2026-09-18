@@ -27,7 +27,7 @@ export default function AdminSettingsPage() {
     loadSettings()
   }, [])
 
-  const handleChange = (field: keyof SiteSettings, value: string) => {
+  const handleChange = (field: keyof SiteSettings, value: string | boolean | number) => {
     setSettings({ ...settings, [field]: value })
   }
 
@@ -152,6 +152,10 @@ export default function AdminSettingsPage() {
               placeholder="Jl. Jend. Sudirman No. 123, Polewali"
             />
           </div>
+          <div className="mt-4">
+            <label className="block text-sm font-bold text-gray-700 mb-2">Google Maps URL</label>
+            <input type="url" value={settings.googleMapsUrl} onChange={(e) => handleChange('googleMapsUrl', e.target.value)} className="input-premium" placeholder="https://maps.google.com/..." />
+          </div>
         </div>
 
         {/* Social Media */}
@@ -261,6 +265,16 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="flex items-center gap-3 rounded-button border border-border p-3 text-sm font-semibold"><input type="checkbox" checked={settings.bankTransferActive} onChange={(e) => handleChange('bankTransferActive', e.target.checked)} />Transfer Bank</label>
+              <label className="flex items-center gap-3 rounded-button border border-border p-3 text-sm font-semibold"><input type="checkbox" checked={settings.qrisActive} onChange={(e) => handleChange('qrisActive', e.target.checked)} />QRIS</label>
+              <label className="flex items-center gap-3 rounded-button border border-border p-3 text-sm font-semibold"><input type="checkbox" checked={settings.codActive} onChange={(e) => handleChange('codActive', e.target.checked)} />Bayar di Tempat</label>
+            </div>
+            <div className="max-w-xs">
+              <label className="block text-sm font-bold text-gray-700 mb-2">DP Penitipan (%)</label>
+              <input type="number" min={0} max={100} step={1} value={settings.boardingDepositPercent} onChange={(e) => handleChange('boardingDepositPercent', Number(e.target.value))} className="input-premium" />
+              <p className="mt-1 text-xs text-muted">Berlaku untuk transfer bank dan QRIS. COD dibayar di lokasi.</p>
+            </div>
             <div className="grid md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">Nama Bank</label>

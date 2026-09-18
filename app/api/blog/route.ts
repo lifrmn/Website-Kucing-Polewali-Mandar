@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { sanitizeBlogHtml } from '@/lib/sanitize-html';
 import { createBlogPostSchema } from '@/lib/validations/blog';
+import { parsePagination } from '@/lib/validations/pagination';
 import {
   BlogManagementError,
   createBlogPost,
@@ -18,13 +19,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const slug = searchParams.get('slug');
     const all = searchParams.get('all');
-    const pagination = z.object({
-      page: z.coerce.number().int().min(1).default(1),
-      limit: z.coerce.number().int().min(1).max(50).default(10),
-    }).parse({
-      page: searchParams.get('page') || undefined,
-      limit: searchParams.get('limit') || undefined,
-    });
+    const pagination = parsePagination(searchParams);
 
     if (all === 'true') {
       const authorization = await authorizeAdmin('blog:manage');
@@ -82,27 +77,25 @@ export async function GET(request: NextRequest) {
       created_at: true,
       updated_at: true,
     } as const;
-    const [posts, total] = all === 'true'
-      ? [await prisma.blogPost.findMany({ where, orderBy: { created_at: 'desc' }, select: listSelection }), await prisma.blogPost.count({ where })]
-      : await prisma.$transaction([
-        prisma.blogPost.findMany({
-          where,
-          orderBy: { created_at: 'desc' },
-          skip: (pagination.page - 1) * pagination.limit,
-          take: pagination.limit,
-          select: listSelection,
-        }),
-        prisma.blogPost.count({ where }),
-      ]);
+    const [posts, total] = await prisma.$transaction([
+      prisma.blogPost.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+        select: listSelection,
+      }),
+      prisma.blogPost.count({ where }),
+    ]);
 
     return NextResponse.json({
       success: true,
       data: posts,
       pagination: {
-        page: all === 'true' ? 1 : pagination.page,
-        limit: all === 'true' ? total : pagination.limit,
+        page: pagination.page,
+        limit: pagination.limit,
         total,
-        totalPages: all === 'true' ? 1 : Math.ceil(total / pagination.limit),
+        totalPages: Math.ceil(total / pagination.limit),
       },
     });
   } catch (error: unknown) {
@@ -126,7 +119,7 @@ export async function GET(request: NextRequest) {
 // POST create blog post
 export async function POST(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('blog:manage');
+    const authorization = await authorizeAdmin('blog:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const input = createBlogPostSchema.parse(await request.json());

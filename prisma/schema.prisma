@@ -323,6 +323,11 @@ model PenitipanBooking {
   cat_gender           String?
   cat_breed            String?
   cat_health_condition String?
+  cat_count            Int           @default(1)
+  vaccination_status   String?
+  routine_medication   String?
+  allergies            String?
+  special_food         String?
   cat_photo_url        String?
   
   // Booking Details
@@ -333,13 +338,17 @@ model PenitipanBooking {
   
   // Status & Payment
   status               String        @default("PENDING") // BookingStatus
+  payment_method       String        @default("BANK_TRANSFER") // PaymentMethod
   payment_status       String        @default("PENDING") // PaymentStatus
+  deposit_amount       Float         @default(0)
   payment_proof_url    String?
+  payment_verified_at  DateTime?
   
   // Additional Info
   special_requests     String?
   admin_notes          String?
   emergency_contact    String?
+  boarding_terms_accepted_at DateTime?
   
   // Timestamps
   confirmed_at         DateTime?
@@ -375,6 +384,18 @@ model BookingCapacity {
   @@index([date])
   @@index([is_available])
   @@map("booking_capacities")
+}
+
+model GroomingSlot {
+  id           String   @id @default(uuid())
+  time         String   @unique
+  max_bookings Int      @default(1)
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([is_active])
+  @@map("grooming_slots")
 }
 
 // ============================================
@@ -435,6 +456,38 @@ model Testimonial {
   @@index([is_approved])
   @@index([is_featured])
   @@map("testimonials")
+}
+
+model GalleryItem {
+  id               String   @id @default(uuid())
+  title            String
+  kind             String   @default("GALLERY")
+  image_url        String?
+  before_image_url String?
+  after_image_url  String?
+  description      String?
+  is_published     Boolean  @default(false)
+  sort_order       Int      @default(0)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  @@index([is_published, sort_order])
+  @@map("gallery_items")
+}
+
+model TeamMember {
+  id           String   @id @default(uuid())
+  name         String
+  role         String
+  bio          String?
+  image_url    String?
+  is_published Boolean  @default(false)
+  sort_order   Int      @default(0)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([is_published, sort_order])
+  @@map("team_members")
 }
 
 // ============================================

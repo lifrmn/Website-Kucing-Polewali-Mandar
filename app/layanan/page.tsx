@@ -1,22 +1,11 @@
 'use client'
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { serviceService } from '@/services/serviceService'
 import { useCartStore } from '@/store/cartStore'
 import { toast } from 'react-toastify'
 import { CalendarPlus, Check, Clock, ShoppingCart, Search, Scissors, Stethoscope, Home, Sparkles, X } from 'lucide-react'
-import LoadingSpinner from '@/components/LoadingSpinner'
 import AppIcon from '@/components/AppIcon'
-
-interface Service {
-  id: string
-  name: string
-  description: string | null
-  type: string
-  duration: number | null
-  price: number
-  is_active: boolean
-}
+import { useServiceInitialData, type PublicService as Service } from './ServiceInitialData'
 
 const SERVICE_IMAGES: Record<string, string> = {
   grooming: 'https://images.unsplash.com/photo-1585289167915-67cfeb4e6b52?w=600&auto=format&fit=crop',
@@ -34,9 +23,9 @@ const SERVICE_ICONS: Record<string, any> = {
 }
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([])
-  const [filteredServices, setFilteredServices] = useState<Service[]>([])
-  const [loading, setLoading] = useState(true)
+  const initialServices = useServiceInitialData()
+  const [services] = useState<Service[]>(initialServices)
+  const [filteredServices, setFilteredServices] = useState<Service[]>(initialServices)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
@@ -48,22 +37,10 @@ export default function ServicesPage() {
     booking_date: string
     booking_time: string
   } | null>(null)
+  const [availableSlots, setAvailableSlots] = useState<Array<{ time: string; available: boolean }>>([])
+  const [slotsLoading, setSlotsLoading] = useState(false)
   const idempotencyKey = useRef('')
   const { addItem, openCart } = useCartStore()
-
-  useEffect(() => {
-    loadServices()
-  }, [])
-
-  const loadServices = async () => {
-    setLoading(true)
-    const response = await serviceService.getServices()
-    if (response.success && response.data) {
-      setServices(response.data)
-      setFilteredServices(response.data)
-    }
-    setLoading(false)
-  }
 
   useEffect(() => {
     let filtered = [...services]
@@ -117,7 +94,29 @@ export default function ServicesPage() {
     idempotencyKey.current = crypto.randomUUID()
     setBookingError('')
     setBookingResult(null)
+    setAvailableSlots([])
     setSelectedService(service)
+  }
+
+  const loadAvailableSlots = async (date: string) => {
+    if (!selectedService || selectedService.type.toLowerCase() !== 'grooming' || !date) return
+    setSlotsLoading(true)
+    setBookingError('')
+    try {
+      const response = await fetch(`/api/grooming-slots?serviceId=${encodeURIComponent(selectedService.id)}&date=${encodeURIComponent(date)}`)
+      const data = await response.json()
+      if (!response.ok || !data.success) {
+        setAvailableSlots([])
+        setBookingError(data.error || 'Slot grooming belum dapat dimuat')
+        return
+      }
+      setAvailableSlots(data.data)
+    } catch {
+      setAvailableSlots([])
+      setBookingError('Slot grooming belum dapat dimuat')
+    } finally {
+      setSlotsLoading(false)
+    }
   }
 
   const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
@@ -150,16 +149,6 @@ export default function ServicesPage() {
 
   const getServiceImage = (type: string) => SERVICE_IMAGES[type] || SERVICE_IMAGES.default
   const getServiceIcon = (type: string) => SERVICE_ICONS[type] || SERVICE_ICONS.default
-
-  if (loading) {
-    return (
-      <LoadingSpinner
-        message="Memuat layanan..."
-        submessage="Menyiapkan data layanan"
-        variant="primary"
-      />
-    )
-  }
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
@@ -360,8 +349,12 @@ export default function ServicesPage() {
                   <label className="text-sm font-medium">Nama pelanggan<input name="customer_name" required minLength={2} maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Nomor WhatsApp<input name="customer_phone" required inputMode="tel" placeholder="081234567890" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium md:col-span-2">Email (opsional)<input name="customer_email" type="email" maxLength={254} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium">Tanggal layanan<input name="booking_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium">Jam layanan (WITA)<input name="booking_time" type="time" required className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Tanggal layanan<input name="booking_date" type="date" required min={minimumBookingDate} onChange={(event) => loadAvailableSlots(event.target.value)} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  {selectedService.type.toLowerCase() === 'grooming' ? (
+                    <label className="text-sm font-medium">Jam layanan (WITA)<select name="booking_time" required disabled={slotsLoading || availableSlots.length === 0} className="mt-1 w-full rounded-lg border px-3 py-2.5 disabled:bg-slate-100"><option value="">{slotsLoading ? 'Memuat slot...' : 'Pilih slot tersedia'}</option>{availableSlots.map((slot) => <option key={slot.time} value={slot.time} disabled={!slot.available}>{slot.time} {slot.available ? '' : '(penuh)'}</option>)}</select></label>
+                  ) : (
+                    <label className="text-sm font-medium">Jam layanan (WITA)<input name="booking_time" type="time" required className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  )}
                   <label className="text-sm font-medium md:col-span-2">Nama kucing<input name="pet_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium md:col-span-2">Catatan (opsional)<textarea name="notes" maxLength={1000} rows={3} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
                 </div>

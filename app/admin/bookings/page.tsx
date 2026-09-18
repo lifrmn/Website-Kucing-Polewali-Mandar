@@ -27,6 +27,10 @@ interface Booking {
   total_nights: number;
   total_price: number;
   status: string;
+  payment_method: string;
+  payment_status: string;
+  deposit_amount: number;
+  payment_proof_url?: string;
   special_requests?: string;
   created_at: string;
 }
@@ -133,6 +137,18 @@ export default function AdminBookingsPage() {
     } catch {
       alert('An error occurred');
     }
+  };
+
+  const handlePaymentStatus = async (id: string, paymentStatus: 'PAID' | 'FAILED') => {
+    if (!confirm(`Ubah status pembayaran menjadi "${paymentStatus}"?`)) return;
+    const response = await fetch(`/api/bookings/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payment_status: paymentStatus }),
+    });
+    const data = await response.json();
+    if (data.success) fetchBookings();
+    else alert(data.error || 'Gagal memperbarui pembayaran');
   };
 
   if (loading) {
@@ -313,7 +329,19 @@ export default function AdminBookingsPage() {
                       {formatCurrency(booking.total_price)}
                     </span>
                   </div>
+                  <div className="rounded-button border border-border bg-surface2 p-3 text-small">
+                    <div className="flex justify-between gap-3"><span className="text-muted">Pembayaran</span><span className="font-semibold text-text">{booking.payment_method.replace(/_/g, ' ')} · {booking.payment_status}</span></div>
+                    <div className="mt-1 flex justify-between gap-3"><span className="text-muted">DP</span><span className="font-semibold text-text">{formatCurrency(booking.deposit_amount)}</span></div>
+                    {booking.payment_proof_url && <a href={booking.payment_proof_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex font-semibold text-dark-gold hover:underline">Lihat bukti pembayaran</a>}
+                  </div>
                 </div>
+
+                {booking.payment_status === 'VERIFYING' && (
+                  <div className="flex gap-2">
+                    <Button size="sm" onClick={() => handlePaymentStatus(booking.id, 'PAID')} className="flex-1">Terima Pembayaran</Button>
+                    <Button size="sm" variant="destructive" onClick={() => handlePaymentStatus(booking.id, 'FAILED')} className="flex-1">Tolak Bukti</Button>
+                  </div>
+                )}
 
                 {booking.status === 'PENDING' && (
                   <div className="flex gap-2 pt-2">

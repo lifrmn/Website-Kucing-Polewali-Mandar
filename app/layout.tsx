@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google'
 import { ReactNode } from 'react'
 import PublicLayoutWrapper from '@/components/PublicLayoutWrapper'
 import AuthProvider from '@/components/AuthProvider'
+import { getSiteUrl } from '@/lib/site-url'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import './globals.css'
@@ -21,13 +22,20 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.AUTH_URL || 'http://localhost:3000'),
+  metadataBase: new URL(getSiteUrl()),
   title: {
-    default: 'Cikal Pet Care Polewali Mandar | Grooming, Penitipan & Produk Kucing',
+    default: 'Cikal Pet Care Polewali Mandar | Grooming & Penitipan Kucing',
     template: '%s | Cikal Pet Care Polewali Mandar',
   },
-  description: 'Perawatan kucing profesional di Polewali Mandar, mulai dari grooming dan penitipan hingga produk pilihan untuk kebutuhan kucing Anda.',
-  keywords: 'pet care Polewali Mandar, grooming kucing, penitipan kucing, produk kucing, Cikal Pet Care',
+  description: 'Grooming kucing, penitipan kucing, pet hotel dan kebutuhan kucing di Polewali Mandar. Booking perawatan kucing dengan mudah bersama Cikal Pet Care.',
+  keywords: [
+    'grooming kucing Polewali',
+    'penitipan kucing Polewali',
+    'pet hotel Polewali Mandar',
+    'pet care Polewali',
+    'grooming Polman',
+  ],
+  alternates: { canonical: '/' },
   icons: {
     icon: '/favicon.svg',
   },

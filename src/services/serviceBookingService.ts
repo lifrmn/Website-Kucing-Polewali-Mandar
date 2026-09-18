@@ -11,6 +11,7 @@ export type ServiceBookingErrorCode =
   | 'SERVICE_UNAVAILABLE'
   | 'PAST_BOOKING_SLOT'
   | 'DAILY_LIMIT_REACHED'
+  | 'SLOT_UNAVAILABLE'
   | 'BOOKING_NOT_FOUND'
   | 'INVALID_STATUS_TRANSITION';
 
@@ -55,6 +56,25 @@ export async function createServiceBooking(
       if (!service) throw new ServiceBookingError('SERVICE_UNAVAILABLE');
 
       const bookingDate = parseBookingDate(input.booking_date);
+      if (service.type.toLowerCase() === 'grooming') {
+        const slot = await tx.groomingSlot.findFirst({
+          where: { time: input.booking_time, is_active: true },
+        });
+        if (!slot) throw new ServiceBookingError('SLOT_UNAVAILABLE');
+
+        const bookingsInSlot = await tx.serviceBooking.count({
+          where: {
+            service_id: service.id,
+            booking_date: bookingDate,
+            booking_time: slot.time,
+            status: { not: BookingStatus.CANCELED },
+          },
+        });
+        if (bookingsInSlot >= slot.max_bookings) {
+          throw new ServiceBookingError('SLOT_UNAVAILABLE');
+        }
+      }
+
       const activeBookings = await tx.serviceBooking.count({
         where: {
           service_id: service.id,

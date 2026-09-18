@@ -24,6 +24,8 @@ import {
   siteSettingsSchema,
   socialSettingsSchema,
 } from '../src/lib/validations/settings';
+import { trustContentCreateSchema } from '../src/lib/validations/trust-content';
+import { productSchema } from '../src/lib/validations/product';
 
 test('blog sanitizer removes executable HTML while retaining safe formatting', () => {
   const sanitized = sanitizeBlogHtml(
@@ -116,4 +118,34 @@ test('blog validation rejects browser authorship and malformed public fields', (
     ...validPost,
     featured_image: 'javascript:alert(1)',
   }));
+});
+
+test('trust content requires valid images and keeps new records unpublished by default', () => {
+  const gallery = trustContentCreateSchema.parse({
+    resource: 'gallery',
+    data: { title: 'Ruang penitipan', kind: 'GALLERY', image_url: 'https://example.com/room.jpg' },
+  });
+  if (gallery.resource !== 'gallery') assert.fail('Expected gallery content');
+  assert.equal(gallery.data.is_published, false);
+  assert.throws(() => trustContentCreateSchema.parse({
+    resource: 'gallery',
+    data: { title: 'Hasil grooming', kind: 'BEFORE_AFTER', before_image_url: 'https://example.com/before.jpg' },
+  }));
+});
+
+test('product validation rejects mass assignment and unreasonable stock', () => {
+  const product = {
+    name: 'Makanan Kucing',
+    slug: 'makanan-kucing',
+    description: 'Makanan kucing dengan nutrisi lengkap.',
+    sku: 'FOOD-001',
+    price: 50_000,
+    stock: 10,
+    category: 'Makanan',
+  };
+
+  assert.equal(productSchema.parse(product).stock, 10);
+  assert.throws(() => productSchema.parse({ ...product, role: 'SUPER_ADMIN' }));
+  assert.throws(() => productSchema.parse({ ...product, stock: 1_000_001 }));
+  assert.throws(() => productSchema.parse({ ...product, image_url: 'javascript:alert(1)' }));
 });

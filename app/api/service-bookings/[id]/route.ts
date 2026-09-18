@@ -15,7 +15,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('bookings:manage');
+    const authorization = await authorizeAdmin('bookings:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;

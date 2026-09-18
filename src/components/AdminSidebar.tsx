@@ -15,7 +15,9 @@ import {
   Hotel,
   PawPrint,
   ChevronLeft,
-  FileBarChart2
+  FileBarChart2,
+  Images
+  ,Clock3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -32,20 +34,22 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
 
   const menuItems = [
-    { icon: BarChart3, label: 'Dashboard', path: '/admin' },
+    { icon: BarChart3, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: Package, label: 'Produk', path: '/admin/products' },
     { icon: Scissors, label: 'Layanan', path: '/admin/services' },
     { icon: ShoppingBag, label: 'Pesanan', path: '/admin/orders' },
     { icon: Hotel, label: 'Penitipan', path: '/admin/penitipan' },
     { icon: Calendar, label: 'Booking', path: '/admin/bookings' },
+    { icon: Clock3, label: 'Slot Grooming', path: '/admin/grooming-slots' },
     { icon: Newspaper, label: 'Blog', path: '/admin/blog' },
+    { icon: Images, label: 'Konten & Galeri', path: '/admin/content' },
     { icon: FileBarChart2, label: 'Laporan', path: '/admin/laporan' },
     { icon: Settings, label: 'Pengaturan', path: '/admin/settings' },
   ];
 
   const isActive = (path: string) => {
-    if (path === '/admin') {
-      return pathname === path;
+    if (path === '/admin/dashboard') {
+      return pathname === path || pathname === '/admin';
     }
     return pathname.startsWith(path);
   };
@@ -71,7 +75,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         <div className="h-16 px-4 border-b border-white/10 flex items-center justify-between">
           {!collapsed && (
             <Link 
-              href="/admin" 
+              href="/admin/dashboard"
               className="flex items-center gap-2.5 group" 
               onClick={onClose}
             >
@@ -90,7 +94,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           
           {collapsed && (
             <Link 
-              href="/admin" 
+              href="/admin/dashboard"
               className="flex items-center justify-center w-full"
               onClick={onClose}
             >

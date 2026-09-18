@@ -1,14 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
 import { orderService } from '@/services/orderService'
 import { toast } from 'react-toastify'
 import { Loader2, ShoppingBag, ShoppingCart } from 'lucide-react'
+import { useSiteSettings } from '@/components/SiteSettingsContext'
 
 export default function CheckoutPage() {
   const router = useRouter()
+  const settings = useSiteSettings()
   const { items, getTotal, clearCart, syncWithServer } = useCartStore()
   const [loading, setLoading] = useState(false)
   
@@ -18,8 +20,20 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     notes: '',
-    payment_method: 'qris',
+    payment_method: '',
   })
+
+  const availablePaymentMethods = [
+    settings.qrisActive && settings.qrisImageUrl ? { value: 'qris', label: 'QRIS (Semua E-Wallet)' } : null,
+    settings.bankTransferActive && settings.bankName && settings.bankAccount && settings.bankAccountName ? { value: 'transfer', label: 'Transfer Bank' } : null,
+    settings.codActive ? { value: 'cod', label: 'Bayar di Tempat' } : null,
+  ].filter((method): method is { value: string; label: string } => Boolean(method))
+
+  useEffect(() => {
+    if (!availablePaymentMethods.some((method) => method.value === formData.payment_method)) {
+      setFormData((current) => ({ ...current, payment_method: availablePaymentMethods[0]?.value || '' }))
+    }
+  }, [settings.bankTransferActive, settings.bankName, settings.bankAccount, settings.bankAccountName, settings.qrisActive, settings.qrisImageUrl, settings.codActive]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -54,6 +68,11 @@ export default function CheckoutPage() {
 
     if (!formData.address.trim()) {
       toast.error('Alamat harus diisi!')
+      return
+    }
+
+    if (!formData.payment_method) {
+      toast.error('Belum ada metode pembayaran yang tersedia')
       return
     }
 
@@ -95,7 +114,7 @@ export default function CheckoutPage() {
           variant_id: item.variantId,
           quantity: item.quantity,
         })),
-        payment_method: formData.payment_method as 'qris' | 'transfer',
+        payment_method: formData.payment_method as 'qris' | 'transfer' | 'cod',
         notes: formData.notes,
       }
 
@@ -257,8 +276,8 @@ export default function CheckoutPage() {
                   onChange={handleChange}
                   className="input-premium"
                 >
-                  <option value="qris">QRIS (Semua E-Wallet)</option>
-                  <option value="transfer">Transfer Bank</option>
+                  {availablePaymentMethods.length === 0 && <option value="">Belum ada metode tersedia</option>}
+                  {availablePaymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}
                 </select>
               </div>
 

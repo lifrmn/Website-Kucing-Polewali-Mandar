@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { productUpdateSchema } from '@/lib/validations/product';
 import { toProductResponse } from '@/lib/product-response';
+import { createActivityLog, getRequestIp } from '@/lib/audit';
 import { z } from 'zod';
 
 // GET single product
@@ -60,7 +62,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('products:manage');
+    const authorization = await authorizeAdmin('products:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
@@ -191,10 +193,25 @@ export async function PUT(
       );
     }
 
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return NextResponse.json(
+          { success: false, error: 'Slug atau SKU sudah digunakan' },
+          { status: 409 }
+        );
+      }
+      if (error.code === 'P2025') {
+        return NextResponse.json(
+          { success: false, error: 'Produk atau varian tidak ditemukan' },
+          { status: 404 }
+        );
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Gagal memperbarui produk',
+        error: 'Gagal memperbarui produk',
       },
       { status: 500 }
     );
@@ -207,7 +224,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('products:manage');
+    const authorization = await authorizeAdmin('products:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
@@ -227,10 +244,21 @@ export async function DELETE(
       );
     }
 
-    await prisma.$transaction([
-      prisma.product.update({ where: { id }, data: { is_active: false } }),
-      prisma.productVariant.updateMany({ where: { product_id: id }, data: { is_active: false } }),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      await tx.product.update({ where: { id }, data: { is_active: false } });
+      await tx.productVariant.updateMany({
+        where: { product_id: id },
+        data: { is_active: false },
+      });
+      await createActivityLog(tx, {
+        userId: authorization.session.user.id,
+        ipAddress: getRequestIp(request),
+        entityType: 'Product',
+        entityId: id,
+        action: 'DELETE',
+        description: 'Produk dinonaktifkan',
+      });
+    });
 
     return NextResponse.json({
       success: true,

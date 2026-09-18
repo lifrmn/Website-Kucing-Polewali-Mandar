@@ -70,7 +70,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('orders:manage');
+    const authorization = await authorizeAdmin('orders:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
@@ -145,7 +145,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('orders:manage');
+    const authorization = await authorizeAdmin('orders:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;

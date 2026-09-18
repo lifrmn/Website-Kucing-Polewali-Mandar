@@ -5,24 +5,22 @@ import Link from 'next/link'
 import { blogService } from '@/services/blogService'
 import { Calendar, ArrowRight, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
-
-interface BlogPost {
-  id: string
-  title: string
-  slug: string
-  excerpt: string | null
-  featured_image: string | null
-  published_at: Date | string | null
-  is_published: boolean
-}
+import { useBlogInitialData, type BlogListPost as BlogPost } from './BlogInitialData'
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
+  const initialData = useBlogInitialData()
+  const [posts, setPosts] = useState<BlogPost[]>(initialData.posts)
+  const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [totalPages, setTotalPages] = useState(initialData.totalPages)
 
   useEffect(() => {
+    if (page === 1) {
+      setPosts(initialData.posts)
+      setTotalPages(initialData.totalPages)
+      setLoading(false)
+      return
+    }
     loadPosts(page)
   }, [page]) // eslint-disable-line react-hooks/exhaustive-deps
 

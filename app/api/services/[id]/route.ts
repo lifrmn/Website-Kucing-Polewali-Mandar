@@ -50,7 +50,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('services:manage');
+    const authorization = await authorizeAdmin('services:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;
@@ -90,7 +90,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = await authorizeAdmin('services:manage');
+    const authorization = await authorizeAdmin('services:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const { id } = await params;

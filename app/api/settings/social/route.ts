@@ -29,7 +29,7 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    const authorization = await authorizeAdmin('settings:manage');
+    const authorization = await authorizeAdmin('settings:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const input = socialSettingsSchema.parse(await request.json());

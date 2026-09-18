@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { productSchema } from '@/lib/validations/product';
+import { parsePagination } from '@/lib/validations/pagination';
 import { toProductResponse } from '@/lib/product-response';
 import { z } from 'zod';
 
@@ -9,10 +11,9 @@ import { z } from 'zod';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get('q') || '';
-    const category = searchParams.get('category');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const q = z.string().max(100).parse(searchParams.get('q') || '');
+    const category = z.string().max(100).nullable().parse(searchParams.get('category'));
+    const pagination = parsePagination(searchParams);
     const featured = searchParams.get('featured');
     const all = searchParams.get('all'); // For admin to see all including inactive
 
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
       if (!authorization.authorized) return authorization.response;
     }
 
-    const skip = (page - 1) * limit;
+    const skip = (pagination.page - 1) * pagination.limit;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
 
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
       prisma.product.findMany({
         where,
         skip,
-        take: limit,
+        take: pagination.limit,
         orderBy: { created_at: 'desc' },
         include: {
           variants: {
@@ -70,13 +71,19 @@ export async function GET(request: NextRequest) {
       data: {
         data: products.map(toProductResponse),
         total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        page: pagination.page,
+        limit: pagination.limit,
+        totalPages: Math.ceil(total / pagination.limit),
       },
     });
   } catch (error: unknown) {
     console.error('GET products error:', error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Parameter pencarian tidak valid' },
+        { status: 422 }
+      );
+    }
     return NextResponse.json(
       {
         success: false,
@@ -90,7 +97,7 @@ export async function GET(request: NextRequest) {
 // POST create product (Admin only)
 export async function POST(request: NextRequest) {
   try {
-    const authorization = await authorizeAdmin('products:manage');
+    const authorization = await authorizeAdmin('products:manage', request);
     if (!authorization.authorized) return authorization.response;
 
     const body = await request.json();
@@ -170,10 +177,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { success: false, error: 'Slug atau SKU sudah digunakan' },
+        { status: 409 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Gagal menambahkan produk',
+        error: 'Gagal menambahkan produk',
       },
       { status: 500 }
     );

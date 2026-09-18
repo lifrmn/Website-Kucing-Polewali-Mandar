@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BookingStatus } from '@/types/enums';
+import { BookingStatus, PaymentMethod, PaymentStatus } from '@/types/enums';
 
 const phoneSchema = z.string().trim()
   .transform((value) => value.replace(/\s+/g, ''))
@@ -21,15 +21,23 @@ export const boardingBookingSchema = z.object({
   cat_age: z.string().trim().max(50).optional(),
   cat_gender: z.string().trim().max(30).optional(),
   cat_breed: z.string().trim().max(100).optional(),
-  cat_health_condition: z.string().trim().max(1_000).optional(),
+  cat_health_condition: z.string().trim().min(2).max(1_000),
+  cat_count: z.coerce.number().int().min(1).max(20),
+  vaccination_status: z.enum(['VACCINATED', 'PARTIAL', 'NOT_VACCINATED', 'UNKNOWN']),
+  routine_medication: z.string().trim().max(500).optional(),
+  allergies: z.string().trim().max(500).optional(),
+  special_food: z.string().trim().max(500).optional(),
   check_in_date: dateSchema,
   check_out_date: dateSchema,
   special_requests: z.string().trim().max(1_000).optional(),
-  emergency_contact: z.string().trim().max(100).optional(),
+  emergency_contact: phoneSchema,
+  payment_method: z.enum(PaymentMethod),
+  boarding_terms_accepted: z.literal(true),
 }).strict();
 
 export const boardingBookingUpdateSchema = z.object({
   status: z.enum(BookingStatus).optional(),
+  payment_status: z.enum(PaymentStatus).optional(),
   admin_notes: z.string().trim().max(2_000).nullable().optional(),
 }).strict().refine(
   (data) => Object.values(data).some((value) => value !== undefined),

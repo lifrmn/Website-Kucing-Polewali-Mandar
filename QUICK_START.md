@@ -27,7 +27,9 @@ npx prisma generate
 # Run migrations
 npx prisma migrate dev
 
-# Seed database dengan sample data
+# Salin .env.example ke .env, lalu isi INITIAL_ADMIN_EMAIL dan
+# INITIAL_ADMIN_PASSWORD unik (12-256 karakter, huruf besar/kecil, angka, simbol).
+# Seed mereset database development, jadi set SEED_RESET_DATABASE="true" hanya saat siap.
 npm run db:seed
 ```
 
@@ -125,9 +127,7 @@ Server berjalan di: **http://localhost:3000**
 ## 🔐 LANGKAH 5: LOGIN ADMIN (1 menit)
 
 1. Buka: http://localhost:3000/login
-2. Login dengan:
-   - **Email**: `admin@cikalpetcare.com`
-   - **Password**: `admin123`
+2. Login dengan `INITIAL_ADMIN_EMAIL` dan `INITIAL_ADMIN_PASSWORD` yang digunakan saat seed.
 3. Klik "Login"
 
 ✅ Anda masuk ke Admin Dashboard!
@@ -271,11 +271,14 @@ npm run dev -- -p 3001
 
 ### Database error?
 ```bash
-# Reset database
-rm prisma/dev.db
-npx prisma migrate dev
-npm run db:seed
+# Jangan hapus file database atau menjalankan reset pada database berisi data.
+npm run db:backup
+npx dotenvx run -- prisma migrate status
+npm run db:migrate
+npm run db:verify
 ```
+
+Jika verifikasi gagal, hentikan deployment dan pulihkan snapshot tervalidasi. `npm run db:seed` hanya untuk database development kosong karena dapat mereset data.
 
 ---
 
