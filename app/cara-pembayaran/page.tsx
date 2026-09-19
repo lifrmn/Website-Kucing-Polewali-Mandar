@@ -83,7 +83,7 @@ export default function PaymentInstructionsPage() {
       <section className="pt-28 md:pt-36 pb-14" style={{ backgroundColor: '#3b3a2e' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
             Cara Pembayaran
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -101,26 +101,32 @@ export default function PaymentInstructionsPage() {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-6 sm:px-8 py-14 md:py-20">
         <div className="space-y-8">
-          <form onSubmit={lookupOrder} className="bg-white rounded-[20px] shadow-md p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
+          <form onSubmit={lookupOrder} className="bg-white rounded-[20px] shadow-md p-5 sm:p-8 border-2" style={{ borderColor: '#E8E3DA' }}>
             <h2 className="text-xl font-bold mb-5" style={{ color: '#383838' }}>Konfirmasi Pesanan</h2>
             <div className="grid sm:grid-cols-2 gap-4">
-              <input
-                required
-                value={orderNumber}
-                onChange={(event) => setOrderNumber(event.target.value)}
-                placeholder="Nomor pesanan (INV-...)"
-                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-primary focus:outline-none"
-                style={{ borderColor: '#E8E3DA' }}
-              />
-              <input
-                required
-                type="tel"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                placeholder="Nomor telepon checkout"
-                className="h-12 px-4 rounded-xl border-2 focus:ring-2 focus:ring-primary focus:outline-none"
-                style={{ borderColor: '#E8E3DA' }}
-              />
+              <label className="min-w-0 text-sm font-medium text-text">
+                Nomor pesanan
+                <input
+                  required
+                  value={orderNumber}
+                  onChange={(event) => setOrderNumber(event.target.value)}
+                  placeholder="INV-..."
+                  className="mt-1 h-12 w-full min-w-0 rounded-xl border-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
+                  style={{ borderColor: '#E8E3DA' }}
+                />
+              </label>
+              <label className="min-w-0 text-sm font-medium text-text">
+                Nomor telepon checkout
+                <input
+                  required
+                  type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="08..."
+                  className="mt-1 h-12 w-full min-w-0 rounded-xl border-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary"
+                  style={{ borderColor: '#E8E3DA' }}
+                />
+              </label>
             </div>
             <button type="submit" disabled={loading} className="mt-4 w-full h-12 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50" style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}>
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
@@ -212,7 +218,7 @@ export default function PaymentInstructionsPage() {
           {siteSettings.codActive && <div className="rounded-card border-2 border-border bg-white p-8 shadow-md"><div className="flex items-start gap-4"><div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-button bg-primary"><HandCoins className="h-6 w-6 text-secondary" /></div><div><h3 className="text-xl font-bold text-text">Bayar di Lokasi</h3><p className="mt-1 text-muted">Bayarkan nominal yang tercantum pada pesanan atau booking langsung kepada petugas Cikal Pet Care. Konfirmasikan nomor referensi Anda sebelum menyerahkan pembayaran.</p><p className="mt-3 text-sm font-semibold text-text">Metode ini tidak memerlukan upload bukti transfer.</p></div></div></div>}
 
           {!siteSettings.qrisActive && !siteSettings.bankTransferActive && !siteSettings.codActive && (
-            <div className="rounded-card border border-border bg-white p-8 text-center shadow-sm"><h2 className="text-xl font-bold text-text">Metode pembayaran belum tersedia</h2><p className="mt-2 text-muted">Silakan hubungi Cikal Pet Care untuk konfirmasi pembayaran.</p></div>
+            <div className="rounded-card border border-border bg-white p-5 text-center shadow-sm sm:p-8"><h2 className="break-words text-lg font-bold text-text sm:text-xl">Metode pembayaran belum tersedia</h2><p className="mt-2 text-muted">Silakan hubungi Cikal Pet Care untuk konfirmasi pembayaran.</p></div>
           )}
 
           {/* Tips */}

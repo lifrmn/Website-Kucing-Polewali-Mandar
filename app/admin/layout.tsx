@@ -25,12 +25,12 @@ export default function AdminLayout({
         <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
         {/* Main Content */}
-        <main className="min-w-0 flex-1 lg:ml-[260px] transition-all duration-300 overflow-visible">
+        <main className="min-w-0 flex-1 overflow-x-hidden lg:ml-[260px] transition-all duration-300">
           {/* Header */}
           <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
           
           {/* Page Content */}
-          <div className="mx-auto max-w-[1400px] overflow-visible p-4 sm:p-6">
+          <div className="mx-auto max-w-[1400px] overflow-x-hidden p-4 sm:p-6">
             {children}
           </div>
         </main>

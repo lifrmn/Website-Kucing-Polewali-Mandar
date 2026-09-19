@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { getSiteUrl } from '@/lib/site-url';
 import { defaultSiteSettings } from '@/lib/validations/settings';
 import { settingsService } from '@/services/settingsService';
 
@@ -9,7 +10,7 @@ const resend = process.env.RESEND_API_KEY
 
 // Default sender email
 const FROM_EMAIL = process.env.EMAIL_FROM || 'Cikal Pet Care Polman <onboarding@resend.dev>';
-const SITE_URL = (process.env.AUTH_URL || 'http://localhost:3000').replace(/\/$/, '');
+const SITE_URL = getSiteUrl();
 
 async function getEmailSettings() {
   return settingsService.getSiteSettings().catch(() => defaultSiteSettings);

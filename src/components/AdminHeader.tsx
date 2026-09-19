@@ -1,7 +1,7 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { Menu, Bell, Search, LogOut, Settings } from 'lucide-react';
+import { Menu, LogOut, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import AppIcon from './AppIcon';
@@ -34,8 +34,7 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   return (
     <header className="sticky top-0 z-40 bg-surface border-b border-border">
       <div className="h-16 px-6 flex items-center justify-between gap-4 overflow-visible">
-        {/* Left: Mobile Menu + Search */}
-        <div className="flex items-center gap-4 flex-1 max-w-2xl">
+        <div className="flex flex-1 items-center">
           <button
             onClick={onMenuClick}
             className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted hover:text-text hover:bg-surface2 transition-colors"
@@ -43,29 +42,9 @@ export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
           >
             <AppIcon icon={Menu} size="md" />
           </button>
-          
-          {/* Search Bar - max 420px */}
-          <div className="hidden md:flex items-center gap-2.5 px-3 py-2 bg-bg rounded-lg border border-border focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all w-full max-w-[420px]">
-            <AppIcon icon={Search} size="sm" className="text-muted" />
-            <input
-              type="text"
-              placeholder="Cari produk, pesanan, atau layanan..."
-              className="bg-transparent border-none outline-none text-sm text-text placeholder:text-muted/60 w-full"
-            />
-          </div>
         </div>
 
-        {/* Right: Notifications + User */}
         <div className="flex items-center gap-2 overflow-visible">
-          {/* Notifications */}
-          <button
-            className="relative flex items-center justify-center h-10 w-10 rounded-xl text-muted hover:text-text hover:bg-surface2 transition-colors overflow-visible"
-            aria-label="Notifikasi"
-          >
-            <AppIcon icon={Bell} size="md" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-danger rounded-full ring-2 ring-surface"></span>
-          </button>
-
           {/* User Menu */}
           <div className="relative" ref={menuRef}>
             <button
