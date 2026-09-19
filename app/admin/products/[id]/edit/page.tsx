@@ -8,6 +8,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Upload, X, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import PetTypeSelector from '@/components/PetTypeSelector';
+import { PetType } from '@/types/enums';
 
 // Validation schema
 const productSchema = z.object({
@@ -21,7 +23,7 @@ const productSchema = z.object({
   stock: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 0, {
     message: 'Stok tidak boleh negatif',
   }),
-  category: z.enum(['MAKANAN', 'ALAT', 'OBAT', 'AKSESORIS'], {
+  category: z.enum(['MAKANAN', 'ALAT', 'OBAT', 'AKSESORIS', 'PASIR', 'GROOMING', 'MAINAN'], {
     message: 'Pilih kategori yang valid',
   }),
   is_active: z.boolean(),
@@ -49,6 +51,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showToast, setShowToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [variants, setVariants] = useState<EditProductVariant[]>([]);
+  const [petTypes, setPetTypes] = useState<PetType[]>([PetType.CAT]);
 
   const {
     register,
@@ -106,6 +109,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         if (product.image_url) {
           setImagePreview(product.image_url);
         }
+        setPetTypes(product.pet_types || [PetType.CAT]);
         setVariants((product.variants || []).map((variant: Omit<EditProductVariant, 'clientKey'>) => ({
           ...variant,
           clientKey: variant.id || crypto.randomUUID(),
@@ -217,6 +221,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           ...data,
           price: Number(data.price),
           stock: Number(data.stock),
+          pet_types: petTypes,
           variants: variants.map(({ clientKey: _, ...variant }) => variant),
         }),
       });
@@ -473,6 +478,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       <option value="ALAT">Alat</option>
                       <option value="OBAT">Obat</option>
                       <option value="AKSESORIS">Aksesoris</option>
+                      <option value="PASIR">Pasir</option>
+                      <option value="GROOMING">Grooming</option>
+                      <option value="MAINAN">Mainan</option>
                     </select>
                     {errors.category && (
                       <p className="text-red-500 text-xs mt-1">{errors.category.message}</p>
@@ -498,6 +506,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       </label>
                     </div>
                   </div>
+                </div>
+                <div className="mt-5">
+                  <PetTypeSelector
+                    value={petTypes}
+                    onChange={setPetTypes}
+                    error={petTypes.length === 0 ? 'Pilih minimal satu jenis hewan.' : undefined}
+                  />
                 </div>
               </div>
             </div>
@@ -577,7 +592,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             </Link>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || petTypes.length === 0}
               className="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {loading ? (

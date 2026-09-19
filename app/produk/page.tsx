@@ -8,6 +8,9 @@ import { toast } from 'react-toastify'
 import AppIcon from '@/components/AppIcon'
 import Link from 'next/link'
 import { useProductInitialData } from './ProductInitialData'
+import PetTypeBadge from '@/components/PetTypeBadge'
+import PetTypeQuickFilter, { type PetTypeFilterValue } from '@/components/PetTypeQuickFilter'
+import { PetType } from '@/types/enums'
 
 export default function ProductsPage() {
   const initialProducts = useProductInitialData()
@@ -15,6 +18,7 @@ export default function ProductsPage() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts)
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('all')
+  const [petTypeFilter, setPetTypeFilter] = useState<PetTypeFilterValue>('all')
   const [sortBy, setSortBy] = useState('name')
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const { addItem, openCart } = useCartStore()
@@ -30,13 +34,16 @@ export default function ProductsPage() {
     if (categoryFilter !== 'all') {
       filtered = filtered.filter(product => product.category === categoryFilter)
     }
+    if (petTypeFilter !== 'all') {
+      filtered = filtered.filter(product => product.pet_types?.includes(petTypeFilter as PetType))
+    }
     filtered.sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price
       if (sortBy === 'price-desc') return b.price - a.price
       return a.name.localeCompare(b.name)
     })
     setFilteredProducts(filtered)
-  }, [searchQuery, categoryFilter, sortBy, products])
+  }, [searchQuery, categoryFilter, petTypeFilter, sortBy, products])
 
   const categories = ['all', ...new Set(products.map(p => p.category).filter(Boolean))]
 
@@ -81,10 +88,10 @@ export default function ProductsPage() {
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
-            Produk Kucing Terbaik
+            Produk Terbaik untuk Hewan Kesayangan
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Pilihan lengkap produk berkualitas untuk kesehatan dan kebahagiaan kucing Anda
+            Temukan makanan, perlengkapan grooming, aksesori, mainan, dan kebutuhan harian untuk hewan kesayangan Anda.
           </p>
         </div>
         {/* Wave bottom */}
@@ -98,7 +105,8 @@ export default function ProductsPage() {
       {/* Filter Section */}
       <section className="py-6 md:py-8 bg-white border-b sticky top-20 z-20" style={{ borderColor: '#E8E3DA' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8">
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
+          <PetTypeQuickFilter value={petTypeFilter} onChange={setPetTypeFilter} />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full sm:w-80">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
                 <AppIcon icon={Search} size="sm" className="text-slate-400" />
@@ -165,7 +173,7 @@ export default function ProductsPage() {
               <p className="text-xl font-semibold text-slate-800 mb-2">Produk tidak ditemukan</p>
               <p className="text-slate-500 mb-6">Coba ubah kata kunci atau filter</p>
               <button
-                onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setSortBy('name'); }}
+                onClick={() => { setSearchQuery(''); setCategoryFilter('all'); setPetTypeFilter('all'); setSortBy('name'); }}
                 className="min-h-11 rounded-button bg-primary px-6 py-2.5 font-semibold text-[#2A2A1A] transition-colors hover:bg-primary-hover"
               >
                 Reset Filter
@@ -214,6 +222,7 @@ export default function ProductsPage() {
 
                   {/* Content */}
                   <div className="p-4 md:p-5">
+                    {product.pet_types && <div className="mb-3 flex flex-wrap gap-1.5">{product.pet_types.map((type) => <PetTypeBadge key={type} type={type} />)}</div>}
                     <Link href={`/produk/${product.slug}`} className="block mb-2 md:mb-3">
                       <h3 className="font-semibold text-sm md:text-base line-clamp-2 min-h-[2.5rem] text-text hover:text-dark-gold transition-colors">
                         {product.name}

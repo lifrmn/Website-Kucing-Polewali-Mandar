@@ -51,7 +51,7 @@ export default function ContactPage() {
             Hubungi Kami
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Kami siap membantu Anda dengan segala kebutuhan perawatan kucing kesayangan
+            Kami siap membantu kebutuhan perawatan hewan kesayangan Anda
           </p>
         </div>
         {/* Wave bottom */}
@@ -98,7 +98,7 @@ export default function ContactPage() {
               <h3 className="text-2xl font-bold mb-3 text-text">Chat WhatsApp</h3>
               <p className="mb-6 text-muted">Hubungi tim Cikal Pet Care untuk informasi layanan, booking, dan produk.</p>
               <a
-                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk kucing saya.')}
+                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk hewan peliharaan saya.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]" 

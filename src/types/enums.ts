@@ -37,6 +37,15 @@ export enum BookingStatus {
   CANCELED = 'CANCELED',
 }
 
+export enum PetType {
+  CAT = 'CAT',
+  DOG = 'DOG',
+  RABBIT = 'RABBIT',
+  HAMSTER = 'HAMSTER',
+  BIRD = 'BIRD',
+  OTHER = 'OTHER',
+}
+
 export enum UserRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
@@ -67,6 +76,10 @@ export function isValidPaymentMethod(method: string): method is PaymentMethod {
 
 export function isValidBookingStatus(status: string): status is BookingStatus {
   return Object.values(BookingStatus).includes(status as BookingStatus);
+}
+
+export function isValidPetType(type: string): type is PetType {
+  return Object.values(PetType).includes(type as PetType);
 }
 
 export function isValidUserRole(role: string): role is UserRole {

@@ -1,0 +1,1 @@
+ALTER TABLE "service_bookings" ADD COLUMN "pet_type_other" TEXT;

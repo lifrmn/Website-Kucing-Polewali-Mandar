@@ -2,18 +2,20 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 
 import { createActivityLog, type AuditContext } from '@/lib/audit';
+import { parsePetTypes } from '@/lib/pet-types';
 import type {
   BoardingBookingInput,
   BoardingBookingUpdateInput,
 } from '@/lib/validations/booking';
-import { BookingStatus, PaymentMethod, PaymentStatus } from '@/types/enums';
+import { BookingStatus, PaymentMethod, PaymentStatus, PetType } from '@/types/enums';
 
 export type BoardingBookingErrorCode =
   | 'PACKAGE_UNAVAILABLE'
   | 'INVALID_DATE_RANGE'
   | 'PAST_CHECK_IN'
   | 'CAPACITY_FULL'
-  | 'TOO_MANY_CATS'
+  | 'TOO_MANY_PETS'
+  | 'PET_TYPE_UNSUPPORTED'
   | 'PAYMENT_METHOD_UNAVAILABLE'
   | 'BOOKING_NOT_FOUND'
   | 'INVALID_STATUS_TRANSITION';
@@ -79,8 +81,11 @@ export async function createBoardingBooking(
         where: { id: input.package_id, is_active: true },
       });
       if (!pkg) throw new BoardingBookingError('PACKAGE_UNAVAILABLE');
-      if (input.cat_count > pkg.max_cats) {
-        throw new BoardingBookingError('TOO_MANY_CATS');
+      if (input.pet_count > pkg.max_pets) {
+        throw new BoardingBookingError('TOO_MANY_PETS');
+      }
+      if (!parsePetTypes(pkg.accepted_pet_types).includes(input.pet_type)) {
+        throw new BoardingBookingError('PET_TYPE_UNSUPPORTED');
       }
       const paymentSettings = await tx.settings.findMany({
         where: {
@@ -120,9 +125,9 @@ export async function createBoardingBooking(
               check_in_date: { lte: date },
               check_out_date: { gt: date },
             },
-            _sum: { cat_count: true },
+            _sum: { pet_count: true },
           });
-          const occupiedCapacity = existingBookings._sum.cat_count ?? 0;
+          const occupiedCapacity = existingBookings._sum.pet_count ?? 0;
           capacity = await tx.bookingCapacity.create({
             data: {
               date,
@@ -134,7 +139,7 @@ export async function createBoardingBooking(
 
         if (
           !capacity.is_available ||
-          capacity.current_bookings + input.cat_count > capacity.max_capacity
+          capacity.current_bookings + input.pet_count > capacity.max_capacity
         ) {
           throw new BoardingBookingError('CAPACITY_FULL');
         }
@@ -145,8 +150,8 @@ export async function createBoardingBooking(
             is_available: true,
           },
           data: {
-            current_bookings: { increment: input.cat_count },
-            is_available: capacity.current_bookings + input.cat_count < capacity.max_capacity,
+            current_bookings: { increment: input.pet_count },
+            is_available: capacity.current_bookings + input.pet_count < capacity.max_capacity,
           },
         });
         if (incremented.count !== 1) throw new BoardingBookingError('CAPACITY_FULL');
@@ -166,7 +171,7 @@ export async function createBoardingBooking(
       });
       const datePart = new Date().toISOString().slice(2, 10).replace(/-/g, '');
       const bookingNumber = `BOK-${datePart}-${randomBytes(6).toString('hex').toUpperCase()}`;
-      const totalPrice = pkg.price_per_night * stayDates.length * input.cat_count;
+      const totalPrice = pkg.price_per_night * stayDates.length * input.pet_count;
       const configuredDepositPercent = Number(paymentValues.get('payment_boarding_deposit_percent') ?? 30);
       const depositPercent = Number.isFinite(configuredDepositPercent)
         ? Math.min(100, Math.max(0, configuredDepositPercent))
@@ -181,12 +186,14 @@ export async function createBoardingBooking(
           idempotency_key: idempotencyKey,
           customer_id: customer.id,
           package_id: pkg.id,
-          cat_name: input.cat_name,
-          cat_age: input.cat_age,
-          cat_gender: input.cat_gender,
-          cat_breed: input.cat_breed,
-          cat_health_condition: input.cat_health_condition,
-          cat_count: input.cat_count,
+          pet_name: input.pet_name,
+          pet_type: input.pet_type,
+          pet_type_other: input.pet_type === PetType.OTHER ? input.pet_type_other : null,
+          pet_age: input.pet_age,
+          pet_gender: input.pet_gender,
+          pet_breed: input.pet_breed,
+          pet_health_condition: input.pet_health_condition,
+          pet_count: input.pet_count,
           vaccination_status: input.vaccination_status,
           routine_medication: input.routine_medication,
           allergies: input.allergies,
@@ -246,8 +253,8 @@ export function updateBoardingBooking(
       );
       for (const date of stayDates) {
         await tx.bookingCapacity.updateMany({
-          where: { date, current_bookings: { gte: current.cat_count } },
-          data: { current_bookings: { decrement: current.cat_count }, is_available: true },
+          where: { date, current_bookings: { gte: current.pet_count } },
+          data: { current_bookings: { decrement: current.pet_count }, is_available: true },
         });
       }
     }

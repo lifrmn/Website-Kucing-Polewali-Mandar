@@ -30,6 +30,10 @@ after(async () => {
 });
 
 test('dashboard counts only authoritative active and paid records', async () => {
+  const [baselineProducts, baselineServices] = await Promise.all([
+    prisma.product.count({ where: { is_active: true } }),
+    prisma.service.count({ where: { is_active: true } }),
+  ]);
   const customer = await prisma.customer.create({
     data: { name: 'Dashboard Customer', phone: '081200000001' },
   });
@@ -71,31 +75,31 @@ test('dashboard counts only authoritative active and paid records', async () => 
   await prisma.penitipanBooking.createMany({ data: [
     {
       booking_number: 'BOARD-ACTIVE', customer_id: customer.id, package_id: boardingPackage.id,
-      cat_name: 'Milo', check_in_date: new Date('2026-03-20'), check_out_date: new Date('2026-03-21'),
+      pet_name: 'Milo', check_in_date: new Date('2026-03-20'), check_out_date: new Date('2026-03-21'),
       total_nights: 1, total_price: 50_000, status: BookingStatus.CONFIRMED,
     },
     {
       booking_number: 'BOARD-DONE', customer_id: customer.id, package_id: boardingPackage.id,
-      cat_name: 'Mimi', check_in_date: new Date('2026-03-10'), check_out_date: new Date('2026-03-11'),
+      pet_name: 'Mimi', check_in_date: new Date('2026-03-10'), check_out_date: new Date('2026-03-11'),
       total_nights: 1, total_price: 50_000, status: BookingStatus.CHECKED_OUT,
     },
   ] });
   await prisma.serviceBooking.createMany({ data: [
     {
       service_id: activeService.id, customer_id: customer.id, booking_date: new Date('2026-03-20'),
-      booking_time: '10:00', pet_name: 'Milo', pet_type: 'Kucing', status: BookingStatus.PENDING,
+      booking_time: '10:00', pet_name: 'Milo', pet_type: 'CAT', status: BookingStatus.PENDING,
     },
     {
       service_id: activeService.id, customer_id: customer.id, booking_date: new Date('2026-03-21'),
-      booking_time: '11:00', pet_name: 'Mimi', pet_type: 'Kucing', status: BookingStatus.COMPLETED,
+      booking_time: '11:00', pet_name: 'Mimi', pet_type: 'CAT', status: BookingStatus.COMPLETED,
     },
   ] });
 
   const dashboard = await getDashboardData(prisma, new Date('2026-03-15T12:00:00.000Z'));
 
   assert.deepEqual(dashboard.stats, {
-    totalProducts: 1,
-    totalServices: 1,
+    totalProducts: baselineProducts + 1,
+    totalServices: baselineServices + 1,
     totalOrders: 6,
     totalRevenue: 900_000,
     pendingOrders: 2,

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Card, Badge, Button } from '@/components/ui';
 import { ArrowLeft, Calendar, User, Phone, Mail, PawPrint, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import PetTypeBadge from '@/components/PetTypeBadge';
 
 interface BookingDetail {
   id: string;
@@ -18,11 +19,13 @@ interface BookingDetail {
     name: string;
     price_per_night: number;
   };
-  cat_name: string;
-  cat_age: string;
-  cat_gender: string;
-  cat_breed?: string;
-  cat_health_condition?: string;
+  pet_name: string;
+  pet_type: string;
+  pet_type_other?: string;
+  pet_age?: string;
+  pet_gender?: string;
+  pet_breed?: string;
+  pet_health_condition?: string;
   check_in_date: string;
   check_out_date: string;
   total_nights: number;
@@ -238,42 +241,44 @@ export default function BookingDetailPage({ params }: { params: Promise<{ id: st
             </Card.Content>
           </Card>
 
-          {/* Cat Information */}
+          {/* Pet Information */}
           <Card>
             <Card.Header>
-              <Card.Title>Cat Information</Card.Title>
+              <Card.Title>Informasi Hewan</Card.Title>
             </Card.Header>
             <Card.Content className="space-y-3">
               <div className="flex items-center gap-3">
                 <PawPrint className="w-5 h-5 text-primary" />
                 <div>
-                  <p className="text-small text-muted">Cat Name</p>
-                  <p className="text-body font-semibold text-text">{booking.cat_name}</p>
+                  <p className="text-small text-muted">Nama</p>
+                  <p className="text-body font-semibold text-text">{booking.pet_name}</p>
+                  <PetTypeBadge type={booking.pet_type} className="mt-1" />
+                  {booking.pet_type_other && <p className="mt-1 text-small text-muted">{booking.pet_type_other}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-small text-muted">Age</p>
-                  <p className="text-body text-text">{booking.cat_age}</p>
+                  <p className="text-small text-muted">Usia</p>
+                  <p className="text-body text-text">{booking.pet_age || '-'}</p>
                 </div>
                 <div>
                   <p className="text-small text-muted">Gender</p>
-                  <p className="text-body text-text">{booking.cat_gender}</p>
+                  <p className="text-body text-text">{booking.pet_gender || '-'}</p>
                 </div>
               </div>
 
-              {booking.cat_breed && (
+              {booking.pet_breed && (
                 <div>
                   <p className="text-small text-muted">Breed</p>
-                  <p className="text-body text-text">{booking.cat_breed}</p>
+                  <p className="text-body text-text">{booking.pet_breed}</p>
                 </div>
               )}
 
-              {booking.cat_health_condition && (
+              {booking.pet_health_condition && (
                 <div>
                   <p className="text-small text-muted">Health Condition</p>
-                  <p className="text-body text-text">{booking.cat_health_condition}</p>
+                  <p className="text-body text-text">{booking.pet_health_condition}</p>
                 </div>
               )}
 

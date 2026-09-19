@@ -40,3 +40,24 @@ test('production environment accepts a durable database URL and HTTPS auth URL',
 test('development environment does not require production credentials', () => {
   assert.deepEqual(getProductionEnvironmentErrors({ NODE_ENV: 'development' }), []);
 });
+
+test('production validates WhatsApp configuration only when enabled', () => {
+  const base = {
+    NODE_ENV: 'production' as const,
+    DATABASE_URL: 'file:/data/cikal.db',
+    AUTH_SECRET: 'a-unique-production-secret-with-more-than-32-characters',
+    AUTH_URL: 'https://cikal.example.com',
+  };
+  assert.deepEqual(getProductionEnvironmentErrors({
+    ...base,
+    WHATSAPP_PROVIDER: 'WABLAS',
+  }), [
+    'WHATSAPP_API_TOKEN wajib diatur saat WhatsApp aktif',
+    'WHATSAPP_API_URL wajib diatur untuk WABLAS',
+  ]);
+  assert.deepEqual(getProductionEnvironmentErrors({
+    ...base,
+    WHATSAPP_PROVIDER: 'FONNTE',
+    WHATSAPP_API_TOKEN: 'provider-token',
+  }), []);
+});

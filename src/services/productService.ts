@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import type { PetType } from '@/types/enums';
+
 export const productService = {
   async getProducts(page: number = 1, limit: number = 12, category?: string) {
     try {
@@ -123,6 +125,7 @@ export const productService = {
     price: number;
     stock: number;
     category: string;
+    pet_types: PetType[];
     image_url?: string;
     is_active?: boolean;
     sku?: string;
@@ -160,6 +163,7 @@ export const productService = {
     price?: number;
     stock?: number;
     category?: string;
+    pet_types?: PetType[];
     image_url?: string;
     is_active?: boolean;
     variants?: Array<{

@@ -2,16 +2,16 @@ import { Prisma, PrismaClient } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 
 import { calculateShipping, CheckoutInput, normalizePaymentMethod } from '@/lib/validations/order';
+import { defaultSiteSettings } from '@/lib/validations/settings';
 import { OrderStatus, PaymentStatus } from '@/types/enums';
 
 export type CheckoutConflictCode =
   | 'PRODUCT_UNAVAILABLE'
   | 'VARIANT_REQUIRED'
   | 'VARIANT_UNAVAILABLE'
-  | 'SERVICE_UNAVAILABLE'
   | 'INSUFFICIENT_STOCK'
-  | 'INVALID_SERVICE_VARIANT'
-  | 'PAYMENT_METHOD_UNAVAILABLE';
+  | 'PAYMENT_METHOD_UNAVAILABLE'
+  | 'FULFILLMENT_UNAVAILABLE';
 
 export class CheckoutConflictError extends Error {
   constructor(public readonly code: CheckoutConflictCode) {
@@ -67,6 +67,13 @@ export async function createCheckout(
               'payment_qris_active',
               'payment_qris_image_url',
               'payment_cod_active',
+              'shipping_delivery_active',
+              'shipping_pickup_active',
+              'shipping_free_threshold',
+              'shipping_fee_polewali',
+              'shipping_fee_wonomulyo',
+              'shipping_fee_tinambung',
+              'shipping_fee_other',
             ],
           },
         },
@@ -83,6 +90,14 @@ export async function createCheckout(
             && Boolean(paymentValues.get('payment_qris_image_url'))
           : paymentValues.get('payment_cod_active') === 'true';
       if (!paymentAvailable) throw new CheckoutConflictError('PAYMENT_METHOD_UNAVAILABLE');
+      const deliveryActive = paymentValues.get('shipping_delivery_active') !== 'false';
+      const pickupActive = paymentValues.get('shipping_pickup_active') !== 'false';
+      if (
+        (body.fulfillment_type === 'DELIVERY' && !deliveryActive)
+        || (body.fulfillment_type === 'PICKUP' && !pickupActive)
+      ) {
+        throw new CheckoutConflictError('FULFILLMENT_UNAVAILABLE');
+      }
 
       const resolvedItems: Array<{
         product_id: string | null;
@@ -96,7 +111,6 @@ export async function createCheckout(
       }> = [];
 
       for (const item of groupedItems) {
-        if (item.item_type === 'product') {
           const product = await tx.product.findFirst({
             where: { id: item.item_id, is_active: true },
             include: {
@@ -150,28 +164,25 @@ export async function createCheckout(
               subtotal: product.price * item.quantity,
             });
           }
-        } else {
-          if (item.variant_id) throw new CheckoutConflictError('INVALID_SERVICE_VARIANT');
-          const service = await tx.service.findFirst({
-            where: { id: item.item_id, is_active: true },
-          });
-          if (!service) throw new CheckoutConflictError('SERVICE_UNAVAILABLE');
-
-          resolvedItems.push({
-            product_id: null,
-            variant_id: null,
-            service_id: service.id,
-            name: service.name,
-            sku: null,
-            quantity: item.quantity,
-            price: service.price,
-            subtotal: service.price * item.quantity,
-          });
-        }
       }
 
       const subtotal = resolvedItems.reduce((sum, item) => sum + item.subtotal, 0);
-      const shippingCost = calculateShipping(subtotal);
+      const numericSetting = (key: string, fallback: number) => {
+        const value = Number(paymentValues.get(key));
+        return Number.isFinite(value) && value >= 0 ? value : fallback;
+      };
+      const shippingCost = calculateShipping(
+        subtotal,
+        body.fulfillment_type,
+        body.delivery_area,
+        {
+          freeShippingThreshold: numericSetting('shipping_free_threshold', defaultSiteSettings.freeShippingThreshold),
+          polewaliDeliveryFee: numericSetting('shipping_fee_polewali', defaultSiteSettings.polewaliDeliveryFee),
+          wonomulyoDeliveryFee: numericSetting('shipping_fee_wonomulyo', defaultSiteSettings.wonomulyoDeliveryFee),
+          tinambungDeliveryFee: numericSetting('shipping_fee_tinambung', defaultSiteSettings.tinambungDeliveryFee),
+          otherDeliveryFee: numericSetting('shipping_fee_other', defaultSiteSettings.otherDeliveryFee),
+        }
+      );
       const totalAmount = subtotal + shippingCost;
       const phone = body.customer_phone.replace(/\s+/g, '');
       const customer = await tx.customer.upsert({
@@ -179,7 +190,7 @@ export async function createCheckout(
         update: {
           name: body.customer_name,
           email: body.customer_email || null,
-          address: body.customer_address,
+          ...(body.customer_address ? { address: body.customer_address } : {}),
           total_orders: { increment: 1 },
           total_spent: { increment: totalAmount },
         },
@@ -187,7 +198,7 @@ export async function createCheckout(
           name: body.customer_name,
           phone,
           email: body.customer_email || null,
-          address: body.customer_address,
+          address: body.customer_address || null,
           total_orders: 1,
           total_spent: totalAmount,
         },
@@ -207,7 +218,9 @@ export async function createCheckout(
           payment_method: paymentMethod,
           payment_status: PaymentStatus.PENDING,
           status: OrderStatus.PENDING,
-          shipping_address: body.customer_address,
+          fulfillment_type: body.fulfillment_type,
+          shipping_address: body.fulfillment_type === 'DELIVERY' ? body.customer_address : null,
+          shipping_city: body.fulfillment_type === 'DELIVERY' ? body.delivery_area : null,
           notes: body.notes,
           orderItems: { create: resolvedItems },
         },

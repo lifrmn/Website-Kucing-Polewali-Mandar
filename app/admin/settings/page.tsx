@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Save, Mail, MapPin, Settings as SettingsIcon } from 'lucide-react'
+import { Save, Mail, MapPin, Settings as SettingsIcon, Truck } from 'lucide-react'
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp, FaYoutube } from 'react-icons/fa6'
 import { toast } from 'react-toastify'
 import { defaultSiteSettings, type SiteSettings } from '@/lib/validations/settings'
@@ -317,6 +317,26 @@ export default function AdminSettingsPage() {
                 placeholder="https://example.com/qris.jpg"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="rounded-card border border-border bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center gap-3">
+            <div className="rounded-button bg-primary p-3"><Truck className="h-7 w-7 text-secondary" /></div>
+            <div><h2 className="text-xl font-bold text-gray-800">Pengantaran Produk</h2><p className="text-sm text-gray-600">Atur pickup, wilayah, dan ongkir produk fisik</p></div>
+          </div>
+          <div className="mb-4 grid gap-3 sm:grid-cols-2">
+            <label className="flex items-center gap-3 rounded-button border border-border p-3 text-sm font-semibold"><input type="checkbox" checked={settings.deliveryActive} onChange={(event) => handleChange('deliveryActive', event.target.checked)} />Pengantaran aktif</label>
+            <label className="flex items-center gap-3 rounded-button border border-border p-3 text-sm font-semibold"><input type="checkbox" checked={settings.pickupActive} onChange={(event) => handleChange('pickupActive', event.target.checked)} />Ambil di toko aktif</label>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {([
+              ['freeShippingThreshold', 'Batas gratis ongkir'],
+              ['polewaliDeliveryFee', 'Ongkir Polewali'],
+              ['wonomulyoDeliveryFee', 'Ongkir Wonomulyo'],
+              ['tinambungDeliveryFee', 'Ongkir Tinambung'],
+              ['otherDeliveryFee', 'Ongkir kecamatan lain'],
+            ] as const).map(([field, label]) => <label key={field} className="block text-sm font-bold text-gray-700">{label}<input type="number" min={0} step={1000} value={settings[field]} onChange={(event) => handleChange(field, Number(event.target.value))} className="input-premium mt-2" /></label>)}
           </div>
         </div>
 

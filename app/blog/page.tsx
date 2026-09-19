@@ -45,7 +45,7 @@ export default function BlogPage() {
 
   if (loading) {
     return (
-      <LoadingSpinner message="Memuat artikel..." submessage="Menyiapkan tips perawatan kucing untuk Anda" size="md" />
+      <LoadingSpinner message="Memuat artikel..." submessage="Menyiapkan tips perawatan hewan untuk Anda" size="md" />
     )
   }
 
@@ -56,10 +56,10 @@ export default function BlogPage() {
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
-            Tips Kesehatan Kucing
+            Tips Kesehatan Hewan
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Artikel dan tips bermanfaat untuk merawat kucing kesayangan Anda
+            Artikel dan tips bermanfaat untuk merawat berbagai hewan kesayangan Anda
           </p>
         </div>
         {/* Wave bottom */}

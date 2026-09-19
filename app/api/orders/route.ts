@@ -8,6 +8,7 @@ import { getClientIp } from '@/lib/client-ip';
 import { checkoutSchema } from '@/lib/validations/order';
 import { parsePagination } from '@/lib/validations/pagination';
 import { z } from 'zod';
+import { whatsappService } from '@/services/whatsappService';
 
 // GET all orders
 export async function GET(request: NextRequest) {
@@ -157,6 +158,20 @@ export async function POST(request: NextRequest) {
       // Don't fail the request if email fails
     }
 
+    if (!replayed) {
+      await whatsappService.sendOrderConfirmation({
+        customerPhone: order.customer.phone,
+        customerName: order.customer.name,
+        orderNumber: order.order_number,
+        items: order.orderItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+        })),
+        totalAmount: order.total_amount,
+      });
+    }
+
     return NextResponse.json({
       success: true,
       data: order,
@@ -176,10 +191,9 @@ export async function POST(request: NextRequest) {
       PRODUCT_UNAVAILABLE: 'Produk tidak tersedia',
       VARIANT_REQUIRED: 'Pilih varian produk yang tersedia',
       VARIANT_UNAVAILABLE: 'Varian produk tidak tersedia',
-      SERVICE_UNAVAILABLE: 'Layanan tidak tersedia',
       INSUFFICIENT_STOCK: 'Stok tidak mencukupi',
-      INVALID_SERVICE_VARIANT: 'Varian tidak valid untuk layanan',
       PAYMENT_METHOD_UNAVAILABLE: 'Metode pembayaran tidak tersedia',
+      FULFILLMENT_UNAVAILABLE: 'Opsi pengambilan atau pengantaran tidak tersedia',
     };
     if (error instanceof CheckoutConflictError) {
       return NextResponse.json(

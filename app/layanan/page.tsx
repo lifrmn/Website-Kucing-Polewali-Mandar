@@ -1,16 +1,18 @@
 'use client'
 
 import { FormEvent, useEffect, useRef, useState } from 'react'
-import { useCartStore } from '@/store/cartStore'
-import { toast } from 'react-toastify'
-import { CalendarPlus, Check, Clock, ShoppingCart, Search, Scissors, Stethoscope, Home, Sparkles, X } from 'lucide-react'
+import { CalendarPlus, Check, Clock, Search, Scissors, Stethoscope, Home, Sparkles, X } from 'lucide-react'
 import AppIcon from '@/components/AppIcon'
 import { useServiceInitialData, type PublicService as Service } from './ServiceInitialData'
+import PetTypeBadge from '@/components/PetTypeBadge'
+import PetTypeQuickFilter, { type PetTypeFilterValue } from '@/components/PetTypeQuickFilter'
+import { PET_TYPE_OPTIONS } from '@/lib/pet-types'
+import { PetType } from '@/types/enums'
 
 const SERVICE_IMAGES: Record<string, string> = {
-  grooming: 'https://images.unsplash.com/photo-1585289167915-67cfeb4e6b52?w=600&auto=format&fit=crop',
+  grooming: 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=600&auto=format&fit=crop',
   medical: 'https://images.unsplash.com/photo-1530126483408-aa533e55bdb2?w=600&auto=format&fit=crop',
-  boarding: 'https://images.unsplash.com/photo-1573865526739-10c1dd7db5d8?w=600&auto=format&fit=crop',
+  boarding: 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=600&auto=format&fit=crop',
   default: 'https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=600&auto=format&fit=crop'
 }
 
@@ -28,10 +30,12 @@ export default function ServicesPage() {
   const [filteredServices, setFilteredServices] = useState<Service[]>(initialServices)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
+  const [petTypeFilter, setPetTypeFilter] = useState<PetTypeFilterValue>('all')
   const [sortBy, setSortBy] = useState('name')
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState('')
+  const [selectedPetType, setSelectedPetType] = useState<PetType>(PetType.CAT)
   const [bookingResult, setBookingResult] = useState<{
     service_name: string
     booking_date: string
@@ -40,7 +44,6 @@ export default function ServicesPage() {
   const [availableSlots, setAvailableSlots] = useState<Array<{ time: string; available: boolean }>>([])
   const [slotsLoading, setSlotsLoading] = useState(false)
   const idempotencyKey = useRef('')
-  const { addItem, openCart } = useCartStore()
 
   useEffect(() => {
     let filtered = [...services]
@@ -53,13 +56,16 @@ export default function ServicesPage() {
     if (typeFilter !== 'all') {
       filtered = filtered.filter(service => service.type === typeFilter)
     }
+    if (petTypeFilter !== 'all') {
+      filtered = filtered.filter(service => service.supported_pet_types.includes(petTypeFilter as PetType))
+    }
     filtered.sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price
       if (sortBy === 'price-desc') return b.price - a.price
       return a.name.localeCompare(b.name)
     })
     setFilteredServices(filtered)
-  }, [searchQuery, typeFilter, sortBy, services])
+  }, [searchQuery, typeFilter, petTypeFilter, sortBy, services])
 
   const serviceTypes = ['all', ...new Set(services.map(s => s.type).filter(Boolean))]
 
@@ -78,23 +84,12 @@ export default function ServicesPage() {
     day: '2-digit',
   }).format(new Date())
 
-  const handleAddToCart = (service: Service) => {
-    addItem({
-      id: service.id,
-      type: 'service',
-      name: service.name,
-      price: service.price,
-      description: service.description,
-    })
-    toast.success(`${service.name} ditambahkan ke keranjang!`)
-    openCart()
-  }
-
   const openBooking = (service: Service) => {
     idempotencyKey.current = crypto.randomUUID()
     setBookingError('')
     setBookingResult(null)
     setAvailableSlots([])
+    setSelectedPetType(service.supported_pet_types[0] ?? PetType.CAT)
     setSelectedService(service)
   }
 
@@ -132,7 +127,7 @@ export default function ServicesPage() {
           'Content-Type': 'application/json',
           'Idempotency-Key': idempotencyKey.current,
         },
-        body: JSON.stringify({ ...payload, service_id: selectedService.id, pet_type: 'Kucing' }),
+        body: JSON.stringify({ ...payload, service_id: selectedService.id }),
       })
       const data = await response.json()
       if (!response.ok || !data.success) {
@@ -157,10 +152,10 @@ export default function ServicesPage() {
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
-            Layanan Perawatan Kucing
+            Layanan Perawatan Hewan
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Layanan kesehatan dan perawatan profesional untuk kucing kesayangan Anda
+            Layanan profesional untuk menjaga kebersihan, kesehatan, dan kenyamanan hewan kesayangan Anda.
           </p>
         </div>
         {/* Wave bottom */}
@@ -174,6 +169,7 @@ export default function ServicesPage() {
       {/* Filter Section */}
       <section className="py-6 md:py-8 bg-white border-b sticky top-20 z-20" style={{ borderColor: '#E8E3DA' }}>
         <div className="max-w-5xl mx-auto px-6 sm:px-8">
+          <PetTypeQuickFilter value={petTypeFilter} onChange={setPetTypeFilter} />
           <div className="flex flex-col sm:flex-row gap-3 md:gap-4 items-center justify-between">
             <div className="relative w-full sm:w-80">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -257,9 +253,13 @@ export default function ServicesPage() {
                   {/* Image */}
                   <div className="relative h-44 md:h-48 overflow-hidden">
                     <img
-                      src={getServiceImage(service.type)}
-                      alt={service.name}
+                      src={service.image_url || getServiceImage(service.type)}
+                      alt={`${service.name} untuk ${service.supported_pet_types.map((type) => PET_TYPE_OPTIONS.find((option) => option.value === type)?.label).filter(Boolean).join(' dan ')}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null
+                        event.currentTarget.src = '/placeholder-product.svg'
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 flex items-center gap-2">
@@ -286,8 +286,10 @@ export default function ServicesPage() {
                     )}
 
                     <p className="text-slate-600 text-xs md:text-sm leading-relaxed mb-3 md:mb-4 line-clamp-2">
-                      {service.description || 'Layanan profesional untuk kucing Anda'}
+                      {service.description || 'Layanan profesional untuk hewan kesayangan Anda'}
                     </p>
+
+                    <div className="mb-4 flex flex-wrap gap-1.5">{service.supported_pet_types.map((type) => <PetTypeBadge key={type} type={type} />)}</div>
 
                     <div className="pt-3 md:pt-4 border-t border-slate-100">
                       <div className="flex items-center justify-between mb-3">
@@ -295,24 +297,14 @@ export default function ServicesPage() {
                         {formatCurrency(service.price)}
                       </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleAddToCart(service)}
-                        className="flex items-center justify-center gap-2 px-3 py-2 text-xs md:text-sm font-semibold rounded-full border transition-colors hover:bg-stone-50"
-                        style={{ borderColor: '#E6D18B', color: '#4a4632' }}
-                      >
-                        <AppIcon icon={ShoppingCart} size="sm" />
-                        <span className="leading-none">Tambah</span>
-                      </button>
                       <button
                         onClick={() => openBooking(service)}
-                        className="flex items-center justify-center gap-2 px-3 py-2 text-xs md:text-sm font-semibold rounded-full transition-opacity hover:opacity-90"
+                        className="flex w-full items-center justify-center gap-2 rounded-button px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90"
                         style={{ backgroundColor: '#E6D18B', color: '#2a2a1a' }}
                       >
                         <AppIcon icon={CalendarPlus} size="sm" />
-                        <span className="leading-none">Jadwalkan</span>
+                        <span className="leading-none">Jadwalkan Layanan</span>
                       </button>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -355,7 +347,9 @@ export default function ServicesPage() {
                   ) : (
                     <label className="text-sm font-medium">Jam layanan (WITA)<input name="booking_time" type="time" required className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   )}
-                  <label className="text-sm font-medium md:col-span-2">Nama kucing<input name="pet_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jenis hewan *<select name="pet_type" required value={selectedPetType} onChange={(event) => setSelectedPetType(event.target.value as PetType)} className="mt-1 w-full rounded-lg border px-3 py-2.5">{PET_TYPE_OPTIONS.filter((option) => selectedService.supported_pet_types.includes(option.value)).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                  {selectedPetType === PetType.OTHER && <label className="text-sm font-medium">Jenis hewan lainnya *<input name="pet_type_other" required maxLength={100} placeholder="Contoh: Guinea pig" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>}
+                  <label className="text-sm font-medium">Nama hewan *<input name="pet_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium md:col-span-2">Catatan (opsional)<textarea name="notes" maxLength={1000} rows={3} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
                 </div>
                 {bookingError && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{bookingError}</p>}

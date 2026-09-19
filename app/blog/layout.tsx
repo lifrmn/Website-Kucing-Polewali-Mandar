@@ -4,8 +4,8 @@ import prisma from '@/lib/prisma'
 import { BlogInitialDataProvider } from './BlogInitialData'
 
 export const metadata: Metadata = {
-  title: 'Tips Perawatan Kucing',
-  description: 'Baca artikel dan panduan praktis untuk menjaga kesehatan serta kenyamanan kucing kesayangan Anda.',
+  title: 'Tips Perawatan Hewan',
+  description: 'Baca artikel dan panduan praktis untuk menjaga kesehatan serta kenyamanan berbagai hewan peliharaan.',
   alternates: { canonical: '/blog' },
 }
 

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { Check, LoaderCircle, Pencil, Plus, Trash2 } from 'lucide-react';
+import PetTypeBadge from '@/components/PetTypeBadge';
+import PetTypeSelector from '@/components/PetTypeSelector';
+import { PetType } from '@/types/enums';
 
 interface Package {
   id: string;
@@ -10,7 +13,8 @@ interface Package {
   description: string;
   price_per_night: number;
   features: string | string[];
-  max_cats: number;
+  max_pets: number;
+  accepted_pet_types: PetType[];
   is_active: boolean;
 }
 
@@ -24,7 +28,8 @@ export default function AdminPackagesPage() {
     description: '',
     price_per_night: '',
     features: '',
-    max_cats: '1',
+    max_pets: '1',
+    accepted_pet_types: [] as PetType[],
     is_active: true,
   });
 
@@ -48,6 +53,10 @@ export default function AdminPackagesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.accepted_pet_types.length === 0) {
+      toast.error('Pilih minimal satu jenis hewan');
+      return;
+    }
     setLoading(true);
 
     try {
@@ -60,7 +69,7 @@ export default function AdminPackagesPage() {
         body: JSON.stringify({
           ...formData,
           price_per_night: parseFloat(formData.price_per_night),
-          max_cats: parseInt(formData.max_cats),
+          max_pets: parseInt(formData.max_pets),
         }),
       });
 
@@ -88,7 +97,8 @@ export default function AdminPackagesPage() {
       description: pkg.description || '',
       price_per_night: pkg.price_per_night.toString(),
       features: Array.isArray(pkg.features) ? pkg.features.join(', ') : pkg.features,
-      max_cats: pkg.max_cats.toString(),
+      max_pets: pkg.max_pets.toString(),
+      accepted_pet_types: pkg.accepted_pet_types,
       is_active: pkg.is_active,
     });
     setIsModalOpen(true);
@@ -118,7 +128,8 @@ export default function AdminPackagesPage() {
       description: '',
       price_per_night: '',
       features: '',
-      max_cats: '1',
+      max_pets: '1',
+      accepted_pet_types: [] as PetType[],
       is_active: true,
     });
     setEditingPackage(null);
@@ -179,7 +190,8 @@ export default function AdminPackagesPage() {
                 Rp {pkg.price_per_night.toLocaleString('id-ID')}
                 <span className="text-sm text-gray-500">/malam</span>
               </p>
-              <p className="text-sm text-gray-500">Max {pkg.max_cats} kucing</p>
+              <p className="text-sm text-gray-500">Kapasitas maksimal {pkg.max_pets} hewan</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">{pkg.accepted_pet_types.map((type) => <PetTypeBadge key={type} type={type} />)}</div>
             </div>
 
             <div className="mb-4">
@@ -278,15 +290,24 @@ export default function AdminPackagesPage() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">
-                  Maksimal Kucing
+                  Kapasitas Maksimal
                 </label>
                 <input
                   type="number"
-                  value={formData.max_cats}
-                  onChange={(e) => setFormData({ ...formData, max_cats: e.target.value })}
+                  value={formData.max_pets}
+                  onChange={(e) => setFormData({ ...formData, max_pets: e.target.value })}
                   className="input-premium"
                   min="1"
                   required
+                />
+              </div>
+
+              <div className="mb-4">
+                <PetTypeSelector
+                  value={formData.accepted_pet_types}
+                  onChange={(accepted_pet_types) => setFormData({ ...formData, accepted_pet_types })}
+                  label="Jenis hewan yang diterima"
+                  error={formData.accepted_pet_types.length === 0 ? 'Pilih minimal satu jenis hewan.' : undefined}
                 />
               </div>
 
@@ -317,7 +338,7 @@ export default function AdminPackagesPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || formData.accepted_pet_types.length === 0}
                   className="flex-1 rounded-button bg-primary py-2 font-semibold text-[#2A2A1A] hover:bg-primary-hover disabled:bg-gray-300 disabled:text-gray-500"
                 >
                   {loading ? 'Menyimpan...' : 'Simpan'}

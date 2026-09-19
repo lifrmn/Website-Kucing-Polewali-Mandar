@@ -18,7 +18,7 @@ export default function Navbar() {
     { path: '/produk', label: 'Produk' },
     { path: '/booking', label: 'Pet Hotel / Booking' },
     { path: '/pesanan', label: 'Pesanan' },
-    { path: '/blog', label: 'Tips Kucing' },
+    { path: '/blog', label: 'Tips Pet' },
     { path: '/tentang', label: 'Tentang Kami' },
     { path: '/kontak', label: 'Kontak' },
   ];

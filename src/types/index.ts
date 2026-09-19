@@ -59,6 +59,7 @@ export interface Product {
   slug: string;
   description?: string | null;
   category: string;
+  pet_types?: import('./enums').PetType[];
   price: number;
   stock: number;
   image_url?: string | null;
@@ -98,6 +99,7 @@ export interface Service {
   name: string;
   description?: string;
   service_type: ServiceType;
+  supported_pet_types?: import('./enums').PetType[];
   price: number;
   duration?: string;
   image_url?: string;
@@ -115,7 +117,8 @@ export interface PenitipanPackage {
   description?: string;
   price_per_night: number;
   features?: string[];
-  max_cats: number;
+  max_pets: number;
+  accepted_pet_types: import('./enums').PetType[];
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -177,10 +180,13 @@ export interface PenitipanBooking {
   order_id?: string;
   customer_id?: string;
   package_id?: string;
-  cat_name: string;
-  cat_age?: string;
-  cat_gender?: string;
-  cat_health_condition?: string;
+  pet_name: string;
+  pet_type: import('./enums').PetType;
+  pet_type_other?: string;
+  pet_age?: string;
+  pet_gender?: string;
+  pet_health_condition?: string;
+  pet_count: number;
   check_in_date: string;
   check_out_date: string;
   total_nights: number;
@@ -227,7 +233,7 @@ export interface Testimonial {
   id: string;
   customer_name: string;
   customer_avatar?: string;
-  cat_name?: string;
+  pet_name?: string;
   rating: number;
   comment: string;
   is_approved: boolean;
@@ -242,7 +248,7 @@ export interface Testimonial {
 
 export interface CartItem {
   id: string;
-  type: 'product' | 'service';
+  type: 'product';
   name: string;
   price: number;
   quantity: number;
@@ -258,7 +264,6 @@ export interface CartItem {
   
   // Original Data
   productData?: Product;
-  serviceData?: Service;
   
   // Metadata
   sku?: string;
@@ -299,10 +304,14 @@ export interface BookingFormData {
   customer_phone: string;
   customer_email?: string;
   package_id: string;
-  cat_name: string;
-  cat_age?: string;
-  cat_gender?: 'jantan' | 'betina';
-  cat_health_condition?: string;
+  pet_name: string;
+  pet_type: import('./enums').PetType;
+  pet_type_other?: string;
+  pet_age?: string;
+  pet_gender?: 'Jantan' | 'Betina';
+  pet_breed?: string;
+  pet_health_condition?: string;
+  pet_count: number;
   check_in_date: string;
   check_out_date: string;
   special_requests?: string;

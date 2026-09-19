@@ -1,14 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Cat, Home, ShoppingBag } from 'lucide-react'
+import { Home, PawPrint, ShoppingBag } from 'lucide-react'
 
 export default function NotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-5 pb-16 pt-28">
       <div className="w-full max-w-2xl text-center">
         <div className="mx-auto mb-7 flex h-24 w-24 items-center justify-center rounded-full bg-primary/35">
-          <Cat className="h-12 w-12 text-secondary" />
+          <PawPrint className="h-12 w-12 text-secondary" />
         </div>
         <p className="mb-2 text-7xl font-bold text-dark-gold sm:text-8xl">404</p>
         <h1 className="mb-4 text-3xl font-bold text-text sm:text-4xl">

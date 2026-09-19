@@ -1,14 +1,16 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 
 import { createActivityLog, type AuditContext } from '@/lib/audit';
+import { parsePetTypes } from '@/lib/pet-types';
 import type {
   ServiceBookingInput,
   ServiceBookingUpdateInput,
 } from '@/lib/validations/booking';
-import { BookingStatus } from '@/types/enums';
+import { BookingStatus, PetType } from '@/types/enums';
 
 export type ServiceBookingErrorCode =
   | 'SERVICE_UNAVAILABLE'
+  | 'PET_TYPE_UNSUPPORTED'
   | 'PAST_BOOKING_SLOT'
   | 'DAILY_LIMIT_REACHED'
   | 'SLOT_UNAVAILABLE'
@@ -54,6 +56,9 @@ export async function createServiceBooking(
         where: { id: input.service_id, is_active: true },
       });
       if (!service) throw new ServiceBookingError('SERVICE_UNAVAILABLE');
+      if (!parsePetTypes(service.supported_pet_types).includes(input.pet_type)) {
+        throw new ServiceBookingError('PET_TYPE_UNSUPPORTED');
+      }
 
       const bookingDate = parseBookingDate(input.booking_date);
       if (service.type.toLowerCase() === 'grooming') {
@@ -108,6 +113,7 @@ export async function createServiceBooking(
           booking_time: input.booking_time,
           pet_name: input.pet_name,
           pet_type: input.pet_type,
+          pet_type_other: input.pet_type === PetType.OTHER ? input.pet_type_other : null,
           notes: input.notes,
           status: BookingStatus.PENDING,
         },

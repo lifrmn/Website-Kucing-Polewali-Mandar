@@ -52,7 +52,9 @@ class SettingsService {
         Object.entries(siteSettingKeys).map(([field, key]) => [
           field,
           typeof defaultSiteSettings[field as keyof SiteSettings] === 'boolean'
-            ? valuesByKey.get(key) === 'true'
+            ? valuesByKey.has(key)
+              ? valuesByKey.get(key) === 'true'
+              : defaultSiteSettings[field as keyof SiteSettings]
             : typeof defaultSiteSettings[field as keyof SiteSettings] === 'number'
               ? Number(valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings])
             : valuesByKey.get(key) ?? defaultSiteSettings[field as keyof SiteSettings],

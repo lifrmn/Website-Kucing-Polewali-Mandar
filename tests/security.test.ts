@@ -6,6 +6,7 @@ import {
   BookingStatus,
   OrderStatus,
   PaymentStatus,
+  PetType,
   UserRole,
   isValidBookingStatus,
   isValidOrderStatus,
@@ -26,6 +27,9 @@ import {
 } from '../src/lib/validations/settings';
 import { trustContentCreateSchema } from '../src/lib/validations/trust-content';
 import { productSchema } from '../src/lib/validations/product';
+import { createPackageSchema } from '../src/lib/validations/package';
+import { createServiceSchema } from '../src/lib/validations/service';
+import { loginSchema } from '../src/lib/validations/auth';
 
 test('blog sanitizer removes executable HTML while retaining safe formatting', () => {
   const sanitized = sanitizeBlogHtml(
@@ -68,6 +72,16 @@ test('checkout validation ignores browser prices and rejects invalid quantity', 
   assert.equal(normalizePaymentMethod(validPayload.payment_method), 'BANK_TRANSFER');
   assert.equal(calculateShipping(99_999), 10_000);
   assert.equal(calculateShipping(100_000), 0);
+  assert.equal(calculateShipping(10_000, 'PICKUP', 'TINAMBUNG'), 0);
+  assert.equal(calculateShipping(10_000, 'DELIVERY', 'WONOMULYO'), 15_000);
+
+  assert.throws(() => checkoutSchema.parse({
+    customer_name: 'Service Checkout',
+    customer_phone: '081234567890',
+    customer_address: 'Polewali Mandar',
+    payment_method: 'cod',
+    items: [{ item_type: 'service', item_id: '123e4567-e89b-12d3-a456-426614174000', quantity: 1 }],
+  }));
 
   assert.throws(() => checkoutSchema.parse({
     ...validPayload,
@@ -142,10 +156,35 @@ test('product validation rejects mass assignment and unreasonable stock', () => 
     price: 50_000,
     stock: 10,
     category: 'Makanan',
+    pet_types: [PetType.CAT],
   };
 
   assert.equal(productSchema.parse(product).stock, 10);
+  assert.throws(() => productSchema.parse({ ...product, pet_types: undefined }));
   assert.throws(() => productSchema.parse({ ...product, role: 'SUPER_ADMIN' }));
   assert.throws(() => productSchema.parse({ ...product, stock: 1_000_001 }));
   assert.throws(() => productSchema.parse({ ...product, image_url: 'javascript:alert(1)' }));
+});
+
+test('login validation accepts Auth.js protocol fields but only returns credentials', () => {
+  const credentials = loginSchema.parse({
+    email: ' ADMIN@EXAMPLE.COM ',
+    password: 'secret',
+    csrfToken: 'authjs-token',
+    callbackUrl: '/admin/dashboard',
+  });
+
+  assert.deepEqual(credentials, {
+    email: 'admin@example.com',
+    password: 'secret',
+  });
+});
+
+test('new services and packages require explicit pet compatibility', () => {
+  assert.throws(() => createServiceSchema.parse({
+    name: 'Grooming Basic', type: 'grooming', price: 50_000,
+  }));
+  assert.throws(() => createPackageSchema.parse({
+    name: 'Standard Room', price_per_night: 50_000,
+  }));
 });

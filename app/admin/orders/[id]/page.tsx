@@ -30,6 +30,9 @@ interface OrderDetail {
   customer_phone: string;
   customer_address?: string;
   shipping_address?: string;
+  shipping_city?: string;
+  fulfillment_type: string;
+  shipping_cost: number;
   total_amount: number;
   payment_method: string;
   payment_status: string;
@@ -361,6 +364,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 <div>
                   <p className="text-small text-muted">Phone</p>
                   <p className="text-body text-text">{order.customer_phone}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Truck className="w-5 h-5 text-muted mt-0.5" />
+                <div>
+                  <p className="text-small text-muted">Fulfillment</p>
+                  <p className="text-body text-text">{order.fulfillment_type === 'PICKUP' ? 'Ambil di Toko' : `Pengantaran${order.shipping_city ? ` · ${order.shipping_city}` : ''}`} · Ongkir {formatCurrency(order.shipping_cost)}</p>
                 </div>
               </div>
 

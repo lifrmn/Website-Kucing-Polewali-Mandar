@@ -3,6 +3,8 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { updateServiceSchema } from '@/lib/validations/service';
+import { serializePetTypes } from '@/lib/pet-types';
+import { toServiceResponse } from '@/lib/service-response';
 
 // GET single service
 export async function GET(
@@ -30,7 +32,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: toServiceResponse(service),
     });
   } catch (error: unknown) {
     console.error('GET service error:', error);
@@ -58,12 +60,17 @@ export async function PUT(
 
     const service = await prisma.service.update({
       where: { id },
-      data: input,
+      data: {
+        ...input,
+        supported_pet_types: input.supported_pet_types
+          ? serializePetTypes(input.supported_pet_types)
+          : undefined,
+      },
     });
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: toServiceResponse(service),
       message: 'Layanan berhasil diupdate',
     });
   } catch (error: unknown) {

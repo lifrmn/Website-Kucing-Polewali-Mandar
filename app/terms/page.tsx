@@ -37,7 +37,7 @@ export default function TermsPage() {
               Cikal Pet Care menyediakan layanan:
             </p>
             <ul className="list-disc list-inside space-y-2" style={{ color: '#707070' }}>
-              <li>Grooming (mandi, potong kuku, dan perawatan bulu) untuk kucing</li>
+              <li>Grooming (mandi, potong kuku, dan perawatan bulu) sesuai jenis hewan yang didukung</li>
               <li>Konsultasi kesehatan dan vaksinasi</li>
               <li>Pet hotel (penitipan hewan)</li>
               <li>Penjualan produk perawatan hewan (makanan, aksesoris, obat-obatan)</li>

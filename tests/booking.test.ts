@@ -17,7 +17,7 @@ import {
   createBoardingBooking,
   updateBoardingBooking,
 } from '../src/services/boardingBookingService';
-import { BookingStatus, PaymentMethod, PaymentStatus } from '../src/types/enums';
+import { BookingStatus, PaymentMethod, PaymentStatus, PetType } from '../src/types/enums';
 import {
   createServiceBooking,
   ServiceBookingError,
@@ -79,11 +79,12 @@ function bookingInput(packageId: string, phone = '081234567890') {
     customer_name: 'Customer Booking',
     customer_phone: phone,
     customer_email: '',
-    cat_name: 'Milo',
-    cat_age: '2 tahun',
-    cat_gender: 'Jantan',
-    cat_health_condition: 'Sehat',
-    cat_count: 1,
+    pet_name: 'Milo',
+    pet_type: PetType.CAT,
+    pet_age: '2 tahun',
+    pet_gender: 'Jantan',
+    pet_health_condition: 'Sehat',
+    pet_count: 1,
     vaccination_status: 'VACCINATED',
     emergency_contact: '081234567899',
     payment_method: PaymentMethod.BANK_TRANSFER,
@@ -132,18 +133,18 @@ test('boarding uses server price, reserves every night, and replays idempotently
   }), null);
 });
 
-test('boarding reserves capacity and calculates server price per cat', async () => {
+test('boarding reserves capacity and calculates server price per pet', async () => {
   const pkg = await createPackage(60_000);
-  await prisma.penitipanPackage.update({ where: { id: pkg.id }, data: { max_cats: 2 } });
+  await prisma.penitipanPackage.update({ where: { id: pkg.id }, data: { max_pets: 2 } });
   const input = {
     ...bookingInput(pkg.id, '081234567898'),
-    cat_count: 2,
+    pet_count: 2,
     check_in_date: dateFromToday(20),
     check_out_date: dateFromToday(23),
   };
   const created = await createBoardingBooking(prisma, input, randomUUID());
 
-  assert.equal(created.booking.cat_count, 2);
+  assert.equal(created.booking.pet_count, 2);
   assert.equal(created.booking.total_price, 360_000);
   assert.ok(created.booking.boarding_terms_accepted_at);
   assert.deepEqual(
@@ -174,14 +175,14 @@ test('admin payment verification records the verified timestamp', async () => {
   assert.ok(updated.payment_verified_at);
 });
 
-test('boarding rejects cat count above the selected package limit', async () => {
+test('boarding rejects pet count above the selected package limit', async () => {
   const pkg = await createPackage();
   await assert.rejects(
     createBoardingBooking(prisma, {
       ...bookingInput(pkg.id, '081234567889'),
-      cat_count: 2,
+      pet_count: 2,
     }, randomUUID()),
-    (error: unknown) => error instanceof BoardingBookingError && error.code === 'TOO_MANY_CATS'
+    (error: unknown) => error instanceof BoardingBookingError && error.code === 'TOO_MANY_PETS'
   );
 });
 
@@ -317,6 +318,93 @@ test('inactive package and invalid dates are rejected before persistence', async
   }));
 });
 
+test('boarding and service bookings reject unsupported pet types atomically', async () => {
+  const pkg = await createPackage();
+  await assert.rejects(
+    createBoardingBooking(prisma, {
+      ...bookingInput(pkg.id, '081234567873'),
+      pet_type: PetType.DOG,
+    }, randomUUID()),
+    (error: unknown) => error instanceof BoardingBookingError && error.code === 'PET_TYPE_UNSUPPORTED'
+  );
+
+  const service = await prisma.service.create({
+    data: {
+      name: `Layanan Kucing ${randomUUID()}`,
+      slug: `layanan-kucing-${randomUUID()}`,
+      type: 'konsultasi',
+      price: 75_000,
+      supported_pet_types: '["CAT"]',
+    },
+  });
+  const input = serviceBookingSchema.parse({
+    service_id: service.id,
+    customer_name: 'Pemilik Anjing',
+    customer_phone: '081234567874',
+    booking_date: dateFromToday(11),
+    booking_time: '09:00',
+    pet_name: 'Bolt',
+    pet_type: PetType.DOG,
+  });
+  await assert.rejects(
+    createServiceBooking(prisma, input, randomUUID()),
+    (error: unknown) => error instanceof ServiceBookingError && error.code === 'PET_TYPE_UNSUPPORTED'
+  );
+  assert.equal(await prisma.customer.count({
+    where: { phone: { in: ['081234567873', '081234567874'] } },
+  }), 0);
+});
+
+test('service booking requires a species description for OTHER', () => {
+  const input = {
+    service_id: randomUUID(),
+    customer_name: 'Pemilik Hewan',
+    customer_phone: '081234567890',
+    booking_date: dateFromToday(10),
+    booking_time: '09:00',
+    pet_name: 'Bubu',
+    pet_type: PetType.OTHER,
+  };
+
+  assert.equal(serviceBookingSchema.safeParse(input).success, false);
+  assert.equal(serviceBookingSchema.safeParse({ ...input, pet_type_other: 'Guinea pig' }).success, true);
+});
+
+test('service booking stores OTHER details and clears them for known species', async () => {
+  const service = await prisma.service.create({
+    data: {
+      name: `Konsultasi ${randomUUID()}`,
+      slug: `konsultasi-${randomUUID()}`,
+      type: 'konsultasi',
+      price: 75_000,
+      supported_pet_types: '["CAT","OTHER"]',
+    },
+  });
+  const baseInput = {
+    service_id: service.id,
+    customer_name: 'Pemilik Hewan',
+    booking_date: dateFromToday(12),
+    booking_time: '09:00',
+    pet_name: 'Bubu',
+  };
+
+  const otherBooking = await createServiceBooking(prisma, serviceBookingSchema.parse({
+    ...baseInput,
+    customer_phone: '081234567871',
+    pet_type: PetType.OTHER,
+    pet_type_other: 'Guinea pig',
+  }), randomUUID());
+  assert.equal(otherBooking.booking.pet_type_other, 'Guinea pig');
+
+  const catBooking = await createServiceBooking(prisma, serviceBookingSchema.parse({
+    ...baseInput,
+    customer_phone: '081234567872',
+    pet_type: PetType.CAT,
+    pet_type_other: 'Tidak boleh tersimpan',
+  }), randomUUID());
+  assert.equal(catBooking.booking.pet_type_other, null);
+});
+
 test('service booking enforces the database daily limit and reuses customers', async () => {
   const actor = await prisma.user.create({
     data: {
@@ -348,7 +436,7 @@ test('service booking enforces the database daily limit and reuses customers', a
     booking_date: dateFromToday(15),
     booking_time: '10:00',
     pet_name: 'Milo',
-    pet_type: 'Kucing',
+    pet_type: PetType.CAT,
   });
   const idempotencyKey = randomUUID();
 
@@ -426,7 +514,7 @@ test('grooming rejects an unmanaged or full time slot', async () => {
     booking_date: dateFromToday(18),
     booking_time: '14:30',
     pet_name: 'Mimi',
-    pet_type: 'Kucing',
+    pet_type: PetType.CAT,
   });
 
   await createServiceBooking(prisma, input, randomUUID());
@@ -457,7 +545,7 @@ test('service booking rejects inactive services and past slots', async () => {
     booking_date: dateFromToday(16),
     booking_time: '09:00',
     pet_name: 'Luna',
-    pet_type: 'Kucing',
+    pet_type: PetType.CAT,
   });
 
   await assert.rejects(

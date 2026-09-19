@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { createPackageSchema } from '@/lib/validations/package';
 import { parsePagination } from '@/lib/validations/pagination';
+import { parsePetTypes, serializePetTypes } from '@/lib/pet-types';
 
 // GET all penitipan packages
 export async function GET(request: NextRequest) {
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
     // Parse features JSON string to array
     const packagesWithFeatures = packages.map((pkg) => ({
       ...pkg,
+      accepted_pet_types: parsePetTypes(pkg.accepted_pet_types),
       features: typeof pkg.features === 'string' 
         ? pkg.features.split(',').map(f => f.trim()) 
         : pkg.features,
@@ -82,7 +84,8 @@ export async function POST(request: NextRequest) {
         description: input.description,
         price_per_night: input.price_per_night,
         features: featuresString,
-        max_cats: input.max_cats,
+        max_pets: input.max_pets,
+        accepted_pet_types: serializePetTypes(input.accepted_pet_types),
         is_active: input.is_active ?? true,
       },
     });

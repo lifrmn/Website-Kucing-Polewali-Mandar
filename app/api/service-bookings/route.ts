@@ -12,6 +12,7 @@ import {
   ServiceBookingError,
 } from '@/services/serviceBookingService';
 import { emailService } from '@/services/emailService';
+import { whatsappService } from '@/services/whatsappService';
 
 export async function GET(request: NextRequest) {
   try {
@@ -82,6 +83,14 @@ export async function POST(request: NextRequest) {
         schedule: `${input.booking_date} ${input.booking_time} WITA`,
         petName: booking.pet_name,
       });
+      await whatsappService.sendBookingConfirmation({
+        customerPhone: booking.customer.phone,
+        customerName: booking.customer.name,
+        bookingLabel: booking.id.slice(0, 8).toUpperCase(),
+        serviceName: booking.service.name,
+        petName: booking.pet_name,
+        schedule: `${input.booking_date} ${input.booking_time} WITA`,
+      });
     }
     return NextResponse.json({
       success: true,
@@ -105,6 +114,7 @@ export async function POST(request: NextRequest) {
 
     const conflictMessages: Record<string, string> = {
       SERVICE_UNAVAILABLE: 'Layanan tidak tersedia',
+      PET_TYPE_UNSUPPORTED: 'Layanan ini tidak mendukung jenis hewan yang dipilih',
       PAST_BOOKING_SLOT: 'Tanggal dan jam booking tidak boleh di masa lalu',
       DAILY_LIMIT_REACHED: 'Kuota layanan pada tanggal tersebut sudah penuh',
       SLOT_UNAVAILABLE: 'Slot grooming tidak tersedia atau sudah penuh',

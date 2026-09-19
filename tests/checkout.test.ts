@@ -286,3 +286,45 @@ test('checkout rejects a payment method that is not active', async () => {
   );
   assert.equal((await prisma.product.findUniqueOrThrow({ where: { id: product.id } })).stock, 2);
 });
+
+test('store pickup has no shipping fee and does not require a delivery address', async () => {
+  const product = await createProduct(20_000, 2);
+  const input = checkoutSchema.parse({
+    customer_name: 'Pickup Customer',
+    customer_phone: '081211111111',
+    fulfillment_type: 'PICKUP',
+    payment_method: 'cod',
+    items: [{ item_type: 'product', item_id: product.id, quantity: 1 }],
+  });
+
+  const checkout = await createCheckout(prisma, input, randomUUID());
+  assert.equal(checkout.order.fulfillment_type, 'PICKUP');
+  assert.equal(checkout.order.shipping_cost, 0);
+  assert.equal(checkout.order.shipping_address, null);
+  assert.equal(checkout.order.shipping_city, null);
+  assert.equal(checkout.order.total_amount, 20_000);
+});
+
+test('delivery uses the configured district fee and persists its area', async () => {
+  await prisma.settings.upsert({
+    where: { key: 'shipping_fee_wonomulyo' },
+    create: { key: 'shipping_fee_wonomulyo', value: '18000', type: 'number' },
+    update: { value: '18000' },
+  });
+  const product = await createProduct(20_000, 2);
+  const input = checkoutSchema.parse({
+    customer_name: 'Wonomulyo Customer',
+    customer_phone: '081222222222',
+    customer_address: 'Jalan Poros Wonomulyo',
+    fulfillment_type: 'DELIVERY',
+    delivery_area: 'WONOMULYO',
+    payment_method: 'cod',
+    items: [{ item_type: 'product', item_id: product.id, quantity: 1 }],
+  });
+
+  const checkout = await createCheckout(prisma, input, randomUUID());
+  assert.equal(checkout.order.fulfillment_type, 'DELIVERY');
+  assert.equal(checkout.order.shipping_city, 'WONOMULYO');
+  assert.equal(checkout.order.shipping_cost, 18_000);
+  assert.equal(checkout.order.total_amount, 38_000);
+});

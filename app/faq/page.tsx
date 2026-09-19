@@ -20,8 +20,8 @@ function getFaqs(paymentDescription: string) {
         a: 'Daftar layanan yang sedang aktif, harga, dan durasinya ditampilkan pada halaman Layanan. Paket penitipan yang dapat dipesan tersedia pada halaman Booking.'
       },
       {
-        q: 'Berapa lama waktu grooming untuk kucing?',
-        a: 'Durasi mengikuti jenis layanan dan kondisi kucing. Perkiraan durasi untuk setiap layanan aktif ditampilkan pada halaman Layanan.'
+        q: 'Berapa lama waktu grooming hewan?',
+        a: 'Durasi mengikuti jenis layanan, jenis hewan, dan kondisinya. Perkiraan durasi serta spesies yang didukung ditampilkan pada halaman Layanan.'
       },
       {
         q: 'Apakah harus booking terlebih dahulu?',
@@ -129,7 +129,7 @@ export default async function FAQPage() {
           <h3 className="text-2xl font-bold mb-3" style={{ color: '#383838' }}>Masih Ada Pertanyaan?</h3>
           <p className="mb-6" style={{ color: '#707070' }}>Hubungi kami langsung untuk bantuan lebih lanjut</p>
           <a
-            href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk kucing saya.')}
+            href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai layanan untuk hewan peliharaan saya.')}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-8 py-3 font-semibold text-white transition-colors hover:bg-[#0E743D]"

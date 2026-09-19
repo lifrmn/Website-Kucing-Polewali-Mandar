@@ -6,6 +6,8 @@ import { Card, Button, Input, Textarea } from '@/components/ui';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { serviceService } from '@/services/serviceService';
+import PetTypeSelector from '@/components/PetTypeSelector';
+import { PetType } from '@/types/enums';
 
 export default function NewServicePage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function NewServicePage() {
     name: '',
     description: '',
     type: '',
+    supported_pet_types: [] as PetType[],
     duration: '',
     price: '',
     max_bookings_per_day: '5',
@@ -39,6 +42,7 @@ export default function NewServicePage() {
         name: formData.name,
         description: formData.description || undefined,
         type: formData.type,
+        supported_pet_types: formData.supported_pet_types,
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         price: parseFloat(formData.price),
         max_bookings_per_day: parseInt(formData.max_bookings_per_day),
@@ -129,6 +133,12 @@ export default function NewServicePage() {
                     <option value="other">Other</option>
                   </select>
                 </div>
+
+                <PetTypeSelector
+                  value={formData.supported_pet_types}
+                  onChange={(supported_pet_types) => setFormData((current) => ({ ...current, supported_pet_types }))}
+                  error={formData.supported_pet_types.length === 0 ? 'Pilih minimal satu jenis hewan.' : undefined}
+                />
               </Card.Content>
             </Card>
           </div>
@@ -206,7 +216,7 @@ export default function NewServicePage() {
                   Cancel
                 </Button>
               </Link>
-              <Button type="submit" className="flex-1" isLoading={loading}>
+              <Button type="submit" className="flex-1" isLoading={loading} disabled={formData.supported_pet_types.length === 0}>
                 Create Service
               </Button>
             </div>

@@ -39,6 +39,10 @@ if (isProduction) {
 
 const nextConfig = {
   reactStrictMode: true,
+  agentRules: false,
+  experimental: {
+    proxyClientMaxBodySize: '6mb',
+  },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },

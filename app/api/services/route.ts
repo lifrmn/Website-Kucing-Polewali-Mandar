@@ -4,12 +4,16 @@ import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { createServiceSchema } from '@/lib/validations/service';
 import { parsePagination } from '@/lib/validations/pagination';
+import { PetType } from '@/types/enums';
+import { serializePetTypes } from '@/lib/pet-types';
+import { toServiceResponse } from '@/lib/service-response';
 
 // GET all services
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const type = z.string().max(100).nullable().parse(searchParams.get('type'));
+    const petType = z.enum(PetType).nullable().parse(searchParams.get('petType'));
     const pagination = parsePagination(searchParams);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,6 +22,7 @@ export async function GET(request: NextRequest) {
     if (type) {
       where.type = type;
     }
+    if (petType) where.supported_pet_types = { contains: `"${petType}"` };
 
     const [services, total] = await prisma.$transaction([
       prisma.service.findMany({
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: services,
+      data: services.map(toServiceResponse),
       pagination: {
         page: pagination.page,
         limit: pagination.limit,
@@ -77,6 +82,7 @@ export async function POST(request: NextRequest) {
         slug,
         description: input.description,
         type: input.type,
+        supported_pet_types: serializePetTypes(input.supported_pet_types),
         duration: input.duration,
         price: input.price,
         max_bookings_per_day: input.max_bookings_per_day,
@@ -86,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: service,
+      data: toServiceResponse(service),
       message: 'Layanan berhasil ditambahkan',
     });
   } catch (error: unknown) {

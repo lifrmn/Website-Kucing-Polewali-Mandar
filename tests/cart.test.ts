@@ -8,6 +8,7 @@ import { after, before, test } from 'node:test';
 
 import { PrismaClient } from '@prisma/client';
 
+import { cartSyncSchema } from '../src/lib/validations/cart';
 import { reconcileCart } from '../src/services/cartService';
 
 const databasePath = join(tmpdir(), `cikal-cart-${randomUUID()}.db`);
@@ -127,29 +128,8 @@ test('cart sync removes inactive items', async () => {
   assert.match(result.errors[0], /tidak tersedia/i);
 });
 
-test('cart sync normalizes services and returns their current database price', async () => {
-  const id = randomUUID();
-  const service = await prisma.service.create({
-    data: {
-      id,
-      name: `Grooming ${id}`,
-      slug: `grooming-${id}`,
-      type: 'grooming',
-      price: 125_000,
-      image_url: '/database-service.jpg',
-    },
-  });
-
-  const result = await reconcileCart(prisma, [{
-    id: service.id,
-    type: 'service',
-    quantity: 4,
-  }]);
-
-  assert.equal(result.valid, false);
-  assert.deepEqual(result.errors, []);
-  assert.equal(result.changes.length, 1);
-  assert.equal(result.items[0].quantity, 1);
-  assert.equal(result.items[0].price, 125_000);
-  assert.equal(result.items[0].name, service.name);
+test('cart sync schema rejects services because they require direct booking', () => {
+  assert.throws(() => cartSyncSchema.parse({
+    items: [{ id: randomUUID(), type: 'service', quantity: 1 }],
+  }));
 });

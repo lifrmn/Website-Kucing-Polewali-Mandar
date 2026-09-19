@@ -1,14 +1,17 @@
 'use client'
 
 import { createContext, useContext, type ReactNode } from 'react'
+import type { PetType } from '@/types/enums'
 
 export interface PublicService {
   id: string
   name: string
   description: string | null
   type: string
+  supported_pet_types: PetType[]
   duration: number | null
   price: number
+  image_url: string | null
   is_active: boolean
 }
 

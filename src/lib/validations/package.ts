@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PetType } from '@/types/enums';
 
 const featuresSchema = z.union([
   z.array(z.string().trim().min(1).max(200)).max(50),
@@ -10,7 +11,8 @@ const packageFields = {
   description: z.string().trim().max(2_000).optional(),
   price_per_night: z.coerce.number().finite().min(0).max(1_000_000_000),
   features: featuresSchema.default([]),
-  max_cats: z.coerce.number().int().min(1).max(100).default(1),
+  max_pets: z.coerce.number().int().min(1).max(100).default(1),
+  accepted_pet_types: z.array(z.enum(PetType)).min(1, 'Pilih minimal satu jenis hewan'),
   is_active: z.boolean().optional(),
 };
 
@@ -21,7 +23,8 @@ export const updatePackageSchema = z.object({
   description: packageFields.description,
   price_per_night: packageFields.price_per_night.optional(),
   features: featuresSchema.optional(),
-  max_cats: packageFields.max_cats.optional(),
+  max_pets: packageFields.max_pets.optional(),
+  accepted_pet_types: packageFields.accepted_pet_types.optional(),
   is_active: packageFields.is_active,
 }).strict().refine(
   (data) => Object.values(data).some((value) => value !== undefined),

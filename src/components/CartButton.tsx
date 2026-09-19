@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,10 @@ interface CartButtonProps {
  */
 export default function CartButton({ variant = 'desktop', className }: CartButtonProps) {
   const { getItemCount, toggleCart } = useCartStore();
-  const itemCount = getItemCount();
+  const [mounted, setMounted] = useState(false);
+  const itemCount = mounted ? getItemCount() : 0;
+
+  useEffect(() => setMounted(true), []);
 
   return (
     <button

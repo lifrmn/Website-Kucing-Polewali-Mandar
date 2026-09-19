@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PetType } from '@/types/enums';
 
 const productImageUrlSchema = z.union([
   z.literal(''),
@@ -33,6 +34,7 @@ export const productSchema = z.object({
   price: z.number().finite().min(1000, 'Harga minimal Rp 1.000').max(1_000_000_000),
   stock: z.number().int().min(0, 'Stok tidak boleh negatif').max(1_000_000),
   category: z.string().trim().min(1, 'Kategori wajib diisi').max(100),
+  pet_types: z.array(z.enum(PetType)).min(1, 'Pilih minimal satu jenis hewan'),
   image_url: productImageUrlSchema,
   is_active: z.boolean().default(true),
   featured: z.boolean().default(false),

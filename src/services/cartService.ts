@@ -2,7 +2,7 @@ import type { PrismaClient } from '@prisma/client';
 
 export interface CartSyncInput {
   id: string;
-  type: 'product' | 'service';
+  type: 'product';
   variantId?: string;
   quantity: number;
 }
@@ -35,25 +35,6 @@ export async function reconcileCart(database: PrismaClient, inputs: CartSyncInpu
   const errors: string[] = [];
 
   for (const input of inputs) {
-    if (input.type === 'service') {
-      const service = await database.service.findFirst({
-        where: { id: input.id, is_active: true },
-      });
-      if (!service) {
-        errors.push('Layanan dalam keranjang sudah tidak tersedia');
-        continue;
-      }
-      items.push({
-        ...input,
-        quantity: 1,
-        name: service.name,
-        price: service.price,
-        image_url: service.image_url,
-      });
-      if (input.quantity !== 1) changes.push(`Jumlah ${service.name} disesuaikan menjadi 1`);
-      continue;
-    }
-
     const product = await database.product.findFirst({
       where: { id: input.id, is_active: true },
       include: { variants: { where: { is_active: true } } },

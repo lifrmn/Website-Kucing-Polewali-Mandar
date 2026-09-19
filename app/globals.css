@@ -285,6 +285,11 @@
   button, a, input, select, textarea {
     min-height: 44px;
   }
+
+  .Toastify__toast-container--top-right {
+    top: auto;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
   
   /* Prevent text size adjustment on orientation change */
   html {
@@ -297,6 +302,14 @@
   body {
     font-size: 16px;
   }
+}
+
+.Toastify__toast-container {
+  pointer-events: none;
+}
+
+.Toastify__toast {
+  pointer-events: auto;
 }
 
 /* ============================================

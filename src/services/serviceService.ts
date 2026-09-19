@@ -1,3 +1,5 @@
+import type { PetType } from '@/types/enums';
+
 // No longer directly importing Prisma - using API routes instead
 export const serviceService = {
   async getServices() {
@@ -79,6 +81,7 @@ export const serviceService = {
     name: string;
     description?: string;
     type: string;
+    supported_pet_types: PetType[];
     duration?: number;
     price: number;
     max_bookings_per_day?: number;
@@ -108,6 +111,7 @@ export const serviceService = {
     name?: string;
     description?: string;
     type?: string;
+    supported_pet_types?: PetType[];
     duration?: number;
     price?: number;
     max_bookings_per_day?: number;

@@ -9,8 +9,10 @@ export function findCustomerBooking(database: PrismaClient, input: CustomerBooki
     },
     select: {
       booking_number: true,
-      cat_name: true,
-      cat_count: true,
+      pet_name: true,
+      pet_type: true,
+      pet_type_other: true,
+      pet_count: true,
       check_in_date: true,
       check_out_date: true,
       total_nights: true,

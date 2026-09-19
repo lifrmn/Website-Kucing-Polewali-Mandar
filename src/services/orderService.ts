@@ -8,14 +8,16 @@ interface CreateOrderData {
   customer_phone: string;
   customer_email?: string;
   customer_address?: string;
-  order_type: 'product' | 'service' | 'penitipan';
+  order_type: 'product';
   items: Array<{
-    item_type: 'product' | 'service';
+    item_type: 'product';
     item_id: string;
     variant_id?: string;
     quantity: number;
   }>;
   payment_method?: 'qris' | 'transfer' | 'cod';
+  fulfillment_type: 'DELIVERY' | 'PICKUP';
+  delivery_area: 'POLEWALI' | 'WONOMULYO' | 'TINAMBUNG' | 'OTHER';
   notes?: string;
 }
 
@@ -24,6 +26,9 @@ export interface CustomerOrderSummary {
   order_number: string;
   subtotal: number;
   shipping_cost: number;
+  fulfillment_type: string;
+  shipping_address?: string | null;
+  shipping_city?: string | null;
   total_amount: number;
   payment_method: string;
   payment_status: string;
@@ -270,6 +275,9 @@ export const orderService = {
         customer_address: order.customer.address,
         order_type: 'product',
         total_amount: order.total_amount,
+        shipping_cost: order.shipping_cost,
+        fulfillment_type: order.fulfillment_type,
+        shipping_city: order.shipping_city,
         payment_method: order.payment_method,
         payment_status: order.payment_status,
         payment_proof_url: order.payment_proof_url,

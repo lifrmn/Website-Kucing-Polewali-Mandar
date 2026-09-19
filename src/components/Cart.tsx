@@ -12,7 +12,7 @@ export default function Cart() {
     closeCart,
     removeItem,
     updateQuantity,
-    getTotal,
+    getSubtotal,
   } = useCartStore();
   const router = useRouter();
 
@@ -66,7 +66,7 @@ export default function Cart() {
                 <ShoppingBag className="h-9 w-9 text-muted" />
               </div>
               <p className="mb-2 text-xl font-semibold text-text">Keranjang Anda masih kosong</p>
-              <p className="mb-6 max-w-xs text-sm text-muted">Temukan kebutuhan terbaik untuk kucing Anda di halaman produk.</p>
+              <p className="mb-6 max-w-xs text-sm text-muted">Temukan kebutuhan terbaik untuk hewan kesayangan Anda di halaman produk.</p>
               <button onClick={() => { closeCart(); router.push('/produk'); }} className="btn-primary">Lihat Produk</button>
             </div>
           ) : (
@@ -151,9 +151,10 @@ export default function Cart() {
         {items.length > 0 && (
           <div className="space-y-3 border-t border-border bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:p-6">
             <div className="flex items-center justify-between rounded-button bg-surface2 p-4">
-              <span className="font-medium text-text">Total Belanja</span>
-              <span className="text-xl font-bold text-dark-gold">{formatPrice(getTotal())}</span>
+              <span className="font-medium text-text">Subtotal Produk</span>
+              <span className="text-xl font-bold text-dark-gold">{formatPrice(getSubtotal())}</span>
             </div>
+            <p className="text-center text-xs text-muted">Ongkir atau opsi ambil di toko dipilih saat checkout.</p>
 
             <button
               onClick={handleCheckout}

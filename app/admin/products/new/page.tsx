@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { Card, Input, Textarea, Button } from '@/components/ui';
 import { ArrowLeft, Plus, Trash2, Save } from 'lucide-react';
 import { productService } from '@/services/productService';
+import PetTypeSelector from '@/components/PetTypeSelector';
+import { PetType } from '@/types/enums';
 
 interface ProductVariant {
   id: string;
@@ -25,6 +27,7 @@ export default function NewProductPage() {
     price: 0,
     stock: 0,
     category: '',
+    pet_types: [] as PetType[],
     image_url: '',
     sku: '',
     is_active: true,
@@ -141,6 +144,12 @@ export default function NewProductPage() {
                 placeholder="e.g., DOG-FOOD-001"
               />
             </div>
+
+            <PetTypeSelector
+              value={formData.pet_types}
+              onChange={(pet_types) => setFormData({ ...formData, pet_types })}
+              error={formData.pet_types.length === 0 ? 'Pilih minimal satu jenis hewan.' : undefined}
+            />
 
             <Input
               label="Image URL"
@@ -262,7 +271,7 @@ export default function NewProductPage() {
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <Button type="submit" isLoading={loading} className="min-w-32">
+          <Button type="submit" isLoading={loading} disabled={formData.pet_types.length === 0} className="min-w-32">
             <Save className="w-4 h-4 mr-2" />
             Create Product
           </Button>

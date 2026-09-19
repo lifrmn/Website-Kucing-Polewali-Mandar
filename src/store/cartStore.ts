@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { CartItem } from '@/types';
 
 // Cart version for schema migration
-const CART_VERSION = 1;
+const CART_VERSION = 2;
 
 interface CartState {
   items: CartItem[];
@@ -12,8 +12,8 @@ interface CartState {
   
   // Core Actions
   addItem: (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => void;
-  removeItem: (id: string, type: 'product' | 'service', variantId?: string) => void;
-  updateQuantity: (id: string, type: 'product' | 'service', quantity: number, variantId?: string) => void;
+  removeItem: (id: string, type: 'product', variantId?: string) => void;
+  updateQuantity: (id: string, type: 'product', quantity: number, variantId?: string) => void;
   clearCart: () => void;
   
   // Enhanced Actions
@@ -21,10 +21,8 @@ interface CartState {
   syncWithServer: () => Promise<{ valid: boolean; errors: string[]; changes: string[] }>;
   
   // Calculations
-  getTotal: () => number;
   getItemCount: () => number;
   getSubtotal: () => number;
-  getShipping: () => number;
   
   // UI Actions
   openCart: () => void;
@@ -160,18 +158,8 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      getTotal: () => {
-        return get().getSubtotal() + get().getShipping();
-      },
-
       getSubtotal: () => {
         return get().items.reduce((total, item) => total + item.price * item.quantity, 0);
-      },
-
-      getShipping: () => {
-        const subtotal = get().getSubtotal();
-        // Free shipping over Rp 100,000
-        return subtotal >= 100000 ? 0 : 10000;
       },
 
       getItemCount: () => {
@@ -198,9 +186,11 @@ export const useCartStore = create<CartState>()(
       migrate: (persistedState: any, version: number) => {
         // Handle cart schema migrations
         if (version < CART_VERSION) {
-          // Migration logic for future versions
           return {
             ...persistedState,
+            items: Array.isArray(persistedState?.items)
+              ? persistedState.items.filter((item: CartItem) => item.type === 'product')
+              : [],
             version: CART_VERSION,
           };
         }

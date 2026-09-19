@@ -6,6 +6,8 @@ import { productSchema } from '@/lib/validations/product';
 import { parsePagination } from '@/lib/validations/pagination';
 import { toProductResponse } from '@/lib/product-response';
 import { z } from 'zod';
+import { PetType } from '@/types/enums';
+import { serializePetTypes } from '@/lib/pet-types';
 
 // GET all products with search, filter, pagination
 export async function GET(request: NextRequest) {
@@ -13,6 +15,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const q = z.string().max(100).parse(searchParams.get('q') || '');
     const category = z.string().max(100).nullable().parse(searchParams.get('category'));
+    const petType = z.enum(PetType).nullable().parse(searchParams.get('petType'));
     const pagination = parsePagination(searchParams);
     const featured = searchParams.get('featured');
     const all = searchParams.get('all'); // For admin to see all including inactive
@@ -39,6 +42,7 @@ export async function GET(request: NextRequest) {
     if (category && category !== 'ALL') {
       where.category = category;
     }
+    if (petType) where.pet_types = { contains: `"${petType}"` };
     
     // Filter featured
     if (featured === 'true') {
@@ -125,7 +129,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { variants, ...productData } = validatedData;
+    const { variants, pet_types, ...productData } = validatedData;
     const submittedSkus = [productData.sku, ...variants.map((variant) => variant.sku)];
     if (new Set(submittedSkus).size !== submittedSkus.length) {
       return NextResponse.json(
@@ -148,6 +152,7 @@ export async function POST(request: NextRequest) {
     const product = await prisma.product.create({
       data: {
         ...productData,
+        pet_types: serializePetTypes(pet_types),
         variants: {
           create: variants.map(({ id: _, attributes, ...variant }) => ({
             ...variant,

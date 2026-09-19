@@ -6,8 +6,10 @@ import { ArrowLeft, Check, Minus, Package, Plus, ShoppingCart, X } from 'lucide-
 import { toast } from 'react-toastify'
 
 import AppIcon from '@/components/AppIcon'
+import PetTypeBadge from '@/components/PetTypeBadge'
 import { useCartStore } from '@/store/cartStore'
 import type { ProductVariant } from '@/types'
+import type { PetType } from '@/types/enums'
 
 interface ProductDetail {
   id: string
@@ -19,6 +21,7 @@ interface ProductDetail {
   stock: number
   image_url: string | null
   sku: string
+  pet_types: PetType[]
   variants: ProductVariant[]
 }
 
@@ -98,6 +101,13 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-dark-gold">{product.category}</p>
             <h1 className="text-3xl md:text-4xl font-extrabold text-stone-900 mb-4">{product.name}</h1>
             <p className="text-2xl font-bold mb-5" style={{ color: '#9A7B16' }}>{formatCurrency(price)}</p>
+
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-semibold text-stone-700">Cocok untuk</p>
+              <div className="flex flex-wrap gap-2">
+                {product.pet_types.map((type) => <PetTypeBadge key={type} type={type} />)}
+              </div>
+            </div>
 
             <div className="flex items-center gap-2 text-sm mb-7">
               {stock > 0 ? (

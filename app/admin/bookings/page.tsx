@@ -5,6 +5,8 @@ import { Card, Badge, Button } from '@/components/ui';
 import { Calendar, Clock, Search, CheckCircle, XCircle, PawPrint } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import AppIcon from '@/components/AppIcon';
+import PetTypeBadge from '@/components/PetTypeBadge';
+import { getPetTypeLabel } from '@/lib/pet-types';
 
 interface Booking {
   id: string;
@@ -18,10 +20,12 @@ interface Booking {
     name: string;
     price_per_night: number;
   };
-  cat_name: string;
-  cat_age: string;
-  cat_gender: string;
-  cat_health_condition?: string;
+  pet_name: string;
+  pet_type: string;
+  pet_type_other?: string | null;
+  pet_age?: string;
+  pet_gender?: string;
+  pet_health_condition?: string;
   check_in_date: string;
   check_out_date: string;
   total_nights: number;
@@ -40,6 +44,8 @@ interface ServiceBooking {
   booking_date: string;
   booking_time: string;
   pet_name: string;
+  pet_type: string;
+  pet_type_other?: string | null;
   status: string;
   customer: { name: string; phone: string };
   service: { name: string; price: number; duration?: number };
@@ -73,7 +79,8 @@ export default function AdminBookingsPage() {
       filtered = filtered.filter(booking =>
         booking.booking_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
         booking.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        booking.cat_name.toLowerCase().includes(searchQuery.toLowerCase())
+        booking.pet_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getPetTypeLabel(booking.pet_type).toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -195,6 +202,8 @@ export default function AdminBookingsPage() {
                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-primary" />{formatDate(new Date(booking.booking_date))}</span>
                     <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-primary" />{booking.booking_time} WITA</span>
                     <span className="flex items-center gap-1.5"><PawPrint className="w-4 h-4 text-primary" />{booking.pet_name}</span>
+                    <PetTypeBadge type={booking.pet_type} />
+                    {booking.pet_type_other && <span>{booking.pet_type_other}</span>}
                   </div>
                   {booking.status === 'PENDING' && (
                     <div className="flex gap-2">
@@ -295,10 +304,12 @@ export default function AdminBookingsPage() {
                 <div className="flex items-center gap-3 p-3 bg-surface2 rounded-button">
                   <PawPrint className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="text-body font-bold text-text">{booking.cat_name}</p>
+                    <p className="text-body font-bold text-text">{booking.pet_name}</p>
                     <p className="text-small text-muted">
-                      {booking.cat_age} • {booking.cat_gender}
+                      {[booking.pet_age, booking.pet_gender].filter(Boolean).join(' • ') || 'Detail belum diisi'}
                     </p>
+                    <PetTypeBadge type={booking.pet_type} className="mt-1" />
+                    {booking.pet_type_other && <p className="mt-1 text-small text-muted">{booking.pet_type_other}</p>}
                   </div>
                 </div>
 

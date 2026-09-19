@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cartStore'
 import { orderService } from '@/services/orderService'
 import { toast } from 'react-toastify'
-import { Loader2, ShoppingBag, ShoppingCart } from 'lucide-react'
+import { Loader2, MapPin, ShoppingBag, ShoppingCart, Store, Truck } from 'lucide-react'
 import { useSiteSettings } from '@/components/SiteSettingsContext'
+import { calculateShipping, DELIVERY_AREAS, DELIVERY_AREA_LABELS, type DeliveryArea, type FulfillmentType } from '@/lib/delivery'
 
 export default function CheckoutPage() {
   const router = useRouter()
   const settings = useSiteSettings()
-  const { items, getTotal, clearCart, syncWithServer } = useCartStore()
+  const { items, clearCart, syncWithServer } = useCartStore()
   const [loading, setLoading] = useState(false)
   
   const [formData, setFormData] = useState({
@@ -19,6 +20,8 @@ export default function CheckoutPage() {
     email: '',
     phone: '',
     address: '',
+    fulfillment_type: 'DELIVERY' as FulfillmentType,
+    delivery_area: 'POLEWALI' as DeliveryArea,
     notes: '',
     payment_method: '',
   })
@@ -34,6 +37,14 @@ export default function CheckoutPage() {
       setFormData((current) => ({ ...current, payment_method: availablePaymentMethods[0]?.value || '' }))
     }
   }, [settings.bankTransferActive, settings.bankName, settings.bankAccount, settings.bankAccountName, settings.qrisActive, settings.qrisImageUrl, settings.codActive]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (formData.fulfillment_type === 'DELIVERY' && !settings.deliveryActive && settings.pickupActive) {
+      setFormData((current) => ({ ...current, fulfillment_type: 'PICKUP' }))
+    } else if (formData.fulfillment_type === 'PICKUP' && !settings.pickupActive && settings.deliveryActive) {
+      setFormData((current) => ({ ...current, fulfillment_type: 'DELIVERY' }))
+    }
+  }, [formData.fulfillment_type, settings.deliveryActive, settings.pickupActive])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -66,7 +77,7 @@ export default function CheckoutPage() {
       return
     }
 
-    if (!formData.address.trim()) {
+    if (formData.fulfillment_type === 'DELIVERY' && !formData.address.trim()) {
       toast.error('Alamat harus diisi!')
       return
     }
@@ -107,9 +118,11 @@ export default function CheckoutPage() {
         customer_email: formData.email,
         customer_phone: formData.phone,
         customer_address: formData.address,
+        fulfillment_type: formData.fulfillment_type,
+        delivery_area: formData.delivery_area,
         order_type: 'product' as const,
         items: synchronizedItems.map((item) => ({
-          item_type: item.type as 'product' | 'service',
+          item_type: item.type,
           item_id: item.id,
           variant_id: item.variantId,
           quantity: item.quantity,
@@ -139,6 +152,10 @@ export default function CheckoutPage() {
     }
   }
 
+  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+  const shippingCost = calculateShipping(subtotal, formData.fulfillment_type, formData.delivery_area, settings)
+  const total = subtotal + shippingCost
+
   if (items.length === 0) {
     return (
       <main className="min-h-screen" style={{ backgroundColor: '#FAF8F5', fontFamily: "'Poppins','Inter',sans-serif" }}>
@@ -165,7 +182,7 @@ export default function CheckoutPage() {
             </div>
             <h2 className="text-3xl font-bold mb-4" style={{ color: '#383838' }}>Keranjang Kosong</h2>
             <p className="mb-8" style={{ color: '#707070' }}>
-              Keranjang belanja Anda masih kosong. Yuk mulai belanja untuk kucing kesayangan!
+              Keranjang belanja Anda masih kosong. Yuk mulai belanja kebutuhan hewan kesayangan!
             </p>
             <button
               onClick={() => router.push('/produk')}
@@ -252,8 +269,24 @@ export default function CheckoutPage() {
               </div>
 
               <div>
+                <span className="mb-3 block text-sm font-bold text-text">Cara menerima pesanan</span>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {settings.deliveryActive && <button type="button" aria-pressed={formData.fulfillment_type === 'DELIVERY'} onClick={() => setFormData({ ...formData, fulfillment_type: 'DELIVERY' })} className={`flex min-h-14 items-center gap-3 rounded-button border p-3 text-left ${formData.fulfillment_type === 'DELIVERY' ? 'border-primary-hover bg-primary/20' : 'border-border'}`}><Truck className="h-5 w-5" /><span><strong className="block text-sm">Diantar</strong><span className="text-xs text-muted">Pilih kecamatan tujuan</span></span></button>}
+                  {settings.pickupActive && <button type="button" aria-pressed={formData.fulfillment_type === 'PICKUP'} onClick={() => setFormData({ ...formData, fulfillment_type: 'PICKUP' })} className={`flex min-h-14 items-center gap-3 rounded-button border p-3 text-left ${formData.fulfillment_type === 'PICKUP' ? 'border-primary-hover bg-primary/20' : 'border-border'}`}><Store className="h-5 w-5" /><span><strong className="block text-sm">Ambil di Toko</strong><span className="text-xs text-muted">Tanpa biaya pengiriman</span></span></button>}
+                </div>
+              </div>
+
+              {formData.fulfillment_type === 'DELIVERY' ? <>
+              <div>
+                <label className="block text-sm font-bold mb-2 text-text">Wilayah Pengantaran <span className="text-danger" aria-hidden="true">*</span></label>
+                <select name="delivery_area" value={formData.delivery_area} onChange={handleChange} className="input-premium" required>
+                  {DELIVERY_AREAS.map((area) => <option key={area} value={area}>{DELIVERY_AREA_LABELS[area]} · {formatCurrency(calculateShipping(0, 'DELIVERY', area, settings))}</option>)}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
-                  Alamat <span className="text-danger" aria-hidden="true">*</span>
+                  Alamat Pengantaran <span className="text-danger" aria-hidden="true">*</span>
                 </label>
                 <textarea
                   name="address"
@@ -265,6 +298,7 @@ export default function CheckoutPage() {
                   rows={3}
                 />
               </div>
+              </> : <div className="flex items-start gap-3 rounded-button border border-border bg-surface2 p-4"><MapPin className="mt-0.5 h-5 w-5 text-dark-gold" /><div><p className="font-semibold text-text">Lokasi pengambilan</p><p className="text-sm text-muted">{settings.address}</p></div></div>}
 
               <div>
                 <label className="block text-sm font-bold mb-2" style={{ color: '#383838' }}>
@@ -274,11 +308,13 @@ export default function CheckoutPage() {
                   name="payment_method"
                   value={formData.payment_method}
                   onChange={handleChange}
+                  disabled={availablePaymentMethods.length === 0}
                   className="input-premium"
                 >
                   {availablePaymentMethods.length === 0 && <option value="">Belum ada metode tersedia</option>}
                   {availablePaymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}
                 </select>
+                {availablePaymentMethods.length === 0 && <p className="mt-2 text-sm text-danger">Checkout belum tersedia sampai metode pembayaran diaktifkan.</p>}
               </div>
 
               <div>
@@ -297,7 +333,7 @@ export default function CheckoutPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || availablePaymentMethods.length === 0}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-button bg-primary px-6 py-3 font-semibold text-[#2A2A1A] shadow-sm transition-colors hover:bg-primary-hover disabled:opacity-50"
               >
                 {loading && <Loader2 className="animate-spin w-5 h-5" />}
@@ -321,8 +357,16 @@ export default function CheckoutPage() {
                 ))}
               </div>
               <div className="flex justify-between items-center" style={{ color: '#383838' }}>
+                <span>Subtotal</span>
+                <span className="font-semibold">{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between items-center" style={{ color: '#383838' }}>
+                <span>{formData.fulfillment_type === 'PICKUP' ? 'Ambil di toko' : `Ongkir ${DELIVERY_AREA_LABELS[formData.delivery_area]}`}</span>
+                <span className="font-semibold">{shippingCost === 0 ? 'Gratis' : formatCurrency(shippingCost)}</span>
+              </div>
+              <div className="flex justify-between items-center border-t border-border pt-3" style={{ color: '#383838' }}>
                 <span className="font-bold">Total</span>
-                <span className="text-2xl font-bold text-dark-gold">{formatCurrency(getTotal())}</span>
+                <span className="text-2xl font-bold text-dark-gold">{formatCurrency(total)}</span>
               </div>
             </div>
           </div>

@@ -6,6 +6,7 @@ import { productUpdateSchema } from '@/lib/validations/product';
 import { toProductResponse } from '@/lib/product-response';
 import { createActivityLog, getRequestIp } from '@/lib/audit';
 import { z } from 'zod';
+import { serializePetTypes } from '@/lib/pet-types';
 
 // GET single product
 export async function GET(
@@ -110,7 +111,11 @@ export async function PUT(
       }
     }
 
-    const { id: _, variants, ...updateData } = validatedData;
+    const { id: _, variants, pet_types, ...updateData } = validatedData;
+    const serializedUpdateData = {
+      ...updateData,
+      pet_types: pet_types ? serializePetTypes(pet_types) : undefined,
+    };
     const submittedSkus = [
       updateData.sku ?? existingProduct.sku,
       ...(variants?.map((variant) => variant.sku) ?? []),
@@ -148,7 +153,7 @@ export async function PUT(
     }
 
     const product = await prisma.$transaction(async (tx) => {
-      await tx.product.update({ where: { id }, data: updateData });
+      await tx.product.update({ where: { id }, data: serializedUpdateData });
 
       if (variants) {
         const retainedIds = variants.flatMap((variant) => variant.id ? [variant.id] : []);

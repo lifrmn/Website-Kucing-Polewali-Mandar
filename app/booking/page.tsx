@@ -8,6 +8,9 @@ import AppIcon from '@/components/AppIcon'
 import { useSiteSettings } from '@/components/SiteSettingsContext'
 import { getWhatsAppUrl } from '@/lib/whatsapp'
 import { useBookingInitialData } from './BookingInitialData'
+import PetTypeBadge from '@/components/PetTypeBadge'
+import { PET_TYPE_OPTIONS } from '@/lib/pet-types'
+import { PetType } from '@/types/enums'
 
 export default function BookingPage() {
   const settings = useSiteSettings()
@@ -16,6 +19,7 @@ export default function BookingPage() {
   const [selectedPackage, setSelectedPackage] = useState<PenitipanPackage | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [bookingError, setBookingError] = useState('')
+  const [selectedPetType, setSelectedPetType] = useState<PetType>(PetType.CAT)
   const [bookingResult, setBookingResult] = useState<{
     booking_number: string
     total_nights: number
@@ -45,6 +49,7 @@ export default function BookingPage() {
     idempotencyKey.current = crypto.randomUUID()
     setBookingError('')
     setBookingResult(null)
+    setSelectedPetType(pkg.accepted_pet_types[0] ?? PetType.CAT)
     setSelectedPackage(pkg)
   }
 
@@ -66,7 +71,7 @@ export default function BookingPage() {
         body: JSON.stringify({
           ...payload,
           package_id: selectedPackage.id,
-          cat_count: Number(payload.cat_count),
+          pet_count: Number(payload.pet_count),
           boarding_terms_accepted: payload.boarding_terms_accepted === 'on',
         }),
       })
@@ -99,10 +104,10 @@ export default function BookingPage() {
         <div className="max-w-5xl mx-auto px-6 sm:px-8 text-center">
           <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: '#E6D18B' }}>Cikal Pet Care</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4" style={{ fontFamily: "'Poppins',sans-serif" }}>
-            Paket Penitipan Kucing
+            Paket Penitipan Hewan
           </h1>
           <p className="text-base md:text-lg leading-relaxed max-w-xl mx-auto" style={{ color: 'rgba(255,255,255,0.7)' }}>
-            Pilih paket terbaik untuk kenyamanan dan keamanan kucing kesayangan Anda
+            Pilih paket penitipan yang sesuai untuk keamanan dan kenyamanan hewan kesayangan Anda.
           </p>
         </div>
         {/* Wave bottom */}
@@ -126,7 +131,7 @@ export default function BookingPage() {
                 Silakan hubungi kami untuk informasi lebih lanjut
               </p>
               <a 
-                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai penitipan kucing.')}
+                href={getWhatsAppUrl(settings.whatsapp, 'Halo Cikal Pet Care, saya ingin bertanya mengenai penitipan hewan.')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex min-h-12 items-center gap-2 rounded-button bg-[#128C4A] px-6 py-3 font-semibold text-white shadow-md transition-colors hover:bg-[#0E743D]"
@@ -145,7 +150,7 @@ export default function BookingPage() {
                     badgeColor: '#E6D18B',
                     icon: Crown,
                     popular: true,
-                    image: 'https://images.unsplash.com/photo-1573865526739-10c1dd7db5d8?w=600&auto=format&fit=crop'
+                    image: 'https://images.unsplash.com/photo-1574144611937-0df059b5ef3e?w=600&auto=format&fit=crop'
                   };
                 } else if (pkg.name.toLowerCase().includes('standar') || pkg.name.toLowerCase().includes('standard')) {
                   return {
@@ -185,6 +190,10 @@ export default function BookingPage() {
                       src={tierStyle.image}
                       alt={pkg.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null
+                        event.currentTarget.src = '/placeholder-product.svg'
+                      }}
                     />
                     <div className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}></div>
                     
@@ -217,6 +226,10 @@ export default function BookingPage() {
                         {formatCurrency(pkg.price_per_night)}
                       </span>
                       <p className="text-sm mt-2" style={{ color: '#707070' }}>per malam</p>
+                    </div>
+
+                    <div className="mb-5 flex flex-wrap justify-center gap-2" aria-label="Jenis hewan yang diterima">
+                      {pkg.accepted_pet_types.map((type) => <PetTypeBadge key={type} type={type} />)}
                     </div>
 
                     {pkg.features && pkg.features.length > 0 && (
@@ -292,13 +305,15 @@ export default function BookingPage() {
                   <label className="text-sm font-medium md:col-span-2">Email (opsional)<input name="customer_email" type="email" maxLength={254} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Tanggal check-in<input name="check_in_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Tanggal check-out<input name="check_out_date" type="date" required min={minimumBookingDate} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium">Nama kucing<input name="cat_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium">Jumlah kucing<input name="cat_count" type="number" required min={1} max={selectedPackage.max_cats} defaultValue={1} className="mt-1 w-full rounded-lg border px-3 py-2.5" /><span className="mt-1 block text-xs text-muted">Maksimal {selectedPackage.max_cats} kucing untuk paket ini</span></label>
-                  <label className="text-sm font-medium">Usia kucing<input name="cat_age" maxLength={50} placeholder="Contoh: 2 tahun" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
-                  <label className="text-sm font-medium">Jenis kelamin<select name="cat_gender" className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih</option><option value="Jantan">Jantan</option><option value="Betina">Betina</option></select></label>
-                  <label className="text-sm font-medium">Ras (opsional)<input name="cat_breed" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jenis hewan *<select name="pet_type" required value={selectedPetType} onChange={(event) => setSelectedPetType(event.target.value as PetType)} className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="" disabled>Pilih jenis hewan</option>{PET_TYPE_OPTIONS.filter((option) => selectedPackage.accepted_pet_types.includes(option.value)).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                  {selectedPetType === PetType.OTHER && <label className="text-sm font-medium">Jenis hewan *<input name="pet_type_other" required maxLength={100} placeholder="Contoh: Guinea pig" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>}
+                  <label className="text-sm font-medium">Nama hewan *<input name="pet_name" required maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jumlah hewan *<input name="pet_count" type="number" required min={1} max={selectedPackage.max_pets} defaultValue={1} className="mt-1 w-full rounded-lg border px-3 py-2.5" /><span className="mt-1 block text-xs text-muted">Kapasitas maksimal {selectedPackage.max_pets} hewan</span></label>
+                  <label className="text-sm font-medium">Umur<input name="pet_age" maxLength={50} placeholder="Contoh: 2 tahun" className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
+                  <label className="text-sm font-medium">Jenis kelamin<select name="pet_gender" className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih</option><option value="Jantan">Jantan</option><option value="Betina">Betina</option></select></label>
+                  <label className="text-sm font-medium">Ras (opsional)<input name="pet_breed" maxLength={100} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Status vaksin<select name="vaccination_status" required className="mt-1 w-full rounded-lg border px-3 py-2.5"><option value="">Pilih status</option><option value="VACCINATED">Lengkap</option><option value="PARTIAL">Belum lengkap</option><option value="NOT_VACCINATED">Belum vaksin</option><option value="UNKNOWN">Tidak diketahui</option></select></label>
-                  <label className="text-sm font-medium md:col-span-2">Kondisi kesehatan<textarea name="cat_health_condition" required minLength={2} maxLength={1000} rows={2} placeholder="Tuliskan kondisi kesehatan saat ini" className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
+                  <label className="text-sm font-medium md:col-span-2">Kondisi kesehatan<textarea name="pet_health_condition" maxLength={1000} rows={2} placeholder="Tuliskan kondisi kesehatan saat ini" className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
                   <label className="text-sm font-medium md:col-span-2">Obat rutin (opsional)<textarea name="routine_medication" maxLength={500} rows={2} className="mt-1 w-full rounded-lg border px-3 py-2.5 resize-none" /></label>
                   <label className="text-sm font-medium">Alergi (opsional)<input name="allergies" maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
                   <label className="text-sm font-medium">Makanan khusus (opsional)<input name="special_food" maxLength={500} className="mt-1 w-full rounded-lg border px-3 py-2.5" /></label>
@@ -309,10 +324,10 @@ export default function BookingPage() {
                 <section className="mt-6 rounded-card border border-border bg-surface2 p-4" aria-labelledby="boarding-terms-title">
                   <h3 id="boarding-terms-title" className="font-bold text-text">Syarat Penitipan</h3>
                   <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-muted">
-                    <li>Kucing dalam keadaan sehat dan tidak memiliki penyakit menular.</li>
+                    <li>Hewan dalam keadaan sehat dan tidak memiliki penyakit menular.</li>
                     <li>Status vaksin, obat rutin, alergi, dan makanan khusus telah diinformasikan.</li>
                     <li>Kontak darurat dapat dihubungi selama masa penitipan.</li>
-                    <li>Pemilik menyetujui untuk dihubungi jika kucing membutuhkan penanganan kesehatan.</li>
+                    <li>Pemilik menyetujui untuk dihubungi jika hewan membutuhkan penanganan kesehatan.</li>
                   </ul>
                   <label className="mt-4 flex cursor-pointer items-start gap-3 text-sm font-medium text-text">
                     <input name="boarding_terms_accepted" type="checkbox" required className="mt-0.5 h-5 w-5 rounded border-border accent-primary-hover" />

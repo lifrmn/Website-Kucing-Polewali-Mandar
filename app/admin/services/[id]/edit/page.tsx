@@ -6,6 +6,8 @@ import { Card, Button, Input, Textarea } from '@/components/ui';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { serviceService } from '@/services/serviceService';
+import PetTypeSelector from '@/components/PetTypeSelector';
+import { PetType } from '@/types/enums';
 
 export default function EditServicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -17,6 +19,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     name: '',
     description: '',
     type: '',
+    supported_pet_types: [PetType.CAT] as PetType[],
     duration: '',
     price: '',
     max_bookings_per_day: '5',
@@ -37,6 +40,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         name: service.name,
         description: service.description || '',
         type: service.type || '',
+        supported_pet_types: service.supported_pet_types || [PetType.CAT],
         duration: service.duration?.toString() || '',
         price: service.price.toString(),
         max_bookings_per_day: service.max_bookings_per_day.toString(),
@@ -66,6 +70,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         name: formData.name,
         description: formData.description || undefined,
         type: formData.type || undefined,
+        supported_pet_types: formData.supported_pet_types,
         duration: formData.duration ? parseInt(formData.duration) : undefined,
         price: parseFloat(formData.price),
         max_bookings_per_day: parseInt(formData.max_bookings_per_day),
@@ -167,6 +172,12 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                     <option value="other">Other</option>
                   </select>
                 </div>
+
+                <PetTypeSelector
+                  value={formData.supported_pet_types}
+                  onChange={(supported_pet_types) => setFormData((current) => ({ ...current, supported_pet_types }))}
+                  error={formData.supported_pet_types.length === 0 ? 'Pilih minimal satu jenis hewan.' : undefined}
+                />
               </Card.Content>
             </Card>
           </div>
@@ -244,7 +255,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                   Cancel
                 </Button>
               </Link>
-              <Button type="submit" className="flex-1" isLoading={loading}>
+              <Button type="submit" className="flex-1" isLoading={loading} disabled={formData.supported_pet_types.length === 0}>
                 Update Service
               </Button>
             </div>

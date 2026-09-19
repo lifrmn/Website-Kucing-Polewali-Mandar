@@ -11,6 +11,7 @@ import {
   createBoardingBooking,
 } from '@/services/boardingBookingService';
 import { emailService } from '@/services/emailService';
+import { whatsappService } from '@/services/whatsappService';
 
 // GET all bookings
 export async function GET(request: NextRequest) {
@@ -119,7 +120,16 @@ export async function POST(request: NextRequest) {
         customerName: booking.customer.name,
         bookingLabel: booking.booking_number,
         schedule: `${input.check_in_date} sampai ${input.check_out_date}`,
-        petName: booking.cat_name,
+        petName: booking.pet_name,
+      });
+      await whatsappService.sendBookingConfirmation({
+        customerPhone: booking.customer.phone,
+        customerName: booking.customer.name,
+        bookingLabel: booking.booking_number,
+        serviceName: `Penitipan ${booking.package.name}`,
+        petName: booking.pet_name,
+        schedule: `${input.check_in_date} sampai ${input.check_out_date}`,
+        trackingNumber: booking.booking_number,
       });
     }
 
@@ -155,7 +165,8 @@ export async function POST(request: NextRequest) {
       INVALID_DATE_RANGE: 'Tanggal check-out harus setelah check-in, maksimal 30 malam',
       PAST_CHECK_IN: 'Tanggal check-in tidak boleh di masa lalu',
       CAPACITY_FULL: 'Kapasitas penitipan penuh pada salah satu tanggal yang dipilih',
-      TOO_MANY_CATS: 'Jumlah kucing melebihi batas paket yang dipilih',
+      TOO_MANY_PETS: 'Jumlah hewan melebihi batas paket yang dipilih',
+      PET_TYPE_UNSUPPORTED: 'Paket ini tidak menerima jenis hewan yang dipilih',
       PAYMENT_METHOD_UNAVAILABLE: 'Metode pembayaran tidak tersedia atau belum dikonfigurasi',
     };
     if (error instanceof BoardingBookingError) {

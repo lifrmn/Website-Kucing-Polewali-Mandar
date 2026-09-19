@@ -355,7 +355,7 @@ export default function LaporanPage() {
       {/* Footer info skripsi */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 text-center">
         <p className="text-xs text-muted">
-          <span className="font-semibold text-primary">Cikal Pet Care Polman</span> — Sistem Informasi Manajemen Layanan Perawatan Kucing Berbasis Web
+          <span className="font-semibold text-primary">Cikal Pet Care Polman</span> — Sistem Informasi Manajemen Layanan Perawatan Hewan Berbasis Web
         </p>
         <p className="text-xs text-muted mt-0.5">Studi Kasus: Cikal Pet Care Polewali Mandar · Laporan digenerate otomatis oleh sistem</p>
       </div>

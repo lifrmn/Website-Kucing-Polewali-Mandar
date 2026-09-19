@@ -5,6 +5,8 @@ import { CalendarDays, Loader2, Package, Search, Truck, Upload } from 'lucide-re
 
 import AppIcon from '@/components/AppIcon'
 import { CustomerOrderSummary, orderService } from '@/services/orderService'
+import PetTypeBadge from '@/components/PetTypeBadge'
+import { DELIVERY_AREA_LABELS, type DeliveryArea } from '@/lib/delivery'
 
 const statusLabels: Record<string, string> = {
   PENDING: 'Menunggu pembayaran',
@@ -30,8 +32,10 @@ const statusStyles: Record<string, string> = {
 
 interface CustomerBookingSummary {
   booking_number: string
-  cat_name: string
-  cat_count: number
+  pet_name: string
+  pet_type: string
+  pet_type_other?: string
+  pet_count: number
   check_in_date: string
   check_out_date: string
   total_nights: number
@@ -215,6 +219,14 @@ export default function OrdersPage() {
               <div><p className="text-xs text-slate-500">Metode</p><p className="font-bold">{order.payment_method.replace(/_/g, ' ')}</p></div>
             </div>
 
+            <div className="flex items-start gap-3 rounded-xl border border-border bg-surface2 p-4">
+              <Truck className="mt-0.5 h-5 w-5 text-dark-gold" />
+              <div>
+                <p className="font-semibold text-text">{order.fulfillment_type === 'PICKUP' ? 'Ambil di Toko' : `Pengantaran ${order.shipping_city && order.shipping_city in DELIVERY_AREA_LABELS ? DELIVERY_AREA_LABELS[order.shipping_city as DeliveryArea] : ''}`}</p>
+                <p className="text-sm text-muted">{order.fulfillment_type === 'PICKUP' ? 'Pesanan diambil langsung di Cikal Pet Care.' : `${order.shipping_address || 'Alamat tersimpan'} · Ongkir ${formatCurrency(order.shipping_cost)}`}</p>
+              </div>
+            </div>
+
             <div>
               <h3 className="font-bold mb-3 flex items-center gap-2"><Package className="w-5 h-5" /> Item Pesanan</h3>
               <div className="space-y-2">
@@ -260,7 +272,7 @@ export default function OrdersPage() {
             </div>
             <div className="grid gap-4 border-y border-border py-5 sm:grid-cols-2">
               <div><p className="text-xs text-muted">Paket</p><p className="font-bold text-text">{booking.package.name}</p></div>
-              <div><p className="text-xs text-muted">Kucing</p><p className="font-bold text-text">{booking.cat_name} ({booking.cat_count})</p></div>
+              <div><p className="text-xs text-muted">Hewan</p><p className="font-bold text-text">{booking.pet_name} ({booking.pet_count})</p><PetTypeBadge type={booking.pet_type} className="mt-1" />{booking.pet_type_other && <p className="mt-1 text-xs text-muted">{booking.pet_type_other}</p>}</div>
               <div><p className="text-xs text-muted">Check-in</p><p className="font-bold text-text">{new Date(booking.check_in_date).toLocaleDateString('id-ID', { dateStyle: 'long', timeZone: 'UTC' })}</p></div>
               <div><p className="text-xs text-muted">Check-out</p><p className="font-bold text-text">{new Date(booking.check_out_date).toLocaleDateString('id-ID', { dateStyle: 'long', timeZone: 'UTC' })}</p></div>
             </div>

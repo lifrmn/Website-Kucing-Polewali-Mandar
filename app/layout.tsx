@@ -24,13 +24,15 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: 'Cikal Pet Care Polewali Mandar | Grooming & Penitipan Kucing',
+    default: 'Cikal Pet Care Polewali Mandar | Pet Care Profesional',
     template: '%s | Cikal Pet Care Polewali Mandar',
   },
-  description: 'Grooming kucing, penitipan kucing, pet hotel dan kebutuhan kucing di Polewali Mandar. Booking perawatan kucing dengan mudah bersama Cikal Pet Care.',
+  description: 'Pet care profesional untuk berbagai hewan peliharaan di Polewali Mandar. Temukan grooming, penitipan, konsultasi, dan kebutuhan hewan di Cikal Pet Care.',
   keywords: [
     'grooming kucing Polewali',
+    'grooming anjing Polewali',
     'penitipan kucing Polewali',
+    'perawatan hewan Polewali Mandar',
     'pet hotel Polewali Mandar',
     'pet care Polewali',
     'grooming Polman',

@@ -39,6 +39,7 @@ model Product {
   price       Float
   stock       Int      @default(0)
   category    String
+  pet_types   String   @default("[\"CAT\"]") // JSON array of PetType values
   image_url   String?
   gallery     String?  // JSON array of image URLs
   is_active   Boolean  @default(true)
@@ -112,6 +113,7 @@ model Service {
   slug        String   @unique
   description String?
   type        String   // consultation, grooming, vaccination, etc.
+  supported_pet_types String @default("[\"CAT\"]") // JSON array of PetType values
   duration    Int?     // minutes
   price       Float
   image_url   String?
@@ -140,6 +142,7 @@ model ServiceBooking {
   booking_time    String
   pet_name        String
   pet_type        String
+  pet_type_other  String?
   notes           String?
   status          String        @default("PENDING") // BookingStatus
   
@@ -231,6 +234,7 @@ model Order {
   payment_verified_at DateTime?
   
   // Shipping
+  fulfillment_type   String        @default("DELIVERY")
   shipping_address   String?
   shipping_city      String?
   shipping_postal    String?
@@ -297,7 +301,8 @@ model PenitipanPackage {
   description     String?
   price_per_night Float
   features        String   // JSON array
-  max_cats        Int      @default(1)
+  max_pets        Int      @default(1)
+  accepted_pet_types String @default("[\"CAT\"]") // JSON array of PetType values
   image_url       String?
   is_active       Boolean  @default(true)
   featured        Boolean  @default(false)
@@ -317,18 +322,20 @@ model PenitipanBooking {
   customer_id          String
   package_id           String
   
-  // Cat Information
-  cat_name             String
-  cat_age              String?
-  cat_gender           String?
-  cat_breed            String?
-  cat_health_condition String?
-  cat_count            Int           @default(1)
+  // Pet Information
+  pet_name             String
+  pet_type             String        @default("CAT")
+  pet_type_other       String?
+  pet_age              String?
+  pet_gender           String?
+  pet_breed            String?
+  pet_health_condition String?
+  pet_count            Int           @default(1)
   vaccination_status   String?
   routine_medication   String?
   allergies            String?
   special_food         String?
-  cat_photo_url        String?
+  pet_photo_url        String?
   
   // Booking Details
   check_in_date        DateTime

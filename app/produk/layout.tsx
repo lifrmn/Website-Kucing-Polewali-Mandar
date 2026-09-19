@@ -6,15 +6,14 @@ import type { Product } from '@/types'
 import { ProductInitialDataProvider } from './ProductInitialData'
 
 export const metadata: Metadata = {
-  title: 'Produk Kucing',
-  description: 'Temukan makanan, perlengkapan, dan produk pilihan untuk kebutuhan kucing Anda di Cikal Pet Care Polewali Mandar.',
+  title: 'Produk untuk Hewan Kesayangan',
+  description: 'Temukan makanan, perlengkapan grooming, aksesori, mainan, dan kebutuhan harian untuk hewan kesayangan Anda.',
   alternates: { canonical: '/produk' },
 }
 
 export default async function ProductsLayout({ children }: { children: ReactNode }) {
   const records = await prisma.product.findMany({
     where: { is_active: true },
-    take: 10,
     orderBy: { created_at: 'desc' },
     include: {
       variants: {

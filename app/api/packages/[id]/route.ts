@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { authorizeAdmin } from '@/lib/authorization';
 import { updatePackageSchema } from '@/lib/validations/package';
+import { parsePetTypes, serializePetTypes } from '@/lib/pet-types';
 
 // GET single package
 export async function GET(
@@ -31,6 +32,7 @@ export async function GET(
     // Parse features
     const packageWithFeatures = {
       ...pkg,
+      accepted_pet_types: parsePetTypes(pkg.accepted_pet_types),
       features: typeof pkg.features === 'string' 
         ? pkg.features.split(',').map(f => f.trim()) 
         : pkg.features,
@@ -69,7 +71,13 @@ export async function PUT(
       ? input.features.join(', ')
       : input.features;
 
-    const updateData = { ...input, features: featuresString };
+    const updateData = {
+      ...input,
+      features: featuresString,
+      accepted_pet_types: input.accepted_pet_types
+        ? serializePetTypes(input.accepted_pet_types)
+        : undefined,
+    };
 
     const updatedPackage = await prisma.penitipanPackage.update({
       where: { id },

@@ -30,6 +30,13 @@ export const siteSettingsSchema = z.object({
   qrisActive: z.boolean(),
   codActive: z.boolean(),
   boardingDepositPercent: z.number().int().min(0).max(100),
+  deliveryActive: z.boolean(),
+  pickupActive: z.boolean(),
+  freeShippingThreshold: z.number().int().min(0).max(100_000_000),
+  polewaliDeliveryFee: z.number().int().min(0).max(10_000_000),
+  wonomulyoDeliveryFee: z.number().int().min(0).max(10_000_000),
+  tinambungDeliveryFee: z.number().int().min(0).max(10_000_000),
+  otherDeliveryFee: z.number().int().min(0).max(10_000_000),
 }).strict();
 
 const socialUrl = z.union([
@@ -75,6 +82,13 @@ export const defaultSiteSettings: SiteSettings = {
   qrisActive: false,
   codActive: false,
   boardingDepositPercent: 30,
+  deliveryActive: true,
+  pickupActive: true,
+  freeShippingThreshold: 100_000,
+  polewaliDeliveryFee: 10_000,
+  wonomulyoDeliveryFee: 15_000,
+  tinambungDeliveryFee: 20_000,
+  otherDeliveryFee: 25_000,
 };
 
 export const siteSettingKeys: Record<keyof SiteSettings, string> = {
@@ -98,4 +112,11 @@ export const siteSettingKeys: Record<keyof SiteSettings, string> = {
   qrisActive: 'payment_qris_active',
   codActive: 'payment_cod_active',
   boardingDepositPercent: 'payment_boarding_deposit_percent',
+  deliveryActive: 'shipping_delivery_active',
+  pickupActive: 'shipping_pickup_active',
+  freeShippingThreshold: 'shipping_free_threshold',
+  polewaliDeliveryFee: 'shipping_fee_polewali',
+  wonomulyoDeliveryFee: 'shipping_fee_wonomulyo',
+  tinambungDeliveryFee: 'shipping_fee_tinambung',
+  otherDeliveryFee: 'shipping_fee_other',
 };

@@ -29,6 +29,27 @@ function getProductionEnvironmentErrors(environment = process.env) {
       errors.push('AUTH_URL production harus berupa URL valid');
     }
   }
+  const whatsappProvider = environment.WHATSAPP_PROVIDER?.toUpperCase();
+  if (whatsappProvider) {
+    if (!['FONNTE', 'WABLAS'].includes(whatsappProvider)) {
+      errors.push('WHATSAPP_PROVIDER harus FONNTE atau WABLAS');
+    }
+    if (!environment.WHATSAPP_API_TOKEN) {
+      errors.push('WHATSAPP_API_TOKEN wajib diatur saat WhatsApp aktif');
+    }
+    if (whatsappProvider === 'WABLAS' && !environment.WHATSAPP_API_URL) {
+      errors.push('WHATSAPP_API_URL wajib diatur untuk WABLAS');
+    }
+    if (environment.WHATSAPP_API_URL) {
+      try {
+        if (new URL(environment.WHATSAPP_API_URL).protocol !== 'https:') {
+          errors.push('WHATSAPP_API_URL harus menggunakan HTTPS');
+        }
+      } catch {
+        errors.push('WHATSAPP_API_URL harus berupa URL valid');
+      }
+    }
+  }
   return errors;
 }
 
